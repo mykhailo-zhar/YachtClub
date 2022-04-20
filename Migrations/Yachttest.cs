@@ -7,7 +7,6 @@ namespace Project.Migrations
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }
-        public string Status { get; set; }
         public string Results { get; set; }
         public int Yachtid { get; set; }
         public int Staffid { get; set; }

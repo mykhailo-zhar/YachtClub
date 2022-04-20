@@ -104,6 +104,10 @@ namespace Project.Migrations
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
+                entity.Property(e => e.Averallprice)
+                    .HasColumnName("averallprice")
+                    .HasColumnType("numeric");
+
                 entity.Property(e => e.Clientid).HasColumnName("clientid");
 
                 entity.Property(e => e.Contracttypeid).HasColumnName("contracttypeid");
@@ -115,10 +119,6 @@ namespace Project.Migrations
                 entity.Property(e => e.Enddate)
                     .HasColumnName("enddate")
                     .HasColumnType("date");
-
-                entity.Property(e => e.Overallprice)
-                    .HasColumnName("overallprice")
-                    .HasColumnType("numeric");
 
                 entity.Property(e => e.Specials)
                     .IsRequired()
@@ -161,7 +161,9 @@ namespace Project.Migrations
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Description)
+                    .HasColumnName("description")
+                    .HasDefaultValueSql("' '::text");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -183,6 +185,10 @@ namespace Project.Migrations
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
+                entity.Property(e => e.Duration)
+                    .HasColumnName("duration")
+                    .HasColumnType("date");
+
                 entity.Property(e => e.Enddate)
                     .HasColumnName("enddate")
                     .HasColumnType("date");
@@ -199,7 +205,8 @@ namespace Project.Migrations
                 entity.Property(e => e.Status)
                     .IsRequired()
                     .HasColumnName("status")
-                    .HasColumnType("character varying");
+                    .HasColumnType("character varying")
+                    .HasDefaultValueSql("'Created'::character varying");
             });
 
             modelBuilder.Entity<Extradationrequest>(entity =>
@@ -258,6 +265,10 @@ namespace Project.Migrations
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Metric)
+                    .HasColumnName("metric")
+                    .HasColumnType("character varying");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -320,6 +331,14 @@ namespace Project.Migrations
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Description)
+                    .HasColumnName("description")
+                    .HasDefaultValueSql("' '::text");
+
+                entity.Property(e => e.Metric)
+                    .HasColumnName("metric")
+                    .HasColumnType("character varying");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -405,7 +424,9 @@ namespace Project.Migrations
                     .HasColumnName("enddate")
                     .HasColumnType("date");
 
-                entity.Property(e => e.Personnel).HasColumnName("personnel");
+                entity.Property(e => e.Personnel)
+                    .HasColumnName("personnel")
+                    .HasDefaultValueSql("1");
 
                 entity.Property(e => e.Startdate)
                     .HasColumnName("startdate")
@@ -414,7 +435,8 @@ namespace Project.Migrations
                 entity.Property(e => e.Status)
                     .IsRequired()
                     .HasColumnName("status")
-                    .HasColumnType("character varying");
+                    .HasColumnType("character varying")
+                    .HasDefaultValueSql("'New'::character varying");
 
                 entity.Property(e => e.Yachtid).HasColumnName("yachtid");
 
@@ -426,9 +448,10 @@ namespace Project.Migrations
 
             modelBuilder.Entity<RepairMen>(entity =>
             {
-                entity.ToTable("repair_men");
+                entity.HasKey(e => new { e.Repairid, e.Staffid })
+                    .HasName("repair_men_pkey");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.ToTable("repair_men");
 
                 entity.Property(e => e.Repairid).HasColumnName("repairid");
 
@@ -552,7 +575,9 @@ namespace Project.Migrations
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Description)
+                    .HasColumnName("description")
+                    .HasDefaultValueSql("' '::text");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -614,7 +639,9 @@ namespace Project.Migrations
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Description)
+                    .HasColumnName("description")
+                    .HasDefaultValueSql("' '::text");
 
                 entity.Property(e => e.Enddate)
                     .HasColumnName("enddate")
@@ -678,7 +705,10 @@ namespace Project.Migrations
                     .HasColumnName("name")
                     .HasColumnType("character varying");
 
-                entity.Property(e => e.Rentable).HasColumnName("rentable");
+                entity.Property(e => e.Rentable)
+                    .IsRequired()
+                    .HasColumnName("rentable")
+                    .HasDefaultValueSql("true");
 
                 entity.Property(e => e.Status)
                     .IsRequired()
@@ -708,7 +738,9 @@ namespace Project.Migrations
 
                 entity.Property(e => e.Crewid).HasColumnName("crewid");
 
-                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Description)
+                    .HasColumnName("description")
+                    .HasDefaultValueSql("' '::text");
 
                 entity.Property(e => e.Enddate)
                     .HasColumnName("enddate")
@@ -778,7 +810,9 @@ namespace Project.Migrations
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Description)
+                    .HasColumnName("description")
+                    .HasDefaultValueSql("' '::text");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -788,6 +822,8 @@ namespace Project.Migrations
                 entity.Property(e => e.Price)
                     .HasColumnName("price")
                     .HasColumnType("numeric");
+
+                entity.Property(e => e.Staffonly).HasColumnName("staffonly");
             });
 
             modelBuilder.Entity<Yachttest>(entity =>
@@ -805,11 +841,6 @@ namespace Project.Migrations
                     .HasColumnName("results");
 
                 entity.Property(e => e.Staffid).HasColumnName("staffid");
-
-                entity.Property(e => e.Status)
-                    .IsRequired()
-                    .HasColumnName("status")
-                    .HasColumnType("character varying");
 
                 entity.Property(e => e.Yachtid).HasColumnName("yachtid");
 
@@ -842,6 +873,10 @@ namespace Project.Migrations
                     .HasColumnType("character varying");
 
                 entity.Property(e => e.Crewcapacity).HasColumnName("crewcapacity");
+
+                entity.Property(e => e.Description)
+                    .HasColumnName("description")
+                    .HasDefaultValueSql("' '::text");
 
                 entity.Property(e => e.Frame)
                     .IsRequired()

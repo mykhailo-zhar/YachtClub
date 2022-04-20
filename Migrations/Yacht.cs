@@ -18,7 +18,7 @@ namespace Project.Migrations
         public int Id { get; set; }
         public string Name { get; set; }
         public string Status { get; set; }
-        public bool Rentable { get; set; }
+        public bool? Rentable { get; set; }
         public int Typeid { get; set; }
         public int Yachtownerid { get; set; }
 

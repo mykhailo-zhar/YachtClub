@@ -13,6 +13,7 @@ namespace Project.Migrations
         public int Id { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }
+        public bool Staffonly { get; set; }
         public string Description { get; set; }
 
         public virtual ICollection<Yachtlease> Yachtlease { get; set; }

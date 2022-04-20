@@ -20,7 +20,7 @@ namespace Project.Migrations
         public DateTime Duration { get; set; }
         public string Specials { get; set; }
         public string Status { get; set; }
-        public decimal Overallprice { get; set; }
+        public decimal Averallprice { get; set; }
 
         public virtual Client Client { get; set; }
         public virtual Contracttype Contracttype { get; set; }

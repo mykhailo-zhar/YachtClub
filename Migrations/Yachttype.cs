@@ -19,6 +19,7 @@ namespace Project.Migrations
         public int Crewcapacity { get; set; }
         public int Capacity { get; set; }
         public int Sails { get; set; }
+        public string Description { get; set; }
 
         public virtual ICollection<PositionYachttype> PositionYachttype { get; set; }
         public virtual ICollection<Yacht> Yacht { get; set; }

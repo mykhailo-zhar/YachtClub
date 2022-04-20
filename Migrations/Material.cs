@@ -13,6 +13,7 @@ namespace Project.Migrations
 
         public int Id { get; set; }
         public string Name { get; set; }
+        public string Metric { get; set; }
         public int Typeid { get; set; }
 
         public virtual Materialtype Type { get; set; }

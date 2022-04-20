@@ -5,7 +5,6 @@ namespace Project.Migrations
 {
     public partial class RepairMen
     {
-        public int Id { get; set; }
         public int Repairid { get; set; }
         public int Staffid { get; set; }
 
