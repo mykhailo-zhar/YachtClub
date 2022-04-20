@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-
+using Project.Migrations;
+using Project.Database;
 
 namespace WebApp
 {
@@ -19,12 +19,12 @@ namespace WebApp
         public IConfiguration Configuration { get; set; }
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddDbContext<DataContext>(opts =>
-            //{
-            //    opts.UseSqlServer(Configuration[
-            //    "ConnectionStrings:ProductConnection"]);
-            //    opts.EnableSensitiveDataLogging(true);
-            //});
+            services.AddDbContext<DataContext>(opts =>
+            {
+                opts.UseNpgsql(Configuration[
+                "ConnectionStrings:YachtClubConnection"]);
+                opts.EnableSensitiveDataLogging(true);
+            });
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages().AddRazorRuntimeCompilation();
 
@@ -34,7 +34,7 @@ namespace WebApp
             services.Configure<MvcOptions>(opts => opts.ModelBindingMessageProvider
                     .SetValueMustNotBeNullAccessor(value => "Please enter a value"));
         }
-        public void Configure(IApplicationBuilder app, /*DataContext context,*/ IAntiforgery antiforgery)
+        public void Configure(IApplicationBuilder app, DataContext context, IAntiforgery antiforgery)
         {
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
@@ -53,12 +53,10 @@ namespace WebApp
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapControllerRoute("forms",
-                "controllers/{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapDefaultControllerRoute();
                 endpoints.MapRazorPages();
             });
-            //SeedData.SeedDatabase(context);
+            SeedData.Seed(context);
         }
     }
 }
