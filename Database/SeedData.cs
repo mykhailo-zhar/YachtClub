@@ -67,8 +67,9 @@ CREATE TABLE Position (
 				//Тип материала
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE MaterialType(
-  ID    serial     Not Null		Primary Key,
-  Name  varchar    Not Null		Unique,
+  ID		serial     Not Null		Primary Key,
+  Name		varchar    Not Null		Unique,
+  Metric	varchar    Default NULL,
   Description	text	Default ' '
 );
 				");
@@ -205,6 +206,7 @@ Create TABLE Staff_Position(
 CREATE TABLE Material(
 	ID		serial		Not Null	Primary Key,
 	Name	varchar		Not Null	Unique,
+	Metric	varchar     Default NULL,
 	TypeID	int			Not Null
 	References 	MaterialType(ID)	
 	On Update Cascade	
@@ -554,6 +556,7 @@ CREATE TABLE Position_Equivalent(
 			dbContext.Database.EnsureCreated();
 			if (dbContext.Position.Count() == 0)
 			{
+
                 #region Типы
                 //Должности
                 dbContext.Database.ExecuteSqlRaw($@"
@@ -598,6 +601,8 @@ values
 ('Sails'),
 ('Engine'),
 ('Instruments');
+
+UPDATE MaterialType SET Metric = 'kg' where Name = 'Fuel'
 				");
 
 				//Типы контрактов
@@ -708,12 +713,15 @@ Update event set status='Ended'
 ('Engine'),
 ('Instruments')*/
 
+insert into Material(name, TypeID, Metric)
+values
+('Diesel Fuel 1', 				1, NULL),
+('Diesel Fuel 2', 				1, NULL),
+('Carbon fiber for patching', 	2, 'm2'),
+('Simple fiber for patching', 	2, 'm2');
+
 insert into Material(name, TypeID)
 values
-('Diesel Fuel 1', 				1),
-('Diesel Fuel 2', 				1),
-('Carbon fiber for patching', 	2),
-('Simple fiber for patching', 	2),
 ('Small sails', 				3),
 ('Medium sails', 				3),
 ('Large sails', 				3),
