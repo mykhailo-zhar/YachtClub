@@ -56,7 +56,8 @@ namespace WebApp
                 endpoints.MapDefaultControllerRoute();
                 endpoints.MapRazorPages();
             });
-            SeedData.Seed(context);
+            SeedData.RestartDatabase(context);
+            SeedData.SeedWithData(context);
         }
     }
 }
