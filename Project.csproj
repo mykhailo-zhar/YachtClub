@@ -2,7 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>48c1a3f9-1a3b-4565-9443-a9b50d6f5566</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwRoot\lib\css\**" />
+    <Compile Remove="wwwRoot\lib\image\**" />
+    <Content Remove="wwwRoot\lib\css\**" />
+    <Content Remove="wwwRoot\lib\image\**" />
+    <EmbeddedResource Remove="wwwRoot\lib\css\**" />
+    <EmbeddedResource Remove="wwwRoot\lib\image\**" />
+    <None Remove="wwwRoot\lib\css\**" />
+    <None Remove="wwwRoot\lib\image\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.1" />
@@ -30,6 +42,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwRoot\lib\twitter-bootstrap\" />
   </ItemGroup>
 
 </Project>

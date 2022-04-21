@@ -431,7 +431,7 @@ CREATE TABLE Review(
 	
 	Date			date		Not Null,
 	Text			text		Not Null,
-	Rate			int 		Not Null 	check(Rate > 0)
+	Rate			int 		Not Null 	check(Rate > 0 AND Rate <= 5)
 );
 
 				");
@@ -458,7 +458,7 @@ CREATE TABLE Repair_Men(
 );
 				");
 
-				//Обзоры на контракт
+/*				//Обзоры на контракт
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Review_Contract(
 	ReviewID	int			Not Null
@@ -473,7 +473,7 @@ CREATE TABLE Review_Contract(
 
 	Primary Key ( ReviewID, ContractID )
 );
-				");
+				");*/
 
 				//Обзоры на яхту
 				dbContext.Database.ExecuteSqlRaw(@"
@@ -556,7 +556,6 @@ CREATE TABLE Position_Equivalent(
 			dbContext.Database.EnsureCreated();
 			if (dbContext.Position.Count() == 0)
 			{
-
                 #region Типы
                 //Должности
                 dbContext.Database.ExecuteSqlRaw($@"
@@ -1209,11 +1208,24 @@ values
 ;
 				");
 
-                #endregion
+				#endregion
 
-                #endregion
+				#region Четвёртое поколение
 
-            }
+				//Отзывы
+				dbContext.Database.ExecuteSqlRaw($@"
+insert into Review(ClientId, ContractID, date, text, rate)
+values
+( 4, 4, '25-02-2019', 'Некогда больше не поеду на этой яхте', 1 ) ,
+( 3, 6, '25-02-2019', 'Превосходный капитан', 5 ) ,
+( 4, 8, '19-05-2021', 'Как же хорошо', 5 ) 
+;
+				");
+
+				#endregion
+				#endregion
+
+			}
         }
     }
 }
