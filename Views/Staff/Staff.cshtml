@@ -1,0 +1,77 @@
+﻿@model IEnumerable<Staff>
+
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <td>
+                ID
+            </td>
+            <td>
+                Имя
+            </td> 
+            <td>
+                Фамилия
+            </td>
+            <td>
+                Дата рождения
+            </td>
+            <td>
+                Пол
+            </td>
+            <td>
+                Email
+            </td>
+            <td>
+                Телефон
+            </td>
+            <td>
+                Дата приёма на работу
+            </td> 
+            <td colspan="2">
+                
+            </td>     
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var Person in Model)
+        {
+            <tr class="text-black">
+                <td>
+                    @Person.Id
+                </td>
+                <td>
+                    @Person.Name
+                </td>
+                <td>
+                    @Person.Surname
+                </td>
+                <td>
+                    @Person.Birthdate
+                </td>
+                <td>
+                    @Person.Sex
+                </td>
+                <td>
+                    @Person.Email
+                </td>
+                <td>
+                    @Person.Phone
+                </td>
+                <td>
+                    @Person.Hiringdate
+                </td>
+                <td align="center">
+                    <a class="btn btn-info" asp-action="EditStaff" asp-route-id="@Person.Id"> Изменить </a>
+                </td>
+                <td align="center">
+                    <a class="btn btn-danger">Удалить</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+        </tr>
+    </tfoot>
+</table>
+
