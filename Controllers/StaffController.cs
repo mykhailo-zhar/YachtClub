@@ -6,6 +6,7 @@ using System.Linq;
 using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Project.Controllers
 {
@@ -148,6 +149,7 @@ namespace Project.Controllers
             var StaffPosition = Context.StaffPosition
                 .Include(p => p.Position)
                 .Include(p => p.Staff)
+                .OrderBy(p => p.Id)
                 ;
             return View(StaffPosition);
         }
@@ -155,62 +157,62 @@ namespace Project.Controllers
         public IActionResult CreateStaffPosition()
         {
             var StaffPosition = new StaffPosition();
-            var Staff = Context.Staff.ToList();
-            var Position = Context.Position.ToList();
-            return View("StaffPositionEditor", TwineViewModelFactory<StaffPosition,Staff, Position>.Create(StaffPosition, Staff, Position));
+            ViewData["Staff"] = Context.Staff.ToList();
+            ViewData["Position"] = Context.Position.ToList();
+            return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Create(StaffPosition));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateStaffPosition([FromForm] TwineViewModel<StaffPosition,Staff, Position> StaffPosition)
+        public async Task<IActionResult> CreateStaffPosition([FromForm] ObjectViewModel<StaffPosition> StaffPosition)
         {
-            
             if (ModelState.IsValid)
             {
-                Context.StaffPosition.Add(StaffPosition.baseObject.Object);
+                StaffPosition.Object.Startdate = DateTime.Now;
+                Context.StaffPosition.Add(StaffPosition.Object);
                 await Context.SaveChangesAsync();
                 return RedirectToAction(nameof(StaffPosition));
             }
 
-            return View("StaffPositionEditor", TwineViewModelFactory<StaffPosition,Staff, Position>.Create(StaffPosition.baseObject.Object, null, null));
+            return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Create(StaffPosition.Object));
         }
 
         public IActionResult EditStaffPosition(string id)
         {
             var StaffPosition = Context.StaffPosition.First(p => p.Id == int.Parse(id));
-            var Staff = Context.Staff.ToList();
-            var Position = Context.Position.ToList();
-            return View("StaffPositionEditor", TwineViewModelFactory<StaffPosition,Staff, Position>.Edit(StaffPosition, Staff, Position));
+            ViewData["Staff"] = Context.Staff.ToList();
+            ViewData["Position"] = Context.Position.ToList();
+            return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Edit(StaffPosition));
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditStaffPosition([FromForm] TwineViewModel<StaffPosition,Staff, Position> StaffPosition)
+        public async Task<IActionResult> EditStaffPosition([FromForm] ObjectViewModel<StaffPosition> StaffPosition)
         {
             if (ModelState.IsValid)
             {
-                Context.StaffPosition.Update(StaffPosition.baseObject.Object);
+                Context.StaffPosition.Update(StaffPosition.Object);
                 await Context.SaveChangesAsync();
                 return RedirectToAction(nameof(StaffPosition));
             }
-
-            return View("StaffPositionEditor", TwineViewModelFactory<StaffPosition,Staff, Position>.Edit(StaffPosition.baseObject.Object, null, null));
+            return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Edit(StaffPosition.Object));
         }
 
 
         public IActionResult DeleteStaffPosition(string id)
         {
             var StaffPosition = Context.StaffPosition.First(p => p.Id == int.Parse(id));
-            var Staff = Context.Staff.ToList();
-            var Position = Context.Position.ToList();
-            return View("StaffPositionEditor", TwineViewModelFactory<StaffPosition,Staff, Position>.Delete(StaffPosition, Staff, Position));
+            ViewData["Staff"] = null;
+            ViewData["Position"] = null;
+            return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Delete(StaffPosition));
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteStaffPosition([FromForm] TwineViewModel<StaffPosition,Staff, Position> StaffPosition)
+        public async Task<IActionResult> DeleteStaffPosition([FromForm] ObjectViewModel<StaffPosition> StaffPosition)
         {
 
-            Context.StaffPosition.Remove(StaffPosition.baseObject.Object);
+            Context.StaffPosition.Remove(StaffPosition.Object);
             await Context.SaveChangesAsync();
             return RedirectToAction(nameof(StaffPosition));
+
         }
         #endregion
     }

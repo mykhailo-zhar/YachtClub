@@ -11,7 +11,6 @@ namespace Project.Models
         public string Theme { get; set; } = "primary";
         public bool ShowAction { get; set; } = true;
         public bool ShowReadOnlyFields { get; set; } = true;
-        public dynamic[] Options { get; set; } = new dynamic[10];
         public string ActionObjectName => Action + Object.GetType().Name;
     }
 

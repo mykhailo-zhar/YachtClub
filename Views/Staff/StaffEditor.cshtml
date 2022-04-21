@@ -34,7 +34,7 @@
         <div>
             <span asp-validation-for="Object.Birthdate" class="text-danger"></span>
         </div>
-        <input class="form-control" type="date" asp-for="Object.Birthdate"
+        <input class="form-control" asp-for="Object.Birthdate"
                readonly="@Model.ReadOnly" />
     </div>
 
@@ -75,7 +75,7 @@
             <div>
                 <span asp-validation-for="Object.Hiringdate" class="text-danger"></span>
             </div>
-            <input class="form-control" asp-for="Object.Hiringdate" type="date"
+            <input class="form-control" asp-for="Object.Hiringdate"
                    readonly="@Model.ReadOnly" />
         </div>
     }

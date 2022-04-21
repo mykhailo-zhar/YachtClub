@@ -1,64 +1,101 @@
-﻿@model TwineViewModel<StaffPosition, Staff, Position>
+﻿@model ObjectViewModel<StaffPosition>
 <partial name="_Validation" />
-<h5 class="bg-@Model.baseObject.Theme text-white text-center p-2">@Model.baseObject.Action</h5>
-<form asp-action="@Model.baseObject.Action" method="post">
+<h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
+<form asp-action="@Model..Action" method="post">
 
-    @if (Model.baseObject.ShowReadOnlyFields)
+    @if (Model.ShowReadOnlyFields)
     {
         <div class="form-group">
-            <label asp-for="baseObject.Object.Id"></label>
-            <input class="form-control" asp-for="baseObject.Object.Id" readonly />
+            <label asp-for="Object.Id"></label>
+            <input class="form-control" asp-for="Object.Id" readonly />
         </div>
     }
     <div class="dropdown-divider"></div>
-    <label>@Model.baseObject.Object.Position.GetType().Name</label>
+    @if (Model.Object.Position != null)
+    {
+        <label>@typeof(Position).Name</label>
 
-    <div class="form-group">
-        <label asp-for="baseObject.Object.Position.Name"></label>
-        <div>
-            <span asp-validation-for="baseObject.Object.Position.Name" class="text-danger"></span>
+        <div class="form-group">
+            <label asp-for="Object.Position.Name"></label>
+            <input class="form-control" value="@(Model.Object.Staff.Name)"
+                   readonly />
         </div>
-        <input class="form-control" asp-for="baseObject.Object.Position.Name"
-               readonly />
-    </div>
-
-    <div class="form-group">
-        <label>Изменить объект</label>
-        <select class="form-control" asp-items="@(new SelectList(Model.FirstSlaves,"Id","Email"))"></select>
-    </div>
+    }
+    @if (Model.Action != "Delete" && Model.Action != "Delails")
+    {
+        <div class="form-group">
+            <label>Изменить объект</label>
+            <select class="form-control" asp-for="Object.Positionid" asp-items="@(new SelectList(ViewData["Position"] as IEnumerable<Position> ?? Enumerable.Empty<Position>(), "Id", "Name"))"
+                    disabled="@Model.ReadOnly">
+                <option value="" disabled selected>Выберите должность</option>
+            </select>
+        </div>
+    }
 
     <div class="dropdown-divider"></div>
 
-    <label>@Model.baseObject.Object.Staff.GetType().Name</label>
-
-    <div class="form-group">
-        <label asp-for="baseObject.Object.Staff.Name"></label>
-        <div>
-            <span asp-validation-for="baseObject.Object.Staff.Name" class="text-danger"></span>
-        </div>
-        <input class="form-control" asp-for="baseObject.Object.Staff.Name"
-               readonly />
-    </div>
-
-    <div class="form-group">
-        <label asp-for="baseObject.Object.Staff.Email"></label>
-        <div>
-            <span asp-validation-for="baseObject.Object.Staff.Email" class="text-danger"></span>
-        </div>
-        <input class="form-control" asp-for="baseObject.Object.Staff.Email"
-               readonly />
-    </div>
-
-    <div class="form-group">
-        <label>Изменить объект</label>
-        <select class="form-control" asp-items="@(new SelectList(Model.SecondSlaves,"Id","Name"))"></select>
-    </div>
-
-
-
-    @if (Model.baseObject.ShowAction)
+    <label>@typeof(Staff).Name</label>
+    @if (Model.Object.Staff != null)
     {
-        <button class="btn btn-@Model.baseObject.Theme" type="submit" asp-action="@Model.baseObject.ActionObjectName">@Model.baseObject.Action</button>
+        <div class="form-group">
+            <label asp-for="Object.Staff.Name"></label>
+            <div>
+                <span asp-validation-for="Object.Staff.Name" class="text-danger"></span>
+            </div>
+            <input class="form-control" value="@(Model.Object.Staff.Name)"
+                   readonly />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Object.Staff.Email"></label>
+            <div>
+                <span asp-validation-for="Object.Staff.Email" class="text-danger"></span>
+            </div>
+            <input class="form-control" value="@(Model.Object.Staff.Email)"
+                   readonly />
+        </div>
+    }
+    @if (Model.Action != "Delete" && Model.Action != "Delails")
+    {
+        <div class="form-group">
+            <label>Изменить объект</label>
+            <select class="form-control" asp-for="Object.Staffid" asp-items="@((ViewData["Staff"] as IEnumerable<Staff>).Select(p =>
+                {
+                    var item = new SelectListItem();
+                    item.Text = $"{p.Name} {p.Surname} {p.Email}";
+                    item.Value = $"{p.Id}";
+                    return item;
+                }))"
+                    disabled="@Model.ReadOnly">
+                <option value="" disabled selected>Выберите сотрудника</option>
+            </select>
+        </div>
+    }
+    @if (Model.Action != "Create")
+    {
+        <div class="form-group">
+            <label asp-for="Object.Startdate"></label>
+            <div>
+                <span asp-validation-for="Object.Startdate" class="text-danger"></span>
+            </div>
+            <input class="form-control" asp-for="Object.Startdate"
+                   readonly="@Model.ReadOnly" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Object.Enddate"></label>
+            <div>
+                <span asp-validation-for="Object.Enddate" class="text-danger"></span>
+            </div>
+            <input class="form-control" asp-for="Object.Enddate"
+                   readonly="@(Model.ReadOnly || Model.Object.Enddate != null)" />
+        </div>
+
+
+    }
+
+    @if (Model.ShowAction)
+    {
+        <button class="btn btn-@Model.Theme" type="submit" asp-action="@Model.ActionObjectName">@Model.Action</button>
     }
     <a class="btn btn-secondary" asp-action="StaffPosition">Back</a>
 </form>
