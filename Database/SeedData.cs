@@ -130,11 +130,11 @@ CREATE TABLE Staff (
 	ID     			serial     	NOT Null	Primary Key,
 	Name     		varchar   	NOT Null,
 	Surname     	varchar   	NOT Null,
-	BirthDate    	date    	NOT Null,
+	BirthDate    	date    	NOT Null	check(extract( year from age( cast(BirthDate  as date))) >= 18),
 	Sex      	 	SEX     	NOT Null,  
 	Email			Mail		NOT Null	unique,
 	Phone			PhoneNumber	Not Null	unique,
-	HiringDate		date    	NOT Null    check(BirthDate < HiringDate)
+	HiringDate		timestamp   Not Null	check(BirthDate < HiringDate) DEFAULT CURRENT_TIMESTAMP
 );
 				");
 

@@ -1,4 +1,5 @@
 ﻿using Project.Migrations;
+using System.Collections.Generic;
 
 namespace Project.Models
 {
@@ -9,6 +10,9 @@ namespace Project.Models
         public bool ReadOnly { get; set; } = false;
         public string Theme { get; set; } = "primary";
         public bool ShowAction { get; set; } = true;
+        public bool ShowReadOnlyFields { get; set; } = true;
+        public bool[] Options { get; set; } = new bool[10];
+        public string ActionObjectName => Action + Object.GetType().Name;
     }
 
     public class ObjectViewModelFactory<T>
@@ -20,6 +24,28 @@ namespace Project.Models
                 Object = obj,
                 Action = "Edit"
             };
+
+        }
+        public static ObjectViewModel<T> Create<T>(T obj)
+        {
+            return new ObjectViewModel<T>
+            {
+                Object = obj,
+                ShowReadOnlyFields = false
+            };
+
+        }
+        public static ObjectViewModel<T> Delete<T>(T obj)
+        {
+            return new ObjectViewModel<T>
+            {
+                Object = obj,
+                Action = "Delete",
+                Theme = "danger",
+                ShowReadOnlyFields = true,
+                ReadOnly = true
+            };
+
         }
     }
 

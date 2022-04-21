@@ -2,10 +2,14 @@
 <partial name="_Validation" />
 <h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
 <form asp-action="@Model.Action" method="post">
-    <div class="form-group">
-        <label asp-for="Object.Id"></label>
-        <input class="form-control" asp-for="Object.Id" readonly />
-    </div>
+
+    @if (Model.ShowReadOnlyFields)
+    {
+        <div class="form-group">
+            <label asp-for="Object.Id"></label>
+            <input class="form-control" asp-for="Object.Id" readonly />
+        </div>
+    }
 
     <div class="form-group">
         <label asp-for="Object.Name"></label>
@@ -64,18 +68,21 @@
                readonly="@Model.ReadOnly" />
     </div>
 
-    <div class="form-group">
-        <label asp-for="Object.Hiringdate"></label>
-        <div>
-            <span asp-validation-for="Object.Hiringdate" class="text-danger"></span>
+    @if (Model.ShowReadOnlyFields && (DateTime.Now - Model.Object.Hiringdate).Days <= 14)
+    {
+        <div class="form-group">
+            <label asp-for="Object.Hiringdate"></label>
+            <div>
+                <span asp-validation-for="Object.Hiringdate" class="text-danger"></span>
+            </div>
+            <input class="form-control" asp-for="Object.Hiringdate" type="date"
+                   readonly="@Model.ReadOnly" />
         </div>
-        <input class="form-control" asp-for="Object.Hiringdate" type="date"
-               readonly="@Model.ReadOnly" />
-    </div>
+    }
 
     @if (Model.ShowAction)
     {
-        <button class="btn btn-@Model.Theme" type="submit">@Model.Action</button>
+        <button class="btn btn-@Model.Theme" type="submit" asp-action="@Model.ActionObjectName">@Model.Action</button>
     }
     <a class="btn btn-secondary" asp-action="Staff">Back</a>
 </form>

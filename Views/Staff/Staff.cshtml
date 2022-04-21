@@ -64,13 +64,20 @@
                     <a class="btn btn-info" asp-action="EditStaff" asp-route-id="@Person.Id"> Изменить </a>
                 </td>
                 <td align="center">
-                    <a class="btn btn-danger">Удалить</a>
+                    <a class="btn btn-danger" asp-action="DeleteStaff" asp-route-id="@Person.Id">Удалить</a>
                 </td>
             </tr>
         }
     </tbody>
     <tfoot>
         <tr>
+            <td colspan="10" align="center">
+                <a asp-action="CreateStaff" class="btn btn-primary">
+                    <div style="width: 50vw;">
+                        Create
+                    </div>
+                </a>
+            </td>
         </tr>
     </tfoot>
 </table>

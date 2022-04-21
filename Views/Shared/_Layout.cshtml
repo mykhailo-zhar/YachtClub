@@ -12,6 +12,9 @@
         $(document).ready(function () {
             $('#ContentDiv').height( $(document).innerHeight() - 100);
         });
+        $(document).resize(function () {
+            $('#ContentDiv').height( $(document).innerHeight() - 100);
+        });
     </script>
 </head>
 <body class="layout_image">
