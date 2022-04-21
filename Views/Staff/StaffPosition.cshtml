@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Staff>
+﻿@model IEnumerable<StaffPosition>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
@@ -7,64 +7,56 @@
                 ID
             </td>
             <td>
-                Имя
-            </td> 
-            <td>
-                Фамилия
+                Название должности
             </td>
             <td>
-                Дата рождения
-            </td>
-            <td>
-                Пол
+                Имя сотрудника
             </td>
             <td>
                 Email
             </td>
             <td>
-                Телефон
-            </td>
-            <td>
-                Дата приёма на работу
+                Дата заступления на должность
             </td> 
+            <td>
+                Дата ухода с должности
+            </td>
             <td colspan="2">
-                
-            </td>     
+            </td>
         </tr>
     </thead>
     <tbody>
-        @foreach (var Person in Model)
+        @foreach (var sp in Model)
         {
             <tr class="text-black">
                 <td>
-                    @Person.Id
+                    @sp.Id
                 </td>
                 <td>
-                    @Person.Name
+                    @sp.Position.Name
                 </td>
                 <td>
-                    @Person.Surname
+                    @sp.Staff.Name
                 </td>
                 <td>
-                    @Person.Birthdate
+                    @sp.Staff.Email
                 </td>
                 <td>
-                    @Person.Sex
+                    @sp.Startdate
                 </td>
                 <td>
-                    @Person.Email
-                </td>
-                <td>
-                    @Person.Phone
-                </td>
-                <td>
-                    @Person.Hiringdate
+                    @if (sp.Enddate.HasValue) {
+                        <span>@sp.Enddate.Value;</span>
+                    }
+                    else {
+                        <span> Нет даты окончания</span> 
+                    }
                 </td>
                 <td align="center">
-                    <a class="btn btn-info" asp-action="EditStaff" asp-route-id="@Person.Id"> Изменить </a>
+                    <a class="btn btn-info" asp-action="EditStaffPosition" asp-route-id="@sp.Id"> Изменить </a>
                 </td>
                 <td align="center">
-                    <a class="btn btn-danger" asp-action="DeleteStaff" asp-route-id="@Person.Id">Удалить</a>
+                    <a class="btn btn-danger" asp-action="DeleteStaffPosition" asp-route-id="@sp.Id">Удалить</a>
                 </td>
             </tr>
         }
@@ -72,7 +64,7 @@
     <tfoot>
         <tr>
             <td colspan="10" align="center">
-                <a asp-action="CreateStaff" class="btn btn-primary">
+                <a asp-action="CreateStaffPosition" class="btn btn-primary">
                     <div style="width: 50vw;">
                         Создать
                     </div>

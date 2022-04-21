@@ -11,13 +11,13 @@ namespace Project.Models
         public string Theme { get; set; } = "primary";
         public bool ShowAction { get; set; } = true;
         public bool ShowReadOnlyFields { get; set; } = true;
-        public bool[] Options { get; set; } = new bool[10];
+        public dynamic[] Options { get; set; } = new dynamic[10];
         public string ActionObjectName => Action + Object.GetType().Name;
     }
 
     public class ObjectViewModelFactory<T>
     {
-        public static ObjectViewModel<T> Edit<T>(T obj)
+        public static ObjectViewModel<T> Edit(T obj)
         {
             return new ObjectViewModel<T>
             {
@@ -26,7 +26,7 @@ namespace Project.Models
             };
 
         }
-        public static ObjectViewModel<T> Create<T>(T obj)
+        public static ObjectViewModel<T> Create(T obj)
         {
             return new ObjectViewModel<T>
             {
@@ -35,7 +35,7 @@ namespace Project.Models
             };
 
         }
-        public static ObjectViewModel<T> Delete<T>(T obj)
+        public static ObjectViewModel<T> Delete(T obj)
         {
             return new ObjectViewModel<T>
             {
@@ -47,6 +47,19 @@ namespace Project.Models
             };
 
         }
+        public static ObjectViewModel<T> Details(T obj)
+        {
+            return new ObjectViewModel<T>
+            {
+                Object = obj,
+                Action = "Details",
+                ReadOnly = true,
+                Theme = "info",
+                ShowAction = false,
+            };
+        }
+
+
     }
 
     /*

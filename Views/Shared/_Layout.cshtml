@@ -41,8 +41,6 @@
                                     <li>
                                         <a class="dropdown-item" asp-controller="Home" asp-action="ReloadDatabase">Перезагрузить базу данных</a>
                                     </li>
-                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="AddValues">Добавить без удаления</a></li>
-
                                 </ul>
                             </div>
                         </li>
@@ -63,8 +61,8 @@
                                           Персонал
                                         </a>
                                     </li>
-                                    <li><a class="dropdown-item" href="#">Должности</a></li>
-                                    <li><a class="dropdown-item" href="#">Должности персонала</a></li>
+                                    <li><a class="dropdown-item"  asp-controller="Staff" asp-action="Position">Должности</a></li>
+                                    <li><a class="dropdown-item"  asp-controller="Staff" asp-action="StaffPosition">Должности персонала</a></li>
                                 </ul>
                             </div>
                         </li>

@@ -551,10 +551,10 @@ CREATE TABLE Position_Equivalent(
 
 			#endregion
 		}
-		public static void SeedWithData(DataContext dbContext)
+		public static void SeedWithData(DataContext dbContext, bool Force = false)
         {
 			dbContext.Database.EnsureCreated();
-			if (dbContext.Position.Count() == 0)
+			if (dbContext.Position.Count() == 0 || false)
 			{
                 #region Типы
                 //Должности
@@ -568,9 +568,9 @@ CREATE TABLE Position_Equivalent(
                                ('Captain', 				3500.0),
                                ('Boatswain',				2500.0),
                                ('Cook', 					1500.0),
-                               ('Shipboy', 				500.0),
+                               ('Shipboy', 				  0.0),
                                ('Hired Captain',			0.0),
-                ('Hired Boatswain',			2500.0),
+                ('Hired Boatswain',			   0.0),
                                ('Hired Cook', 				0.0),
                                ('Hired Shipboy', 			0.0),
                                ('None', 					0.0),

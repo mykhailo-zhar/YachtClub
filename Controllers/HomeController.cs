@@ -22,13 +22,5 @@ namespace Project.Controllers
             SeedData.SeedWithData(Context);
             return View(nameof(Index));
         }
-        
-        public IActionResult AddValues()
-        {
-            SeedData.SeedWithData(Context);
-            return View(nameof(Index));
-        }
-
-        
     }
 }
