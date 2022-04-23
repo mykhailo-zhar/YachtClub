@@ -1,0 +1,61 @@
+﻿@model IEnumerable<Materialtype>
+
+    <table class="table table-sm table-striped table-bordered text-white ">
+        <thead>
+            <tr class="table-dark">
+                <td>
+                    ID
+                </td>
+                <td>
+                    Название
+                </td>
+                <td>
+                    Метрика
+                </td>
+                <td colspan="3">
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var type in Model)
+            {
+            <tr class="text-black btn-area-3">
+                <td>
+                    @type.Id
+                </td>
+                <td>
+                    @type.Name
+                </td>
+                <td>
+                    @(string.IsNullOrEmpty(type.Metric) ? "[Пусто]" : type.Metric)
+                </td>
+                <td align="center">
+                    @if (string.IsNullOrWhiteSpace(type.Description) || string.IsNullOrEmpty(type.Description))
+                    {
+                        <a class="btn btn-secondary"> Детали </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-info" asp-action="DetailsMaterialType" asp-route-id="@type.Id"> Детали </a>
+                    }
+                </td>
+                <td align="center">
+                    <a class="btn btn-info" asp-action="EditMaterialType" asp-route-id="@type.Id"> Изменить </a>
+                </td>
+                <td align="center">
+                    <a class="btn btn-danger" asp-action="DeleteMaterialType" asp-route-id="@type.Id">Удалить</a>
+                </td>
+            </tr>
+            }
+        </tbody>
+        <tfoot>
+
+        </tfoot>
+    </table>
+    <div>
+        <a asp-action="CreateMaterialType" class="btn btn-primary">
+            <div style="width: 50vw;">
+                Создать
+            </div>
+        </a>
+    </div>

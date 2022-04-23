@@ -1,0 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Project.Migrations;
+
+namespace Project.Models
+{
+    public class Methods
+    {
+        private static bool IsStr(string str) =>
+               !(string.IsNullOrEmpty(str) || string.IsNullOrWhiteSpace(str));
+
+        public static string Message(Material material)
+        {
+            string MaterialMetric = material.Metric;
+            string MaterialTypeMetric = material.Type.Metric;
+            string metric = IsStr(MaterialMetric) ? MaterialMetric : IsStr(MaterialTypeMetric) ? MaterialTypeMetric : "";
+            return IsStr(metric) ? $"в {metric}" : "";
+        }
+    }
+}

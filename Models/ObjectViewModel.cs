@@ -12,6 +12,8 @@ namespace Project.Models
         public bool ShowAction { get; set; } = true;
         public bool ShowReadOnlyFields { get; set; } = true;
         public string ActionObjectName => Action + Object.GetType().Name;
+
+        public bool[] Option { get; set; } = new bool[4];
     }
 
     public class ObjectViewModelFactory<T>

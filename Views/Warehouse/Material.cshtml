@@ -1,0 +1,71 @@
+﻿@model IEnumerable<Material>
+
+    <table class="table table-sm table-striped table-bordered text-white">
+        <thead>
+            <tr class="table-dark">
+                <td>
+                    ID
+                </td>
+                <td>
+                    Наименование материала
+                </td>
+                <td>
+                    Метрика
+                </td>
+                <td>
+                    Тип материала
+                </td>
+                <td colspan="2">
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sp in Model)
+            {
+            <tr class="text-black btn-area-2">
+                <td>
+                    @sp.Id
+                </td>
+                <td>
+                    @sp.Name
+                </td>
+                <td>
+                    @sp.Metric
+                </td>
+                <td>
+                    @sp.Type.Name
+                </td>
+                @*
+                <td align="center">
+                    @if (string.IsNullOrWhiteSpace(sp.Description) || string.IsNullOrEmpty(sp.Description))
+                    {
+                        <a class="btn btn-secondary"> Детали </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary" asp-action="DetailsMaterial" asp-route-id="@sp.Id"> Детали </a>
+                    }
+                </td>
+                *@
+                <td align="center">
+                    <a class="btn btn-info" asp-action="EditMaterial" asp-route-id="@sp.Id"> Изменить </a>
+                </td>
+                <td align="center">
+                    <a class="btn btn-danger" asp-action="DeleteMaterial" asp-route-id="@sp.Id">Удалить</a>
+                </td>
+            </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="10" align="center">
+                    <a asp-action="CreateMaterial" class="btn btn-primary">
+                        <div style="width: 50vw;">
+                            Создать
+                        </div>
+                    </a>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+

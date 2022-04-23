@@ -1,0 +1,74 @@
+﻿@model ObjectViewModel<Material>
+<partial name="_Validation" />
+<h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
+<form asp-action="@Model..Action" method="post">
+
+    @if (Model.ShowReadOnlyFields)
+    {
+        <div class="form-group">
+            <label asp-for="Object.Id"></label>
+            <input class="form-control" asp-for="Object.Id" readonly />
+        </div>
+    }
+
+    <div class="form-group">
+        <label asp-for="Object.Name"></label>
+        <div>
+            <span asp-validation-for="Object.Name" class="text-danger"></span>
+        </div>
+        <input class="form-control" asp-for="Object.Name"
+               readonly="@(Model.ReadOnly)" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Object.Metric"></label>
+        <div>
+            <span asp-validation-for="Object.Metric" class="text-danger"></span>
+        </div>
+        <input class="form-control" asp-for="Object.Metric"
+               readonly="@(Model.ReadOnly)" />
+    </div>
+
+    <div class="dropdown-divider"></div>
+
+    @if (Model.Object.Type != null)
+    {
+        <label>@Model.Object.Type.GetType().Name</label>
+
+        <div class="form-group">
+            <label asp-for="Object.Type.Name"></label>
+            <input class="form-control" value="@(Model.Object.Type.Name)"
+                   readonly />
+        </div>
+    }
+    @if (Model.Action != "Delete")
+    {
+        <div class="form-group">
+            <label>Изменить объект</label>
+            <select class="form-control" asp-for="Object.Typeid" 
+                    asp-items="@(new SelectList(ViewData["Materialtype"] as IEnumerable<Materialtype> ?? Enumerable.Empty<Materialtype>(), "Id", "Name"))"
+                    disabled="@Model.ReadOnly">
+                <option value="" disabled selected>Выберите тип материала</option>
+            </select>
+        </div>
+    }
+
+    <div class="dropdown-divider"></div>
+
+
+    @*<div class="form-group">
+            <label asp-for="Object.Description"></label>
+            <div>
+                <span asp-validation-for="Object.Description" class="text-danger"></span>
+            </div>
+            <textarea class="form-control" asp-for="Object.Description"
+                      readonly="@(Model.ReadOnly)"></textarea>
+        </div>*@
+
+    <partial name="_EditorBottomButtons" model="@new EditorBottomButtonsViewModel {
+        ShowAction = Model.ShowAction,
+        Theme = Model.Theme,
+        Action = Model.ActionObjectName,
+        BackAction = Model.Object.GetType().Name
+    }" />
+</form>

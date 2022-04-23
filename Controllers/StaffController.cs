@@ -154,6 +154,20 @@ namespace Project.Controllers
             return View(StaffPosition);
         }
 
+        public IActionResult DetailsStaffPosition(string id)
+        {
+            var StaffPosition = Context.StaffPosition.First(p => p.Id == int.Parse(id));
+            return View("_Details", new DetailsViewModel
+            {
+                Description = StaffPosition.Description,
+                ButtonsViewModel = new EditorBottomButtonsViewModel
+                {
+                    BackAction = typeof(StaffPosition).Name
+                }
+            });
+        }
+
+
         public IActionResult CreateStaffPosition()
         {
             var StaffPosition = new StaffPosition();

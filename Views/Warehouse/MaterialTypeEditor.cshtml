@@ -1,4 +1,4 @@
-﻿@model ObjectViewModel<Position>
+﻿@model ObjectViewModel<Materialtype>
 <partial name="_Validation" />
 <h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
 <form asp-action="@Model.Action" method="post">
@@ -21,12 +21,20 @@
     </div>
 
     <div class="form-group">
-        <label asp-for="Object.Salary"></label>
+        <label asp-for="Object.Metric"></label>
         <div>
-            <span asp-validation-for="Object.Salary" class="text-danger"></span>
+            <span asp-validation-for="Object.Metric" class="text-danger"></span>
         </div>
-        <input class="form-control" asp-for="Object.Salary"
+        <input class="form-control" asp-for="Object.Metric"
                readonly="@Model.ReadOnly" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Object.Description"></label>
+        <div>
+            <span asp-validation-for="Object.Description" class="text-danger"></span>
+        </div>
+        <textarea class="form-control" asp-for="Object.Description"
+               readonly="@Model.ReadOnly" ></textarea>
     </div>
 
     <partial name="_EditorBottomButtons" model="@new EditorBottomButtonsViewModel {

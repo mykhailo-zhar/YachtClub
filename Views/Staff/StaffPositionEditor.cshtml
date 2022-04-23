@@ -17,11 +17,11 @@
 
         <div class="form-group">
             <label asp-for="Object.Position.Name"></label>
-            <input class="form-control" value="@(Model.Object.Staff.Name)"
+            <input class="form-control" value="@(Model.Object.Position.Name)"
                    readonly />
         </div>
     }
-    @if (Model.Action != "Delete" && Model.Action != "Delails")
+    @if (Model.Action != "Delete")
     {
         <div class="form-group">
             <label>Изменить объект</label>
@@ -34,9 +34,9 @@
 
     <div class="dropdown-divider"></div>
 
-    <label>@typeof(Staff).Name</label>
     @if (Model.Object.Staff != null)
     {
+        <label>@typeof(Staff).Name</label>
         <div class="form-group">
             <label asp-for="Object.Staff.Name"></label>
             <div>
@@ -55,7 +55,7 @@
                    readonly />
         </div>
     }
-    @if (Model.Action != "Delete" && Model.Action != "Delails")
+    @if (Model.Action != "Delete")
     {
         <div class="form-group">
             <label>Изменить объект</label>
@@ -89,13 +89,21 @@
             <input class="form-control" asp-for="Object.Enddate"
                    readonly="@(Model.ReadOnly || Model.Object.Enddate != null)" />
         </div>
-
-
     }
 
-    @if (Model.ShowAction)
-    {
-        <button class="btn btn-@Model.Theme" type="submit" asp-action="@Model.ActionObjectName">@Model.Action</button>
-    }
-    <a class="btn btn-secondary" asp-action="StaffPosition">Back</a>
+    <div class="form-group">
+        <label asp-for="Object.Description"></label>
+        <div>
+            <span asp-validation-for="Object.Description" class="text-danger"></span>
+        </div>
+        <textarea class="form-control" asp-for="Object.Description"
+               readonly="@(Model.ReadOnly)" ></textarea>
+    </div>
+
+    <partial name="_EditorBottomButtons" model="@new EditorBottomButtonsViewModel {
+        ShowAction = Model.ShowAction,
+        Theme = Model.Theme,
+        Action = Model.ActionObjectName,
+        BackAction = Model.Object.GetType().Name
+    }" />
 </form>

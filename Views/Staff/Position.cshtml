@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<Position>
 
-<table class="table table-sm table-striped table-bordered text-white">
+<table class="table table-sm table-striped table-bordered text-white ">
     <thead>
         <tr class="table-dark">
             <td>
@@ -12,14 +12,14 @@
             <td>
                 Зарплата
             </td>
-            <td colspan="2">
+            <td colspan="2" >
             </td>
         </tr>
     </thead>
     <tbody>
         @foreach (var position in Model)
         {
-            <tr class="text-black">
+            <tr class="text-black btn-area-2">
                 <td>
                     @position.Id
                 </td>
@@ -30,24 +30,23 @@
                     @position.Salary
                 </td>
                 <td align="center">
-                    <a class="btn btn-info" asp-action="EditPosition" asp-route-id="@position.Id"> Изменить </a>
+                    <a class="btn btn-info"  asp-action="EditPosition" asp-route-id="@position.Id"> Изменить </a>
                 </td>
                 <td align="center">
-                    <a class="btn btn-danger" asp-action="DeletePosition" asp-route-id="@position.Id">Удалить</a>
+                    <a class="btn btn-danger"  asp-action="DeletePosition" asp-route-id="@position.Id">Удалить</a>
                 </td>
             </tr>
         }
     </tbody>
     <tfoot>
-        <tr>
-            <td colspan="10" align="center">
-                <a asp-action="CreatePosition" class="btn btn-primary">
-                    <div style="width: 50vw;">
-                        Создать
-                    </div>
-                </a>
-            </td>
-        </tr>
+
     </tfoot>
 </table>
+<div>
+    <a asp-action="CreatePosition" class="btn btn-primary">
+        <div style="width: 50vw;">
+            Создать
+        </div>
+    </a>
+</div>
 

@@ -1,0 +1,86 @@
+﻿@model IEnumerable<Materiallease>
+
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <td>
+                ID
+            </td>
+            <td>
+                Материал
+            </td>
+            <td>
+                Продавец
+            </td>
+            <td>
+                Цена за единицу
+            </td>
+            <td>
+                Количество
+            </td>
+            <td>
+                Общая сумма
+            </td>
+            <td>
+                Дата заключения контракта
+            </td>
+            <td>
+                Дата поставки
+            </td>
+            <td colspan="2">
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sp in Model)
+        {
+            <tr class="text-black btn-area-2">
+                <td>
+                    @sp.Id
+                </td>
+                <td>
+                    @sp.MaterialNavigation.Name
+                </td>
+                <td>
+                    @sp.SellerNavigation.Name
+                </td>
+                <td>
+                    @sp.Priceperunit
+                </td>
+                <td>
+                    @($"{sp.Count} {Methods.Message(sp.MaterialNavigation) }")
+                </td>
+                <td>
+                    @sp.Overallprice
+                </td>
+                <td>
+                    @sp.Startdate
+                </td>
+                <td>
+                    @(sp.Deliverydate == null?"Товар ещё не приехал": $"{sp.Deliverydate}")
+                </td>
+
+
+
+                <td align="center">
+                    <a class="btn btn-info" asp-action="EditMateriallease" asp-route-id="@sp.Id"> Изменить </a>
+                </td>
+                <td align="center">
+                    <a class="btn btn-danger" asp-action="DeleteMateriallease" asp-route-id="@sp.Id">Удалить</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="10" align="center">
+                <a asp-action="CreateMateriallease" class="btn btn-primary">
+                    <div style="width: 50vw;">
+                        Создать
+                    </div>
+                </a>
+            </td>
+        </tr>
+    </tfoot>
+</table>
+

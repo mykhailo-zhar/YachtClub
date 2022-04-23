@@ -21,44 +21,56 @@
             <td>
                 Дата ухода с должности
             </td>
-            <td colspan="2">
+            <td colspan="3">
             </td>
         </tr>
     </thead>
     <tbody>
         @foreach (var sp in Model)
         {
-            <tr class="text-black">
-                <td>
-                    @sp.Id
-                </td>
-                <td>
-                    @sp.Position.Name
-                </td>
-                <td>
-                    @sp.Staff.Name
-                </td>
-                <td>
-                    @sp.Staff.Email
-                </td>
-                <td>
-                    @sp.Startdate
-                </td>
-                <td>
-                    @if (sp.Enddate.HasValue) {
-                        <span>@sp.Enddate.Value;</span>
-                    }
-                    else {
-                        <span> Нет даты окончания</span> 
-                    }
-                </td>
-                <td align="center">
-                    <a class="btn btn-info" asp-action="EditStaffPosition" asp-route-id="@sp.Id"> Изменить </a>
-                </td>
-                <td align="center">
-                    <a class="btn btn-danger" asp-action="DeleteStaffPosition" asp-route-id="@sp.Id">Удалить</a>
-                </td>
-            </tr>
+        <tr class="text-black">
+            <td>
+                @sp.Id
+            </td>
+            <td>
+                @sp.Position.Name
+            </td>
+            <td>
+                @sp.Staff.Name
+            </td>
+            <td>
+                @sp.Staff.Email
+            </td>
+            <td>
+                @sp.Startdate
+            </td>
+            <td>
+                @if (sp.Enddate.HasValue)
+                {
+                    <span>@sp.Enddate.Value;</span>
+                }
+                else
+                {
+                    <span> Нет даты окончания</span>
+                }
+            </td>
+            <td align="center">
+                @if (string.IsNullOrWhiteSpace(sp.Description) || string.IsNullOrEmpty(sp.Description))
+                {
+                    <a class="btn btn-secondary"> Детали </a>
+                }
+                else
+                {
+                    <a class="btn btn-primary" asp-action="DetailsStaffPosition" asp-route-id="@sp.Id"> Детали </a>
+                }
+            </td>
+            <td align="center">
+                <a class="btn btn-info" asp-action="EditStaffPosition" asp-route-id="@sp.Id"> Изменить </a>
+            </td>
+            <td align="center">
+                <a class="btn btn-danger" asp-action="DeleteStaffPosition" asp-route-id="@sp.Id">Удалить</a>
+            </td>
+        </tr>
         }
     </tbody>
     <tfoot>

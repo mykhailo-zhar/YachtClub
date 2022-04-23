@@ -119,6 +119,7 @@ CREATE TABLE Seller (
 );
 				");
 
+
                 #endregion
 
                 #region Блок основных таблиц
@@ -682,7 +683,6 @@ values
 ('Dimetrius', 	'Zhbanov',  	'Male',		'30-11-2000',	 	'd-zhb11@gmail.com',	 '+380943222990'	);
 				");
 				
-				
 				//События
 				dbContext.Database.ExecuteSqlRaw($@"
 insert into event(name, startdate, enddate, duration)
@@ -698,7 +698,6 @@ values
 
 Update event set status='Ended'
 				");
-
                 #endregion
 
                 #region Зависимые таблицы
@@ -732,7 +731,6 @@ values
 ('Crowbar',						5)
 ;
 				");
-				
 				//Персонал на должностях
 				dbContext.Database.ExecuteSqlRaw($@"
 /*
