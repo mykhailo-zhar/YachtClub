@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Project.Migrations
 {
+    [Table("event")]
     public partial class Event
     {
         public Event()
@@ -10,13 +13,23 @@ namespace Project.Migrations
             Winner = new HashSet<Winner>();
         }
 
+        [Key]
+        [Column("id")]
         public int Id { get; set; }
+        [Required]
+        [Column("name", TypeName = "character varying")]
         public string Name { get; set; }
+        [Column("startdate", TypeName = "date")]
         public DateTime Startdate { get; set; }
+        [Column("enddate", TypeName = "date")]
         public DateTime? Enddate { get; set; }
+        [Column("duration", TypeName = "date")]
         public DateTime Duration { get; set; }
+        [Required]
+        [Column("status", TypeName = "character varying")]
         public string Status { get; set; }
 
+        [InverseProperty("Event")]
         public virtual ICollection<Winner> Winner { get; set; }
     }
 }

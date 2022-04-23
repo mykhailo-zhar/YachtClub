@@ -79,10 +79,20 @@
                    readonly="@Model.ReadOnly" />
         </div>
     }
+   else {
+<div class="form-group" hidden>
+    <label asp-for="Object.Hiringdate"></label>
+    <div>
+        <span asp-validation-for="Object.Hiringdate" class="text-danger"></span>
+    </div>
+    <input class="form-control" asp-for="Object.Hiringdate"
+           readonly="@Model.ReadOnly" />
+</div>
+    }
 
     @if (Model.ShowAction)
-    {
-        <button class="btn btn-@Model.Theme" type="submit" asp-action="@Model.ActionObjectName">@Model.Action</button>
-    }
+        {
+    <button class="btn btn-@Model.Theme" type="submit" asp-action="@Model.ActionObjectName">@Model.Action</button>
+}
     <a class="btn btn-secondary" asp-action="Staff">Back</a>
 </form>

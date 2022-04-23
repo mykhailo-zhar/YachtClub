@@ -45,9 +45,43 @@
                             </div>
                         </li>
                         <li class="nav-item">
-                            <a class="btn text-white" href="#">Pricing</a>
+                            <div class="btn-group">
+                                <a class="btn text-white" asp-controller="Warehouse" asp-action="Material">
+                                    Кладовщик
+                                </a>
+                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Warehouse" asp-action="Material">
+                                            Материалы
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Warehouse" asp-action="MaterialType">
+                                            Должности
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Warehouse" asp-action="Seller">
+                                            Поставщик материала
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Warehouse" asp-action="MaterialLease">
+                                            Договор на поставку материалов
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Warehouse" asp-action="ExtradationRequest">
+                                            Запрос на поставку материалов
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
-                        <li>
+                        <li class="nav-item">
                             <div class="btn-group">
                                 <a class="btn text-white" asp-controller="Staff" asp-action="Staff">
                                     Персонал
@@ -65,6 +99,31 @@
                                     <li><a class="dropdown-item"  asp-controller="Staff" asp-action="StaffPosition">Должности персонала</a></li>
                                 </ul>
                             </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn text-white" asp-controller="" asp-action="">
+                                Ремонтники
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn text-white" asp-controller="" asp-action="">
+                                Доступ к контрактам
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn text-white" asp-controller="" asp-action="">
+                                Типы контрактов
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn text-white" asp-controller="" asp-action="">
+                                Яхты
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn text-white" asp-controller="" asp-action="">
+                                Клиент
+                            </a>
                         </li>
                     </ul>
                 </div>

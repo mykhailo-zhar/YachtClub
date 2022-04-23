@@ -134,7 +134,7 @@ CREATE TABLE Staff (
 	Sex      	 	SEX     	NOT Null,  
 	Email			Mail		NOT Null	unique,
 	Phone			PhoneNumber	Not Null	unique,
-	HiringDate		timestamp   Not Null	check(BirthDate < HiringDate) DEFAULT CURRENT_TIMESTAMP
+	HiringDate		date		Not Null	check(BirthDate < HiringDate)
 );
 				");
 
