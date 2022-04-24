@@ -30,6 +30,8 @@ namespace Project.Migrations
         public int Personnel { get; set; }
         [Column("yachtid")]
         public int Yachtid { get; set; }
+        [Column("description")]
+        public string Description { get; set; }
 
         [ForeignKey(nameof(Yachtid))]
         [InverseProperty("Repair")]

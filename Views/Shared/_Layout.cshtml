@@ -105,9 +105,25 @@
                         </li>
                         <!--Панель ремонта-->
                         <li class="nav-item">
-                            <a class="btn text-white" asp-controller="" asp-action="">
-                                Ремонтники
-                            </a>
+                            <div class="btn-group">
+                                <a class="btn text-white" asp-controller="Repair" asp-action="RepairStaff">
+                                    Ремонтники
+                                </a>
+                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Repair" asp-action="RepairStaff">
+                                            Ремонтники
+                                        </a>
+                                    </li>
+                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="Yachttest">Тестовые заплывы</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="Repair">Ремонт</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="RepairMen">Ремонтники на ремонте</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="Extradationrequest">Заявка на выдачу</a></li>
+                                </ul>
+                            </div>
                         </li>
                         <!--Контракты-->
                         <li class="nav-item">

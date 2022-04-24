@@ -1,0 +1,91 @@
+﻿@model IEnumerable<Repair>
+
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <td>
+                ID
+            </td>
+            <td>
+                Дата начала ремонта
+            </td>
+            <td>
+                Дата фактического окончания ремонта
+            </td>
+            <td>
+                Дата окончания ремонта
+            </td>
+            <td>
+                Статус
+            </td>
+            <td>
+                Количество персонала
+            </td>
+            <td>
+                Яхта
+            </td>
+            <td colspan="3">
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var sp in Model)
+        {
+        <tr class="text-black btn-area-3">
+            <td>
+                @sp.Id
+            </td>
+            <td>
+                @sp.Startdate
+            </td>
+            <td>
+                @Methods.CoalesceDateTime(sp.Enddate)
+            </td>
+            <td>
+                @sp.Duration
+            </td>
+            <td>
+                @sp.Status
+            </td>
+            <td>
+                @sp.Personnel
+            </td>
+            <td>
+                @($"{sp.Yacht.Name} Типа: {sp.Yacht.Type.Name}")
+            </td>
+            <td align="center">
+                @if (!Methods.IsStr(sp.Description))
+                {
+                    <a class="btn btn-secondary"> Детали </a>
+                }
+                else
+                {
+                    <a class="btn btn-primary" asp-action="DetailsRepair" asp-route-id="@sp.Id"> Детали </a>
+                }
+            </td>
+
+
+            <td align="center">
+                <a class="btn btn-info" asp-action="EditRepair" asp-route-id="@sp.Id"> Изменить </a>
+            </td>
+            <td align="center">
+                <a class="btn btn-danger" asp-action="DeleteRepair" asp-route-id="@sp.Id"> Удалить </a>
+            </td>
+        </tr>
+        }
+
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="10" align="center">
+                <a asp-action="CreateRepair" class="btn btn-primary">
+                    <div style="width: 50vw;">
+                        Создать
+                    </div>
+                </a>
+            </td>
+        </tr>
+    </tfoot>
+</table>
+

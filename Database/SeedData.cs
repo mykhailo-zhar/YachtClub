@@ -15,7 +15,7 @@ namespace Project.Database
 				#region Удаление старой базы и доменов
 				//Удаление Виртуальных Поименованых Производных Таблиц
 				dbContext.Database.ExecuteSqlRaw(@"
-					drop view if exists  AvailableResources;
+					drop view if exists  AvailableResources, repairmen;
 				");
 
 				//Удаление триггеров 
@@ -299,6 +299,7 @@ CREATE TABLE Repair(
 	Duration	timestamp		Not Null	check(StartDate <= Duration),
 	Status		varchar		Not Null	Default 'New',
 	Personnel	int			Not Null	check(Personnel > 0)	Default 1,
+	Description	text		Not Null	Default ' ',
 	YachtID		int			Not Null
 	References 	Yacht(ID)	
 	On Update Cascade	
@@ -567,7 +568,7 @@ CREATE TABLE Position_Equivalent(
 				#region Views
 				//Доступные материалы
 				dbContext.Database.ExecuteSqlRaw(@"
-create view AvailableResources as (
+create or replace view AvailableResources as (
 with mlcount as(
 select  ml.material, sum(ml.count) count from 
 materiallease as ml
@@ -591,6 +592,15 @@ select distinct m.id material, coalesce(ar.count, 0) count from
 	order by m.id
 );
 				");
+
+				//Товарищи ремонтники
+				dbContext.Database.ExecuteSqlRaw(@"
+Create or replace view Repairmen as (
+select sp.id, sp.staffid, sp.positionid, sp.startdate, sp.enddate, sp.description from
+staff_position as sp join position as p on sp.positionid = p.id 
+where p.name = 'Repairman' and sp.enddate is null
+	);
+");
 
                 #endregion
             }

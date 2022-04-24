@@ -30,6 +30,7 @@ namespace Project.Models
 
         public static string YesNo(bool Bool) => Bool ? "Да" : "Нет";
 
+        public static string CoalesceString(string str) => IsStr(str) ? str : string.Empty;
         public static string CoalesceDateTime(DateTime? dateTime) => dateTime == null ? "[Дата окончания отсутствует]" : dateTime.Value.ToString();
     }
 }

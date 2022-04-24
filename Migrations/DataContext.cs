@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Linq;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+
+using Project.Models;
 
 namespace Project.Migrations
 {
@@ -16,6 +20,7 @@ namespace Project.Migrations
         }
 
         public virtual DbSet<Availableresources> Availableresources { get; set; }
+        public virtual DbSet<RepairStaff> RepairStaff { get; set; }
         public virtual DbSet<Client> Client { get; set; }
         public virtual DbSet<Contract> Contract { get; set; }
         public virtual DbSet<Contracttype> Contracttype { get; set; }
@@ -55,6 +60,11 @@ namespace Project.Migrations
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Availableresources>(entity =>
+            {
+                entity.HasNoKey();
+            });
+            
+            modelBuilder.Entity<RepairStaff>(entity =>
             {
                 entity.HasNoKey();
             });
