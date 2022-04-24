@@ -1,0 +1,101 @@
+﻿@model ObjectViewModel<Yachttype>
+<partial name="_Validation" />
+<h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
+<form asp-action="@Model.Action" method="post">
+
+    @if (Model.ShowReadOnlyFields)
+    {
+        <div class="form-group">
+            <label asp-for="Object.Id"></label>
+            <input class="form-control" asp-for="Object.Id" readonly />
+        </div>
+    }
+
+    <div class="form-group">
+        <label asp-for="Object.Name"></label>
+        <div>
+            <span asp-validation-for="Object.Name" class="text-danger"></span>
+        </div>
+        <input class="form-control" asp-for="Object.Name"
+               readonly="@Model.ReadOnly" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Object.Frame"></label>
+        <div>
+            <span asp-validation-for="Object.Frame" class="text-danger"></span>
+        </div>
+        <select asp-for="Object.Frame" class="form-control"
+                disabled="@Model.ReadOnly"
+                asp-items="@(new SelectList(new List<string> { "Single", "Twain", "Ternary"}))">
+            <option value="" disabled selected>Выберите тип рамы</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Object.Goal"></label>
+        <div>
+            <span asp-validation-for="Object.Goal" class="text-danger"></span>
+        </div>
+        <select asp-for="Object.Goal" class="form-control"
+                disabled="@Model.ReadOnly"
+                asp-items="@(new SelectList(new List<string> { "Sport", "Cruise"}))">
+            <option value="" disabled selected>Выберите целевую задачу</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Object.Class"></label>
+        <div>
+            <span asp-validation-for="Object.Class" class="text-danger"></span>
+        </div>
+        <select asp-for="Object.Class" class="form-control"
+                disabled="@Model.ReadOnly"
+                asp-items="@(new SelectList(new List<string> { "Sport", "Kiel", "Schwerbott", "Compromiss"}))">
+            <option value="" disabled selected>Выберите класс яхты</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Object.Sails"></label>
+        <div>
+            <span asp-validation-for="Object.Sails" class="text-danger"></span>
+        </div>
+        <input class="form-control" asp-for="Object.Sails" type="number" min="0" value="0"
+               readonly="@Model.ReadOnly" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Object.Crewcapacity"></label>
+        <div>
+            <span asp-validation-for="Object.Crewcapacity" class="text-danger"></span>
+        </div>
+        <input class="form-control" asp-for="Object.Crewcapacity" type="number" min="1" value="1"
+               readonly="@Model.ReadOnly" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Object.Capacity"></label>
+        <div>
+            <span asp-validation-for="Object.Capacity" class="text-danger"></span>
+        </div>
+        <input class="form-control" asp-for="Object.Capacity" type="number" min="1" value="1"
+               readonly="@Model.ReadOnly" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Object.Description"></label>
+        <div>
+            <span asp-validation-for="Object.Description" class="text-danger"></span>
+        </div>
+        <textarea class="form-control" asp-for="Object.Description"
+                  readonly="@Model.ReadOnly"></textarea>
+    </div>
+
+    <partial name="_EditorBottomButtons" model="@new EditorBottomButtonsViewModel {
+        ShowAction = Model.ShowAction,
+        Theme = Model.Theme,
+        Action = Model.ActionObjectName,
+        BackAction = Model.Object.GetType().Name
+    }" />
+</form>

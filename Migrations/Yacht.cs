@@ -30,6 +30,8 @@ namespace Project.Migrations
         [Required]
         [Column("rentable")]
         public bool? Rentable { get; set; }
+        [Column("registrydate", TypeName = "timestamp")]
+        public DateTime Registrydate { get; set; }
         [Column("typeid")]
         public int Typeid { get; set; }
         [Column("yachtownerid")]

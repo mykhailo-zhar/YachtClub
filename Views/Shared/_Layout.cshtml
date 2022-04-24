@@ -31,6 +31,7 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
+                        <!--Отладочная панель-->
                         <li class="nav-item">
                             <div class="btn-group">
                                 <a class="btn text-white" asp-controller="Home" asp-action="ReloadDatabase">Перезагрузить базу данных</a>
@@ -44,6 +45,7 @@
                                 </ul>
                             </div>
                         </li>
+                        <!--Панель кладовщика-->
                         <li class="nav-item">
                             <div class="btn-group">
                                 <a class="btn text-white" asp-controller="Warehouse" asp-action="Material">
@@ -81,6 +83,7 @@
                                 </ul>
                             </div>
                         </li>
+                        <!--Панель персонала-->
                         <li class="nav-item">
                             <div class="btn-group">
                                 <a class="btn text-white" asp-controller="Staff" asp-action="Staff">
@@ -91,37 +94,69 @@
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item"  asp-controller="Staff" asp-action="Staff">
-                                          Персонал
+                                        <a class="dropdown-item" asp-controller="Staff" asp-action="Staff">
+                                            Персонал
                                         </a>
                                     </li>
-                                    <li><a class="dropdown-item"  asp-controller="Staff" asp-action="Position">Должности</a></li>
-                                    <li><a class="dropdown-item"  asp-controller="Staff" asp-action="StaffPosition">Должности персонала</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Staff" asp-action="Position">Должности</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Staff" asp-action="StaffPosition">Должности персонала</a></li>
                                 </ul>
                             </div>
                         </li>
+                        <!--Панель ремонта-->
                         <li class="nav-item">
                             <a class="btn text-white" asp-controller="" asp-action="">
                                 Ремонтники
                             </a>
                         </li>
+                        <!--Контракты-->
                         <li class="nav-item">
                             <a class="btn text-white" asp-controller="" asp-action="">
                                 Доступ к контрактам
                             </a>
                         </li>
+                        <!--Типы контрактов-->
                         <li class="nav-item">
-                            <a class="btn text-white" asp-controller="" asp-action="">
-                                Типы контрактов
-                            </a>
+                            <div class="btn-group">
+                                <a class="btn text-white" asp-controller="" asp-action="">
+                                    Типы контрактов:
+                                </a>
+                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Client" asp-action="Yachtleasetype">Тип контракта на яхты</a></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Client" asp-action="Contracttype">
+                                            Тип яхт
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
+                        <!--Яхты-->
                         <li class="nav-item">
-                            <a class="btn text-white" asp-controller="" asp-action="">
-                                Яхты
-                            </a>
+                            <div class="btn-group">
+                                <a class="btn text-white" asp-controller="Client" asp-action="Yacht">
+                                    Яхты
+                                </a>
+                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Client" asp-action="Yacht">Яхты</a></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Client" asp-action="Yachttype">
+                                            Тип яхт
+                                        </a>
+                                    </li>
+                                    <li><a class="dropdown-item" asp-controller="Client" asp-action="Yachtlease">Договор по яхте</a></li>
+                                </ul>
+                            </div>
                         </li>
+                        <!--Клиенты-->
                         <li class="nav-item">
-                            <a class="btn text-white" asp-controller="" asp-action="">
+                            <a class="btn text-white" asp-controller="Client" asp-action="Client">
                                 Клиент
                             </a>
                         </li>

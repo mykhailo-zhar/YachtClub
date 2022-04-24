@@ -28,21 +28,17 @@
                    readonly="@Model.ReadOnly" />
         </div>
         <div class="form-group">
-            <label asp-for="Object.Deliverydate"></label>
-            @if (Model.Action == "Edit" && Model.Object.Deliverydate == null)
+            <label>Поставлено</label>
+            @if (Model.Action == "Edit" && Model.Object.Deliverydate == null && !Model.ReadOnly)
             {
-                <div style="margin: 10px; position: relative; ">
-                    <input type="checkbox" id="scales" asp-for="Option[0]">
-                    <label for="scales">Материалы привезены?</label>
-                </div>
+                <select class="form-control" asp-for="Option[0]" asp-items="@(new List<SelectListItem> {
+                        new SelectListItem { Selected = true, Text="Да", Value="true" },
+                        new SelectListItem { Text="Нет", Value="false" },
+                 })"></select>
             }
             else
             {
-                <div>
-                    <span asp-validation-for="Object.Deliverydate" class="text-danger"></span>
-                </div>
-                <input class="form-control" asp-for="Object.Deliverydate"
-                       readonly />
+            <input class="form-control" readonly value="@(Model.Object.Deliverydate != null? "Да": "Нет")" />
             }
         </div>
 
@@ -65,13 +61,12 @@
         </div>
         @if (Model.Object.MaterialNavigation != null)
         {
-            <input class="form-control" asp-for="Object.Count"
-                   placeholder="Количество @Methods.Message(Model.Object.MaterialNavigation)"
+            <input class="form-control" asp-for="Object.Count" min="1" value="1"
                    readonly="@(Model.ReadOnly)" />
         }
         else
         {
-            <input class="form-control" asp-for="Object.Count"
+            <input class="form-control" asp-for="Object.Count" min="1" value="1"
                    placeholder="Количество"
                    readonly="@(Model.ReadOnly)" />
         }

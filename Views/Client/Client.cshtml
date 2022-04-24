@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Staff>
+﻿@model IEnumerable<Client>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
@@ -25,7 +25,7 @@
                 Телефон
             </td>
             <td>
-                Время приёма на работу
+                Время регистрации
             </td>
             <td colspan="3">
             </td>
@@ -57,20 +57,20 @@
                     @Person.Phone
                 </td>
                 <td>
-                    @Person.Hiringdate
+                    @Person.Registrydate
                 </td>
                 <td align="center">
-                    <a class="btn btn-info" asp-action="EditStaff" asp-route-id="@Person.Id"> Изменить </a>
+                    <a class="btn btn-info" asp-action="EditClient" asp-route-id="@Person.Id"> Изменить </a>
                 </td>
                 <td align="center">
-                    <a class="btn btn-danger" asp-action="DeleteStaff" asp-route-id="@Person.Id">Удалить</a>
+                    <a class="btn btn-danger" asp-action="DeleteClient" asp-route-id="@Person.Id">Удалить</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
 
-<a asp-action="CreateStaff" class="btn btn-primary">
+<a asp-action="CreateClient" class="btn btn-primary">
     <div style="width: 50vw;">
         Создать
     </div>

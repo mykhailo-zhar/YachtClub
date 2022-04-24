@@ -22,6 +22,7 @@ namespace Project.Migrations
         [Required]
         [Column("surname", TypeName = "character varying")]
         public string Surname { get; set; }
+        [Required]
         [Column("birthdate", TypeName = "date")]
         public DateTime Birthdate { get; set; }
         [Required]
@@ -33,7 +34,7 @@ namespace Project.Migrations
         [Required]
         [Column("phone", TypeName = "character varying")]
         public string Phone { get; set; }
-        [Column("hiringdate", TypeName = "date")]
+        [Column("hiringdate", TypeName = "timestamp")]
         public DateTime Hiringdate { get; set; }
 
         [InverseProperty("Staff")]

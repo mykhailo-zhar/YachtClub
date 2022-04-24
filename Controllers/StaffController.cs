@@ -203,6 +203,7 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (StaffPosition.Option[0]) StaffPosition.Object.Enddate = DateTime.Now;
                 Context.StaffPosition.Update(StaffPosition.Object);
                 await Context.SaveChangesAsync();
                 return RedirectToAction(nameof(StaffPosition));

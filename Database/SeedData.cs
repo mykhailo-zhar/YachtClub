@@ -141,11 +141,11 @@ CREATE TABLE Staff (
 	ID     			serial     	NOT Null	Primary Key,
 	Name     		varchar   	NOT Null,
 	Surname     	varchar   	NOT Null,
-	BirthDate    	date    	NOT Null	check(extract( year from age( cast(BirthDate  as date))) >= 18),
+	BirthDate    	timestamp    	NOT Null	check(extract( year from age( cast(BirthDate  as timestamp))) >= 18),
 	Sex      	 	SEX     	NOT Null,  
 	Email			Mail		NOT Null	unique,
 	Phone			PhoneNumber	Not Null	unique,
-	HiringDate		date		Not Null	check(BirthDate < HiringDate)
+	HiringDate		timestamp		Not Null	check(BirthDate < HiringDate)	Default current_timestamp
 );
 				");
 
@@ -155,10 +155,11 @@ CREATE TABLE Client(
   	ID    			serial    	Not Null	Primary Key,
   	Name      		varchar    	Not Null,
   	Surname      	varchar    	Not Null,
-  	BirthDate    	date    	Not Null,
+  	BirthDate    	timestamp   Not Null,
 	Sex				Sex			Not Null,	
   	Email      		Mail    	Not Null	unique,
-	Phone			PhoneNumber	Not Null	unique
+	Phone			PhoneNumber	Not Null	unique,
+	RegistryDate	timestamp	Not Null	check(BirthDate < RegistryDate)	Default current_timestamp
 );
 				");
 
@@ -167,9 +168,9 @@ CREATE TABLE Client(
 CREATE TABLE Event(
 	ID			serial		Not Null	Primary Key,
 	Name		varchar		Not Null,
-	StartDate	date		Not Null,
-	EndDate		date		check(StartDate <= EndDate ),
-	Duration	date		Not Null	check(StartDate <= Duration),
+	StartDate	timestamp		Not Null,
+	EndDate		timestamp		check(StartDate <= EndDate ),
+	Duration	timestamp		Not Null	check(StartDate <= Duration),
 	Status		varchar		Not Null	Default 'Created',
 
 	unique(Name,StartDate)
@@ -182,7 +183,7 @@ CREATE TABLE Event(
 					ID			serial		Not Null	Primary Key,
 					Name		varchar		Not Null,
 					Surname		varchar		Not Null,
-					BirthDate	date		Not Null,
+					BirthDate	timestamp		Not Null,
 					Email		Mail		Not Null	unique,
 					Phone		PhoneNumber	Not Null	unique,
 					Sex			Sex			Not Null
@@ -206,8 +207,8 @@ Create TABLE Staff_Position(
 	References 	Position(ID)	
 	On Update Cascade	
 	On Delete Cascade,
-	StartDate		date		Not Null,
-	EndDate			date		check(StartDate <= EndDate),
+	StartDate		timestamp		Not Null,
+	EndDate			timestamp		check(StartDate <= EndDate),
 	Description		Text		Default ' '
 );
 				");
@@ -228,11 +229,12 @@ CREATE TABLE Material(
 				//Яхта
 				dbContext.Database.ExecuteSqlRaw(@"
 Create TABLE Yacht(
-	ID				Serial		Not Null	Primary Key,
-	Name			varchar		Not Null,
-	Status			varchar		Not Null,
-	Rentable		bool		Not Null	Default TRUE,
-	TypeID			int			Not Null
+	ID					Serial		Not Null	Primary Key,
+	Name				varchar		Not Null,
+	Status				varchar		Not Null,
+	Rentable			bool		Not Null	Default TRUE,
+	Registrydate		timestamp	Not Null	Default current_timestamp,
+	TypeID				int			Not Null
 	References 	YachtType(ID)	
 	On Update Cascade	
 	On Delete Cascade,
@@ -265,8 +267,8 @@ CREATE TABLE MaterialLease(
 	PricePerUnit			My_Money	Not Null,
 	Count 					int			Not Null	check(Count > 0),
 	OverallPrice			My_Money	Not Null	check(OverallPrice = Count * PricePerUnit),
-	StartDate				date		Not Null,
-	DeliveryDate			date		check(StartDate <= DeliveryDate)
+	StartDate				timestamp		Not Null,
+	DeliveryDate			timestamp		check(StartDate <= DeliveryDate)
 );
 				");
 
@@ -274,7 +276,7 @@ CREATE TABLE MaterialLease(
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtTest(
 	ID			serial		Not Null	Primary Key,
-	Date		date		Not Null,
+	Date		timestamp		Not Null,
 	Results		text		Not Null,
 	YachtID		int			Not Null
 	References 	Yacht(ID)	
@@ -292,9 +294,9 @@ CREATE TABLE YachtTest(
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Repair(
 	ID			serial		Not Null	Primary Key,
-	StartDate	date		Not Null,
-	EndDate		date		check(StartDate <= EndDate ),
-	Duration	date		Not Null	check(StartDate <= Duration),
+	StartDate	timestamp		Not Null,
+	EndDate		timestamp		check(StartDate <= EndDate ),
+	Duration	timestamp		Not Null	check(StartDate <= Duration),
 	Status		varchar		Not Null	Default 'New',
 	Personnel	int			Not Null	check(Personnel > 0)	Default 1,
 	YachtID		int			Not Null
@@ -318,8 +320,8 @@ CREATE TABLE Yacht_Crew(
 	On Update Cascade	
 	On Delete Cascade,
 	
-	StartDate	date		Not Null,
-	EndDate		date		check(StartDate <= EndDate),
+	StartDate	timestamp		Not Null,
+	EndDate		timestamp		check(StartDate <= EndDate),
 	Description text		Default ' '
 );
 				");
@@ -363,9 +365,9 @@ CREATE TABLE ExtradationRequest(
 	On Update Cascade	
 	On Delete Cascade,
 	
-	StartDate	date		Not Null,
-	EndDate		date		check(StartDate <= EndDate),
-	Duration	date		Not Null	check(StartDate <= Duration),
+	StartDate	timestamp		Not Null,
+	EndDate		timestamp		check(StartDate <= EndDate),
+	Duration	timestamp		Not Null	check(StartDate <= Duration),
 	Status		varchar		Not Null
 );
 				");
@@ -373,12 +375,13 @@ CREATE TABLE ExtradationRequest(
 				//Договор на аренду места
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtLease(
-	ID				serial		Not Null	Primary Key,
-	StartDate		date		Not Null,
-	EndDate			date		check(StartDate <= EndDate ),
-	Duration		date		Not Null	check(StartDate <= Duration),
-	OverallPrice	My_Money	Not Null,
-	YachtID			int			Not Null
+	ID				serial			Not Null	Primary Key,
+	StartDate		timestamp		Not Null,
+	EndDate			timestamp		check(StartDate <= EndDate ),
+	Duration		timestamp		Not Null	check(StartDate <= Duration),
+	OverallPrice	My_Money		Not Null,
+	Specials		text			Not Null	Default ' ',
+	YachtID			int				Not Null
 	References 	Yacht(ID)	
 	On Update Cascade	
 	On Delete Cascade,
@@ -413,9 +416,9 @@ CREATE TABLE Contract(
 	On Update Cascade	
 	On Delete Cascade,
 
-	StartDate		date		Not Null,
-	EndDate			date		check(StartDate <= EndDate ),
-	Duration		date		Not Null	check(StartDate <= Duration),
+	StartDate		timestamp		Not Null,
+	EndDate			timestamp		check(StartDate <= EndDate ),
+	Duration		timestamp		Not Null	check(StartDate <= Duration),
 	Specials		text		Not Null,
 	Status			varchar		Not Null,
 	AverallPrice	My_Money	Not Null
@@ -440,7 +443,7 @@ CREATE TABLE Review(
 	On Update Cascade	
 	On Delete Cascade,
 	
-	Date			date		Not Null,
+	Date			timestamp		Not Null,
 	Text			text		Not Null,
 	Rate			int 		Not Null 	check(Rate > 0 AND Rate <= 5)
 );
@@ -568,6 +571,7 @@ create view AvailableResources as (
 with mlcount as(
 select  ml.material, sum(ml.count) count from 
 materiallease as ml
+where ml.deliverydate is not null
 group by ml.material order by ml.material
 ),
 ercount as (

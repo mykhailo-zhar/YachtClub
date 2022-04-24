@@ -1,4 +1,4 @@
-﻿@model MaterialViewModel
+﻿@model IEnumerable<Yachtleasetype>
 
     <table class="table table-sm table-striped table-bordered text-white">
         <thead>
@@ -7,25 +7,22 @@
                     ID
                 </td>
                 <td>
-                    Наименование материала
+                    Именование
                 </td>
                 <td>
-                    Метрика
+                    Цена за день
                 </td>
                 <td>
-                    Тип материала
+                    Служебное пользование
                 </td>
-                <td>
-                    Доступные материалы
-                </td>
-                <td colspan="2">
+                <td colspan="3">
                 </td>
             </tr>
         </thead>
         <tbody>
-            @foreach (var sp in Model.Materials)
+            @foreach (var sp in Model)
             {
-            <tr class="text-black btn-area-2">
+            <tr class="text-black btn-area-3">
                 <td>
                     @sp.Id
                 </td>
@@ -33,31 +30,26 @@
                     @sp.Name
                 </td>
                 <td>
-                    @sp.Metric
+                    @sp.Price
                 </td>
                 <td>
-                    @sp.Type.Name
+                    @Methods.YesNo(sp.Staffonly)
                 </td>
-                <td>
-                     @Model.Availableresources.First(p => p.Material == sp.Id).Count @Methods.Metric(sp)
-                </td>
-                @*
                 <td align="center">
-                    @if (string.IsNullOrWhiteSpace(sp.Description) || string.IsNullOrEmpty(sp.Description))
+                    @if (!Methods.IsStr(sp.Description))
                     {
                         <a class="btn btn-secondary"> Детали </a>
                     }
                     else
                     {
-                        <a class="btn btn-primary" asp-action="DetailsMaterial" asp-route-id="@sp.Id"> Детали </a>
+                        <a class="btn btn-primary" asp-action="DetailsYachtleasetype" asp-route-id="@sp.Id"> Детали </a>
                     }
                 </td>
-                *@
                 <td align="center">
-                    <a class="btn btn-info" asp-action="EditMaterial" asp-route-id="@sp.Id"> Изменить </a>
+                    <a class="btn btn-info" asp-action="EditYachtleasetype" asp-route-id="@sp.Id"> Изменить </a>
                 </td>
                 <td align="center">
-                    <a class="btn btn-danger" asp-action="DeleteMaterial" asp-route-id="@sp.Id">Удалить</a>
+                    <a class="btn btn-danger" asp-action="DeleteYachtleasetype" asp-route-id="@sp.Id"> Удалить </a>
                 </td>
             </tr>
             }
@@ -65,7 +57,7 @@
         <tfoot>
             <tr>
                 <td colspan="10" align="center">
-                    <a asp-action="CreateMaterial" class="btn btn-primary">
+                    <a asp-action="CreateYachtleasetype" class="btn btn-primary">
                         <div style="width: 50vw;">
                             Создать
                         </div>

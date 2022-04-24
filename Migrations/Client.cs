@@ -24,6 +24,7 @@ namespace Project.Migrations
         [Required]
         [Column("surname", TypeName = "character varying")]
         public string Surname { get; set; }
+        [Required]
         [Column("birthdate", TypeName = "date")]
         public DateTime Birthdate { get; set; }
         [Required]
@@ -35,6 +36,8 @@ namespace Project.Migrations
         [Required]
         [Column("phone", TypeName = "character varying")]
         public string Phone { get; set; }
+        [Column("registrydate", TypeName = "timestamp")]
+        public DateTime Registrydate { get; set; }
 
         [InverseProperty("Client")]
         public virtual ICollection<Contract> Contract { get; set; }

@@ -1,0 +1,71 @@
+﻿@model IEnumerable<Yacht>
+
+    <table class="table table-sm table-striped table-bordered text-white">
+        <thead>
+            <tr class="table-dark">
+                <td>
+                    ID
+                </td>
+                <td>
+                    Именование яхты
+                </td>
+                <td>
+                    Тип яхты
+                </td>
+                <td>
+                    Владелец яхты
+                </td>
+                <td>
+                    Статус
+                </td>
+                <td>
+                    Арендуема
+                </td>
+                <td>
+                    Время регистрации
+                </td>
+                <td colspan="2">
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var Person in Model)
+            {
+            <tr class="text-black btn-area-2">
+                <td>
+                    @Person.Id
+                </td>
+                <td>
+                    @Person.Name
+                </td>
+                <td>
+                    @Person.Type.Name
+                </td>
+                <td>
+                    @($"{Person.Yachtowner.Name} {Person.Yachtowner.Surname} {Person.Yachtowner.Phone}")
+                </td>
+                <td>
+                   @Person.Status
+                </td>
+                <td>
+                    @(Person.Rentable.Value ? "Да": "Нет")
+                </td>
+                <td>
+                    @Person.Registrydate
+                </td>
+                <td align="center">
+                    <a class="btn btn-info" asp-action="EditYacht" asp-route-id="@Person.Id"> Изменить </a>
+                </td>
+                <td align="center">
+                    <a class="btn btn-danger" asp-action="DeleteYacht" asp-route-id="@Person.Id">Удалить</a>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+
+    <a asp-action="CreateYacht" class="btn btn-primary">
+        <div style="width: 50vw;">
+            Создать
+        </div>
+    </a>

@@ -55,7 +55,7 @@
                 }
             </td>
             <td align="center">
-                @if (string.IsNullOrWhiteSpace(sp.Description) || string.IsNullOrEmpty(sp.Description))
+                @if (!Methods.IsStr(sp.Description))
                 {
                     <a class="btn btn-secondary"> Детали </a>
                 }

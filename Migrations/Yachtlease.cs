@@ -11,6 +11,7 @@ namespace Project.Migrations
         [Key]
         [Column("id")]
         public int Id { get; set; }
+        [Required]
         [Column("startdate", TypeName = "date")]
         public DateTime Startdate { get; set; }
         [Column("enddate", TypeName = "date")]
@@ -19,6 +20,8 @@ namespace Project.Migrations
         public DateTime Duration { get; set; }
         [Column("overallprice", TypeName = "numeric")]
         public decimal Overallprice { get; set; }
+        [Column("specials")]
+        public string Specials { get; set; }
         [Column("yachtid")]
         public int Yachtid { get; set; }
         [Column("yachtleasetypeid")]

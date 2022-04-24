@@ -1,0 +1,90 @@
+﻿@model IEnumerable<Yachttype>
+
+<table class="table table-sm table-striped table-bordered text-white ">
+    <thead>
+        <tr class="table-dark">
+            <td>
+                ID
+            </td>
+            <td>
+                Название
+            </td>
+            <td>
+                Рама
+            </td>
+            <td>
+                Цель
+            </td>
+            <td>
+                Класс
+            </td>
+            <td>
+                Паруса
+            </td>
+            <td>
+                Количество персонала
+            </td>
+            <td>
+                Количество пассажиров
+            </td>
+
+            <td colspan="3" align="center" >
+                <div>
+                    <a asp-action="CreateYachttype" class="btn btn-primary">
+                        Создать
+                    </a>
+                </div>
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var type in Model)
+        {
+        <tr class="text-black btn-area-3">
+            <td>
+                @type.Id
+            </td>
+            <td>
+                @type.Name
+            </td>
+            <td>
+                 @type.Frame
+            </td>
+            <td>
+                @type.Goal
+            </td>
+            <td>
+                @type.Class
+            </td>
+            <td>
+                @type.Sails
+            </td>
+            <td>
+                @type.Crewcapacity
+            </td>
+            <td>
+                  @type.Capacity
+            </td>
+            <td align="center">
+                @if (string.IsNullOrWhiteSpace(type.Description) || string.IsNullOrEmpty(type.Description))
+                {
+                    <a class="btn btn-secondary"> Детали </a>
+                }
+                else
+                {
+                    <a class="btn btn-info" asp-action="DetailsYachttype" asp-route-id="@type.Id"> Детали </a>
+                }
+            </td>
+            <td align="center">
+                <a class="btn btn-info" asp-action="EditYachttype" asp-route-id="@type.Id"> Изменить </a>
+            </td>
+            <td align="center">
+                <a class="btn btn-danger" asp-action="DeleteYachttype" asp-route-id="@type.Id">Удалить</a>
+            </td>
+        </tr>
+        }
+    </tbody>
+    <tfoot>
+
+    </tfoot>
+</table>
