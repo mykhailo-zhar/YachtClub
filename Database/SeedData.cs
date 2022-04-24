@@ -13,6 +13,16 @@ namespace Project.Database
 			if (ToSeed)
 			{
 				#region Удаление старой базы и доменов
+				//Удаление Виртуальных Поименованых Производных Таблиц
+				dbContext.Database.ExecuteSqlRaw(@"
+					drop view if exists  AvailableResources;
+				");
+
+				//Удаление триггеров 
+				dbContext.Database.ExecuteSqlRaw(@"
+
+				");
+
 				//Удаление таблиц
 				dbContext.Database.ExecuteSqlRaw(@"
 drop table if exists 
@@ -547,11 +557,42 @@ CREATE TABLE Position_Equivalent(
 
 				#endregion
 
-				#endregion
-			}
 
-			#endregion
-		}
+
+				#endregion
+
+				#region Views
+				//Доступные материалы
+				dbContext.Database.ExecuteSqlRaw(@"
+create view AvailableResources as (
+with mlcount as(
+select  ml.material, sum(ml.count) count from 
+materiallease as ml
+group by ml.material order by ml.material
+),
+ercount as (
+select  er.material, sum(er.count) count from 
+extradationrequest as er
+where er.enddate is not null
+group by er.material order by er.material
+),
+counter as
+(
+select m.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcount as m left join ercount as e on m.material = e.material
+union
+select e.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcount as m right join ercount as e on m.material = e.material
+)
+select distinct m.id material, coalesce(ar.count, 0) count from 
+	material as m left join counter as ar on m.id = ar.material
+	order by m.id
+);
+				");
+
+                #endregion
+            }
+
+            #endregion
+        }
 		public static void SeedWithData(DataContext dbContext, bool Force = false)
         {
 			dbContext.Database.EnsureCreated();

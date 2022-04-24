@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Material>
+﻿@model MaterialViewModel
 
     <table class="table table-sm table-striped table-bordered text-white">
         <thead>
@@ -15,12 +15,15 @@
                 <td>
                     Тип материала
                 </td>
+                <td>
+                    Доступные материалы
+                </td>
                 <td colspan="2">
                 </td>
             </tr>
         </thead>
         <tbody>
-            @foreach (var sp in Model)
+            @foreach (var sp in Model.Materials)
             {
             <tr class="text-black btn-area-2">
                 <td>
@@ -34,6 +37,9 @@
                 </td>
                 <td>
                     @sp.Type.Name
+                </td>
+                <td>
+                     @Model.Availableresources.First(p => p.Material == sp.Id).Count
                 </td>
                 @*
                 <td align="center">

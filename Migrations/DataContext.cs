@@ -15,6 +15,7 @@ namespace Project.Migrations
         {
         }
 
+        public virtual DbSet<Availableresources> Availableresources { get; set; }
         public virtual DbSet<Client> Client { get; set; }
         public virtual DbSet<Contract> Contract { get; set; }
         public virtual DbSet<Contracttype> Contracttype { get; set; }
@@ -53,6 +54,11 @@ namespace Project.Migrations
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Availableresources>(entity =>
+            {
+                entity.HasNoKey();
+            });
+
             modelBuilder.Entity<Client>(entity =>
             {
                 entity.HasIndex(e => e.Email)

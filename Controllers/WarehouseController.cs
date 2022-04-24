@@ -172,8 +172,9 @@ namespace Project.Controllers
         {
             var type = Context.Material
                 .Include(p => p.Type)
-                .OrderBy(p => p.Id);
-            return View(type);
+                .OrderBy(p => p.Id).ToList();
+            var res = Context.Availableresources.ToList();
+            return View(new MaterialViewModel { Availableresources = res, Materials = type });
         }
 
         //public IActionResult DetailsMaterial(string id)
