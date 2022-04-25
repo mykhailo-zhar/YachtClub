@@ -11,7 +11,7 @@ namespace Project.Migrations
         public Repair()
         {
             Extradationrequest = new HashSet<Extradationrequest>();
-            RepairMen1 = new HashSet<RepairMen1>();
+            RepairMen1 = new HashSet<RepairMen>();
         }
 
         [Key]
@@ -40,6 +40,6 @@ namespace Project.Migrations
         [InverseProperty("Repair")]
         public virtual ICollection<Extradationrequest> Extradationrequest { get; set; }
         [InverseProperty("Repair")]
-        public virtual ICollection<RepairMen1> RepairMen1 { get; set; }
+        public virtual ICollection<RepairMen> RepairMen { get; set; }
     }
 }

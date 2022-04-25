@@ -28,8 +28,8 @@ namespace Project.Migrations
         public virtual DbSet<Position> Position { get; set; }
         public virtual DbSet<PositionYachttype> PositionYachttype { get; set; }
         public virtual DbSet<Repair> Repair { get; set; }
-        public virtual DbSet<RepairMen1> RepairMen1 { get; set; }
-        public virtual DbSet<Repairmen> Repairmen { get; set; }
+        public virtual DbSet<RepairMen> RepairMen { get; set; }
+        public virtual DbSet<RepairStaff> RepairStaff { get; set; }
         public virtual DbSet<Review> Review { get; set; }
         public virtual DbSet<ReviewCaptain> ReviewCaptain { get; set; }
         public virtual DbSet<ReviewYacht> ReviewYacht { get; set; }
@@ -213,24 +213,24 @@ namespace Project.Migrations
                     .HasConstraintName("repair_yachtid_fkey");
             });
 
-            modelBuilder.Entity<RepairMen1>(entity =>
+            modelBuilder.Entity<RepairMen>(entity =>
             {
                 entity.HasIndex(e => new { e.Repairid, e.Staffid })
                     .HasName("repair_men_repairid_staffid_key")
                     .IsUnique();
 
                 entity.HasOne(d => d.Repair)
-                    .WithMany(p => p.RepairMen1)
+                    .WithMany(p => p.RepairMen)
                     .HasForeignKey(d => d.Repairid)
                     .HasConstraintName("repair_men_repairid_fkey");
 
                 entity.HasOne(d => d.Staff)
-                    .WithMany(p => p.RepairMen1)
+                    .WithMany(p => p.RepairMen)
                     .HasForeignKey(d => d.Staffid)
                     .HasConstraintName("repair_men_staffid_fkey");
             });
 
-            modelBuilder.Entity<Repairmen>(entity =>
+            modelBuilder.Entity<RepairStaff>(entity =>
             {
                 entity.HasNoKey();
             });

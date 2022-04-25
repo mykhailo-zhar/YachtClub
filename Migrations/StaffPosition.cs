@@ -11,7 +11,7 @@ namespace Project.Migrations
         public StaffPosition()
         {
             Extradationrequest = new HashSet<Extradationrequest>();
-            RepairMen1 = new HashSet<RepairMen1>();
+            RepairMen1 = new HashSet<RepairMen>();
             ReviewCaptain = new HashSet<ReviewCaptain>();
             YachtCrew = new HashSet<YachtCrew>();
             Yachttest = new HashSet<Yachttest>();
@@ -40,7 +40,7 @@ namespace Project.Migrations
         [InverseProperty("Staff")]
         public virtual ICollection<Extradationrequest> Extradationrequest { get; set; }
         [InverseProperty("Staff")]
-        public virtual ICollection<RepairMen1> RepairMen1 { get; set; }
+        public virtual ICollection<RepairMen> RepairMen { get; set; }
         [InverseProperty("Captain")]
         public virtual ICollection<ReviewCaptain> ReviewCaptain { get; set; }
         [InverseProperty("Crew")]

@@ -23,7 +23,7 @@ namespace Project.Migrations
         public string? Description { get; set; }
 
         [ForeignKey(nameof(Staffid))]
-        public virtual Staff Staff { get; set; }
+        public virtual Person Staff { get; set; }
         [ForeignKey(nameof(Positionid))]
         public virtual Position Position{ get; set; }
 

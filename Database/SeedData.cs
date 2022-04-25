@@ -555,7 +555,7 @@ select distinct m.id material, coalesce(ar.count, 0) count from
 
 				//Товарищи ремонтники
 				dbContext.Database.ExecuteSqlRaw(@"
-Create or replace view Repairmen as (
+Create or replace view Repair_Staff as (
 select sp.id, sp.staffid, sp.positionid, sp.startdate, sp.enddate, sp.description from
 staff_position as sp join position as p on sp.positionid = p.id 
 where p.name = 'Repairman' and sp.enddate is null
