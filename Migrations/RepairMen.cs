@@ -9,9 +9,12 @@ namespace Project.Migrations
     public partial class RepairMen
     {
         [Key]
+        [Column("id")]
+        public int Id { get; set; }
+        
         [Column("repairid")]
         public int Repairid { get; set; }
-        [Key]
+
         [Column("staffid")]
         public int Staffid { get; set; }
 

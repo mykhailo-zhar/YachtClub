@@ -8,6 +8,7 @@ namespace Project.Migrations
     [Table("repairmen")]
     public class RepairStaff
     {
+
         [Column("id")]
         public int? Id { get; set; }
         [Column("staffid")]
@@ -20,6 +21,11 @@ namespace Project.Migrations
         public DateTime? Enddate { get; set; }
         [Column("description")]
         public string? Description { get; set; }
+
+        [ForeignKey(nameof(Staffid))]
+        public virtual Staff Staff { get; set; }
+        [ForeignKey(nameof(Positionid))]
+        public virtual Position Position{ get; set; }
 
     }
 }

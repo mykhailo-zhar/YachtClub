@@ -105,10 +105,9 @@ namespace Project.Controllers
             });
         }
 
-
-        public IActionResult EditRepair(string id)
+        private IActionResult LocalEditRepair(string id, Repair Repair = null)
         {
-            var Repair = Context.Repair
+            Repair = Repair ?? Context.Repair
                .Include(p => p.Yacht)
                    .ThenInclude(p => p.Type)
                .First(p => p.Id == int.Parse(id));
@@ -116,7 +115,7 @@ namespace Project.Controllers
             var Model = ObjectViewModelFactory<Repair>.Edit(Repair);
             return View("RepairEditor", Model);
         }
-
+        public IActionResult EditRepair(string id) => LocalEditRepair(id);
 
         [HttpPost]
         public async Task<IActionResult> EditRepair([FromForm] ObjectViewModel<Repair> Repair)
@@ -133,19 +132,19 @@ namespace Project.Controllers
                 await Context.SaveChangesAsync();
                 return RedirectToAction(nameof(Repair));
             }
-            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type);
-            var Model = ObjectViewModelFactory<Repair>.Edit(Repair.Object);
-            return View("RepairEditor", Model);
+           
+            return LocalEditRepair($"{Repair.Object.Id}", Repair.Object);
         }
 
-        public IActionResult CreateRepair(string id)
-        {
-            var Repair =  new Repair();
+        private IActionResult LocalCreateRepair(Repair Repair = null) {
+            Repair = Repair ?? new Repair();
+            Repair.Startdate = DateTime.Now;
             ViewData["Yacht"] = Context.Yacht.Include(p => p.Type);
             var Model = ObjectViewModelFactory<Repair>.Create(Repair);
             return View("RepairEditor", Model);
         }
 
+        public IActionResult CreateRepair() => LocalCreateRepair(null);
 
         [HttpPost]
         public async Task<IActionResult> CreateRepair([FromForm] ObjectViewModel<Repair> Repair)
@@ -153,14 +152,11 @@ namespace Project.Controllers
             if (ModelState.IsValid)
             {
                 Repair.Object.Description = Methods.CoalesceString(Repair.Object.Description);
-                Repair.Object.Startdate = DateTime.Now;
                 Context.Repair.Add(Repair.Object);
                 await Context.SaveChangesAsync();
                 return RedirectToAction(nameof(Repair));
             }
-            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type);
-            var Model = ObjectViewModelFactory<Repair>.Create(Repair.Object);
-            return View("RepairEditor", Model);
+            return LocalCreateRepair(Repair.Object);
         }
         public IActionResult DeleteRepair(string id)
         {
@@ -177,6 +173,76 @@ namespace Project.Controllers
             return RedirectToAction(nameof(Repair));
 
         }
+        #endregion
+
+        #region  RepairMen
+        public IActionResult RepairMen()
+        {
+            var RepairMen = Context.RepairMen
+                .Include(p => p.Staff)
+                     .ThenInclude(p => p.Staff)
+                        .Where(p => Context.RepairStaff.Select(p => p.Id).Contains(p.Staffid))
+                .Include(p => p.Repair)
+                .OrderBy(p => p.Id).ToList();
+
+            return View(RepairMen);
+        }
+
+       
+        private IActionResult LocalCreateRepairMen(RepairMen RepairMen = null)
+        {
+            RepairMen = RepairMen ?? new RepairMen();
+            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from RepairMen").Include(p => p.Staff).ToList();
+            ViewData["Repair"] = Context.Repair.ToList();
+            var Model = ObjectViewModelFactory<RepairMen>.Create(RepairMen);
+            return View("RepairMenEditor", Model);
+        }
+
+        public IActionResult CreateRepairMen() => LocalCreateRepairMen(null);
+
+        [HttpPost]
+        public async Task<IActionResult> CreateRepairMen([FromForm] ObjectViewModel<RepairMen> RepairMen)
+        {
+            if (ModelState.IsValid)
+            {
+                //RepairMen.Object.Description = Methods.CoalesceString(RepairMen.Object.Description);
+                Context.RepairMen.Add(RepairMen.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(RepairMen));
+            }
+            return LocalCreateRepairMen(RepairMen.Object);
+        }
+        public IActionResult DeleteRepairMen(string id)
+        {
+            var RepairMen = Context.RepairMen
+                /*Включение навигационных свойств*/
+                .First(p => p.Id == int.Parse(id));
+            return View("RepairMenEditor", ObjectViewModelFactory<RepairMen>.Delete(RepairMen));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteRepairMen([FromForm] ObjectViewModel<RepairMen> RepairMen)
+        {
+            Context.RepairMen.Remove(RepairMen.Object);
+            await Context.SaveChangesAsync();
+            return RedirectToAction(nameof(RepairMen));
+
+        }
+        #endregion
+
+        #region RepairStaff
+
+        public IActionResult RepairStaff()
+        {
+            var RepairStaff = Context.RepairStaff
+                     .Include(p => p.Staff)
+                        .Where(p => Context.RepairStaff.Select(p => p.Id).Contains(p.Id))
+                     .Include(p => p.Position)
+                .OrderBy(p => p.Id).ToList();
+
+            return View(RepairStaff);
+        }
+
         #endregion
     }
 }

@@ -1,0 +1,86 @@
+﻿@model IEnumerable<RepairStaff>
+
+    <table class="table table-sm table-striped table-bordered text-white">
+        <thead>
+            <tr class="table-dark">
+                <td>
+                    ID
+                </td>
+                <td>
+                    Название должности
+                </td>
+                <td>
+                    Имя сотрудника
+                </td>
+                <td>
+                    Email
+                </td>
+                <td>
+                    Дата заступления на должность
+                </td>
+                <td>
+                    Дата ухода с должности
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sp in Model)
+            {
+            <tr class="text-black">
+                <td>
+                    @sp.Id
+                </td>
+                <td>
+                    @sp.Position.Name
+                </td>
+                <td>
+                    @sp.Staff.Name
+                </td>
+                <td>
+                    @sp.Staff.Email
+                </td>
+                <td>
+                    @sp.Startdate
+                </td>
+                <td>
+                    @if (sp.Enddate.HasValue)
+                    {
+                        <span>@sp.Enddate.Value;</span>
+                    }
+                    else
+                    {
+                        <span> Нет даты окончания</span>
+                    }
+                </td>
+               @* <td align="center">
+                    @if (!Methods.IsStr(sp.Description))
+                    {
+                        <a class="btn btn-secondary"> Детали </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary" asp-action="DetailsStaffPosition" asp-route-id="@sp.Id"> Детали </a>
+                    }
+                </td>
+                <td align="center">
+                    <a class="btn btn-info" asp-action="EditStaffPosition" asp-route-id="@sp.Id"> Изменить </a>
+                </td>
+                <td align="center">
+                    <a class="btn btn-danger" asp-action="DeleteStaffPosition" asp-route-id="@sp.Id">Удалить</a>
+                </td>*@
+            </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+               @* <td colspan="10" align="center">
+                    <a asp-action="CreateStaffPosition" class="btn btn-primary">
+                        <div style="width: 50vw;">
+                            Создать
+                        </div>
+                    </a>
+                </td>*@
+            </tr>
+        </tfoot>
+    </table>
+

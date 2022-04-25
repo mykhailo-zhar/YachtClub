@@ -460,6 +460,8 @@ CREATE TABLE Review(
 				//Справочная таблица ремонтников
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Repair_Men(
+	ID			serial		Not Null	Primary Key,	
+
 	RepairID	int			Not Null
 	References 	Repair(ID)	
 	On Update Cascade	
@@ -469,7 +471,8 @@ CREATE TABLE Repair_Men(
 	References 	Staff_Position(ID)	
 	On Update Cascade	
 	On Delete Cascade,
-	Primary Key(RepairID, StaffID)
+
+	Unique(RepairID, StaffID)
 );
 				");
 
@@ -1175,13 +1178,13 @@ values
                 dbContext.Database.ExecuteSqlRaw($@"
 insert into Repair_Men(RepairID, StaffID)
 values
-(1, 4),
-(2, 4),
-(2, 16),
-(3, 16),
-(4, 4),
-(4, 16),
-(5, 16);
+(1, 5),
+(2, 5),
+(2, 17),
+(3, 17),
+(4, 5),
+(4, 17),
+(5, 17);
 				");
 
 				//Контракты

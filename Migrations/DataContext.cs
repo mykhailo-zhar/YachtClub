@@ -165,7 +165,8 @@ namespace Project.Migrations
                     .HasName("materialtype_name_key")
                     .IsUnique();
 
-                entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
+                entity.Property(e => e.Description)
+                .HasDefaultValueSql("' '::text");
             });
 
             modelBuilder.Entity<Position>(entity =>
@@ -217,12 +218,16 @@ namespace Project.Migrations
                     .WithMany(p => p.Repair)
                     .HasForeignKey(d => d.Yachtid)
                     .HasConstraintName("repair_yachtid_fkey");
+
+                entity.Property(e => e.Description)
+               .HasDefaultValueSql("' '::text");
             });
 
             modelBuilder.Entity<RepairMen>(entity =>
             {
-                entity.HasKey(e => new { e.Repairid, e.Staffid })
-                    .HasName("repair_men_pkey");
+                entity.HasIndex(e => new { e.Repairid, e.Staffid })
+                  .HasName("repair_men_repairid_staffid_key")
+                  .IsUnique();
 
                 entity.HasOne(d => d.Repair)
                     .WithMany(p => p.RepairMen)
@@ -376,6 +381,9 @@ namespace Project.Migrations
                     .WithMany(p => p.Yachtlease)
                     .HasForeignKey(d => d.Yachtleasetypeid)
                     .HasConstraintName("yachtlease_yachtleasetypeid_fkey");
+
+                entity.Property(e => e.Specials)
+               .HasDefaultValueSql("' '::text");
             });
 
             modelBuilder.Entity<Yachtleasetype>(entity =>
@@ -384,7 +392,8 @@ namespace Project.Migrations
                     .HasName("yachtleasetype_name_key")
                     .IsUnique();
 
-                entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
+                entity.Property(e => e.Description)
+                .HasDefaultValueSql("' '::text");
             });
 
             modelBuilder.Entity<Yachttest>(entity =>
@@ -398,6 +407,9 @@ namespace Project.Migrations
                     .WithMany(p => p.Yachttest)
                     .HasForeignKey(d => d.Yachtid)
                     .HasConstraintName("yachttest_yachtid_fkey");
+
+                entity.Property(e => e.Results)
+               .HasDefaultValueSql("' '::text");
             });
 
             modelBuilder.Entity<Yachttype>(entity =>

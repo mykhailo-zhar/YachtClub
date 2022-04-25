@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>CRUD snippet</Title>
+      <Description>Добавляет действия CRUD по некоторой сущности</Description>
+      <Author>MrZahn</Author>
+      <Shortcut>crud</Shortcut>
+    </Header>
+    <Snippet>
+      <Imports>
+        <Import>
+          <Namespace> Microsoft.AspNetCore.Mvc </Namespace>
+        </Import>
+        
+        <Import>
+          <Namespace> Project.Database </Namespace>
+        </Import>
+         
+        <Import>
+          <Namespace>  Project.Models </Namespace>
+        </Import>
+         
+        <Import>
+          <Namespace>  Project.Migrations </Namespace>
+        </Import>
+         
+        <Import>
+          <Namespace> System.Linq </Namespace>
+        </Import>
+          
+        <Import>
+          <Namespace>  System </Namespace>
+        </Import>
+          
+        <Import>
+          <Namespace> Microsoft.EntityFrameworkCore </Namespace>
+        </Import>
+          
+        <Import>
+          <Namespace> System.Threading.Tasks </Namespace>
+        </Import>
+         
+        <Import>
+          <Namespace> Microsoft.AspNetCore.Mvc.Rendering </Namespace>
+        </Import>
+      </Imports>
+      <Declarations>
+        <Literal>
+          <ID>CName</ID>
+          <ToolTip>Название сущности</ToolTip>
+          <Default>Staff</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp">
+        <![CDATA[
+          #region $CName$
+        public IActionResult $CName$()
+        {
+            var $CName$ = Context.$CName$
+                /*Включение навигационных свойств*/
+                .OrderBy(p => p.Id);
+            return View($CName$);
+        }
+
+        public IActionResult Details$CName$(string id)
+        {
+            var $CName$ = Context.$CName$.First(p => p.Id == int.Parse(id));
+            return View("_Details", new DetailsViewModel
+            {
+                Description = $CName$.Description,
+                ButtonsViewModel = new EditorBottomButtonsViewModel
+                {
+                    BackAction = typeof($CName$).Name
+                }
+            });
+        }
+
+        private IActionResult LocalEdit$CName$(string id, $CName$ $CName$ = null)
+        {
+            $CName$ = $CName$ ?? Context.$CName$
+               /*Включение навигационных свойств*/
+               .First(p => p.Id == int.Parse(id));
+            /*Включение навигационных свойств*/
+            var Model = ObjectViewModelFactory<$CName$>.Edit($CName$);
+            return View("$CName$Editor", Model);
+        }
+        
+        public IActionResult Edit$CName$(string id) => LocalEdit$CName$(id);
+
+        [HttpPost]
+        public async Task<IActionResult> Edit$CName$([FromForm] ObjectViewModel<$CName$> $CName$)
+        {
+            if (ModelState.IsValid)
+            {
+
+                if ($CName$.Option[0]) {
+                   /*Опции*/
+                }
+                //$CName$.Object.Description = Methods.CoalesceString($CName$.Object.Description);
+                Context.$CName$.Update($CName$.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof($CName$));
+            }
+           
+            return LocalEdit$CName$($$"{$CName$.Object.Id}", $CName$.Object);
+        }
+
+        private IActionResult LocalCreate$CName$($CName$ $CName$ = null) {
+            $CName$ = $CName$ ?? new $CName$();
+           /*Включение навигационных свойств*/
+            var Model = ObjectViewModelFactory<$CName$>.Create($CName$);
+            return View("$CName$Editor", Model);
+        }
+
+        public IActionResult Create$CName$() => LocalCreate$CName$(null);
+
+        [HttpPost]
+        public async Task<IActionResult> Create$CName$([FromForm] ObjectViewModel<$CName$> $CName$)
+        {
+            if (ModelState.IsValid)
+            {
+                //$CName$.Object.Description = Methods.CoalesceString($CName$.Object.Description);
+                Context.$CName$.Add($CName$.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof($CName$));
+            }
+            return LocalCreate$CName$($CName$.Object);
+        }
+        public IActionResult Delete$CName$(string id)
+        {
+            var $CName$ = Context.$CName$
+                /*Включение навигационных свойств*/
+                .First(p => p.Id == int.Parse(id));
+            return View("$CName$Editor", ObjectViewModelFactory<$CName$>.Delete($CName$));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete$CName$([FromForm] ObjectViewModel<$CName$> $CName$)
+        {
+            Context.$CName$.Remove($CName$.Object);
+            await Context.SaveChangesAsync();
+            return RedirectToAction(nameof($CName$));
+
+        }
+        #endregion
+]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
