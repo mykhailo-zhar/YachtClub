@@ -46,7 +46,7 @@ namespace Project.Controllers
         public IActionResult CreateYachttest()
         {
             var Yachttest = new Yachttest();
-            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repairmen").Include(p => p.Staff);
+            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repair_Staff").Include(p => p.Staff);
             ViewData["Yacht"] = Context.Yacht.Include(p => p.Type).ToList();
             return View("YachttestEditor", ObjectViewModelFactory<Yachttest>.Create(Yachttest));
         }
@@ -61,7 +61,7 @@ namespace Project.Controllers
                 await Context.SaveChangesAsync();
                 return RedirectToAction(nameof(Yachttest));
             }
-            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repairmen").Include(p => p.Staff);
+            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repair_Staff").Include(p => p.Staff);
             ViewData["Yacht"] = Context.Yacht.Include(p => p.Type).ToList();
             return View("YachttestEditor", ObjectViewModelFactory<Yachttest>.Create(staff.Object));
         }
@@ -192,7 +192,7 @@ namespace Project.Controllers
         private IActionResult LocalCreateRepairMen(RepairMen RepairMen = null)
         {
             RepairMen = RepairMen ?? new RepairMen();
-            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from RepairMen").Include(p => p.Staff).ToList();
+            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repair_Staff").Include(p => p.Staff).ToList();
             ViewData["Repair"] = Context.Repair.ToList();
             var Model = ObjectViewModelFactory<RepairMen>.Create(RepairMen);
             return View("RepairMenEditor", Model);
