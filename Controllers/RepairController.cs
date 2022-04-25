@@ -24,7 +24,7 @@ namespace Project.Controllers
             var Yachttest = Context.Yachttest
                 .Include(p => p.Staff)
                      .ThenInclude(p => p.Staff)
-                        .Where(p => Context.RepairStaff.Select(p => p.Id).Contains(p.Staffid))
+                        .Where(p => Context.RepairStaff.Any(s => s.Id == p.Staffid))
                 .Include(p => p.Yacht)
                     .ThenInclude(p => p.Type)
                 .OrderBy(p => p.Id);
@@ -181,7 +181,7 @@ namespace Project.Controllers
             var RepairMen = Context.RepairMen
                 .Include(p => p.Staff)
                      .ThenInclude(p => p.Staff)
-                        .Where(p => Context.RepairStaff.Select(p => p.Id).Contains(p.Staffid))
+                         .Where(p => Context.RepairStaff.Any(s => s.Id == p.Staffid))
                 .Include(p => p.Repair)
                 .OrderBy(p => p.Id).ToList();
 
@@ -236,7 +236,6 @@ namespace Project.Controllers
         {
             var RepairStaff = Context.RepairStaff
                      .Include(p => p.Staff)
-                        .Where(p => Context.RepairStaff.Select(p => p.Id).Contains(p.Id))
                      .Include(p => p.Position)
                 .OrderBy(p => p.Id).ToList();
 

@@ -18,9 +18,6 @@
                 <td>
                     Дата заступления на должность
                 </td>
-                <td>
-                    Дата ухода с должности
-                </td>
             </tr>
         </thead>
         <tbody>
@@ -41,16 +38,6 @@
                 </td>
                 <td>
                     @sp.Startdate
-                </td>
-                <td>
-                    @if (sp.Enddate.HasValue)
-                    {
-                        <span>@sp.Enddate.Value;</span>
-                    }
-                    else
-                    {
-                        <span> Нет даты окончания</span>
-                    }
                 </td>
                @* <td align="center">
                     @if (!Methods.IsStr(sp.Description))

@@ -5,10 +5,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Project.Migrations
 {
-    [Table("repairmen")]
+    [Table("repair_staff")]
     public class RepairStaff
     {
-
         [Column("id")]
         public int? Id { get; set; }
         [Column("staffid")]

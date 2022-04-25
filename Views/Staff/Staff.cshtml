@@ -25,16 +25,14 @@
                 Телефон
             </td>
             <td>
-                Время приёма на работу
-            </td>
-            <td colspan="3">
+                Время регистрации
             </td>
         </tr>
     </thead>
     <tbody>
         @foreach (var Person in Model)
         {
-            <tr class="text-black btn-area-2">
+            <tr class="text-black">
                 <td>
                     @Person.Id
                 </td>
@@ -59,19 +57,7 @@
                 <td>
                     @Person.Registrydate
                 </td>
-                <td align="center">
-                    <a class="btn btn-info" asp-action="EditPerson" asp-route-id="@Person.Id"> Изменить </a>
-                </td>
-                <td align="center">
-                    <a class="btn btn-danger" asp-action="DeletePerson" asp-route-id="@Person.Id">Удалить</a>
-                </td>
             </tr>
         }
     </tbody>
 </table>
-
-<a asp-action="CreatePerson" class="btn btn-primary">
-    <div style="width: 50vw;">
-        Создать
-    </div>
-</a>

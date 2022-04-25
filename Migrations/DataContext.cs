@@ -28,12 +28,13 @@ namespace Project.Migrations
         public virtual DbSet<Position> Position { get; set; }
         public virtual DbSet<PositionYachttype> PositionYachttype { get; set; }
         public virtual DbSet<Repair> Repair { get; set; }
-        public virtual DbSet<RepairMen> RepairMen { get; set; }
         public virtual DbSet<RepairStaff> RepairStaff { get; set; }
+        public virtual DbSet<RepairMen> RepairMen { get; set; }
         public virtual DbSet<Review> Review { get; set; }
         public virtual DbSet<ReviewCaptain> ReviewCaptain { get; set; }
         public virtual DbSet<ReviewYacht> ReviewYacht { get; set; }
         public virtual DbSet<Seller> Seller { get; set; }
+        public virtual DbSet<Staff> Staff { get; set; }
         public virtual DbSet<StaffPosition> StaffPosition { get; set; }
         public virtual DbSet<Winner> Winner { get; set; }
         public virtual DbSet<Yacht> Yacht { get; set; }
@@ -230,11 +231,6 @@ namespace Project.Migrations
                     .HasConstraintName("repair_men_staffid_fkey");
             });
 
-            modelBuilder.Entity<RepairStaff>(entity =>
-            {
-                entity.HasNoKey();
-            });
-
             modelBuilder.Entity<Review>(entity =>
             {
                 entity.HasOne(d => d.Client)
@@ -288,6 +284,20 @@ namespace Project.Migrations
 
                 entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
             });
+
+            modelBuilder.Entity<Staff>(entity =>
+            {
+                entity.HasNoKey();
+            });
+
+            modelBuilder.Entity<RepairStaff>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.HasOne(p => p.Position);
+                entity.HasOne(p => p.Staff);
+            });
+
 
             modelBuilder.Entity<StaffPosition>(entity =>
             {

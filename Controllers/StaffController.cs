@@ -21,63 +21,10 @@ namespace Project.Controllers
         #region Person
         public IActionResult Staff()
         {
-            var Person = Context.Person.OrderBy(p => p.Id);
+            var Person = Context.Person.FromSqlRaw(@"select * from Staff").OrderBy(p => p.Id);
             return View(Person);
         }
 
-        public IActionResult EditStaff(string id)
-        {
-            var Person = Context.Person.First(p => p.Id == int.Parse(id));
-            return View("PersonEditor", ObjectViewModelFactory<Person>.Edit(Person));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> EditStaff([FromForm] ObjectViewModel<Person> staff)
-        {
-            if (ModelState.IsValid)
-            {
-                Context.Person.Update(staff.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Person));
-            }
-
-            return View("PersonEditor", ObjectViewModelFactory<Person>.Edit(staff.Object));
-        }
-
-        public IActionResult CreateStaff()
-        {
-            var Person = new Person();
-            return View("PersonEditor", ObjectViewModelFactory<Person>.Create(Person));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateStaff([FromForm] ObjectViewModel<Person> staff)
-        {
-            if (ModelState.IsValid)
-            {
-                staff.Object.Registrydate = DateTime.Now;
-                Context.Person.Add(staff.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Person));
-            }
-
-            return View("PersonEditor", ObjectViewModelFactory<Person>.Create(staff.Object));
-        }
-        public IActionResult DeleteStaff(string id)
-        {
-            var Person = Context.Person.First(p => p.Id == int.Parse(id));
-            return View("PersonEditor", ObjectViewModelFactory<Person>.Delete(Person));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteStaff([FromForm] ObjectViewModel<Person> staff)
-        {
-
-            Context.Person.Remove(staff.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(Person));
-
-        }
         #endregion
 
         #region Position

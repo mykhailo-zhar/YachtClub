@@ -33,7 +33,7 @@
                     @sp.Type.Name
                 </td>
                 <td>
-                     @Model.Availableresources.First(p => p.Material == sp.Id).Count @Methods.Metric(sp)
+                     @Model.Availableresources.First(p => p.Material == sp.Id).Format
                 </td>
                 @*
                 <td align="center">

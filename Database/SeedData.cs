@@ -15,12 +15,13 @@ namespace Project.Database
 				#region Удаление старой базы и доменов
 				//Удаление Виртуальных Поименованых Производных Таблиц
 				dbContext.Database.ExecuteSqlRaw(@"
-					drop view if exists  AvailableResources, repairstaff, staff ;
+					drop view if exists  AvailableResources, repair_staff, staff ;
 				");
 
 				//Удаление триггеров 
 				dbContext.Database.ExecuteSqlRaw(@"
-
+					-- Триггер на нехватку материалов
+					drop function if exists ER1() CASCADE;
 				");
 
 				//Удаление таблиц
@@ -344,7 +345,7 @@ CREATE TABLE ExtradationRequest(
 	StartDate	timestamp		Not Null,
 	EndDate		timestamp		check(StartDate <= EndDate),
 	Duration	timestamp		Not Null	check(StartDate <= Duration),
-	Status		varchar		Not Null
+	Status		varchar			Not Null	check(Status in ('Created', 'Canceled', 'Waits', 'Done'))
 );
 				");
 				
@@ -520,9 +521,39 @@ CREATE TABLE HiredStaff(
 	Primary Key ( Yacht_CrewID, ClientID)
 );
 				");
-				
+
 				#endregion
 
+				#endregion
+
+				#region Функции и процедурки
+				//Доступные материалы
+				dbContext.Database.ExecuteSqlRaw(@"
+create or replace function MaterialMetric(
+	material_id bigint,
+	count decimal
+)
+	returns varchar
+as $$
+declare 
+	rec RECORD;
+begin 
+	select count, m.metric m1, t.metric m2 into rec
+	from material as m join materialtype as t on m.typeid = t.id
+	where m.id = material_id and m.id = material_id;
+	
+	if(rec.m1 ~ '^[\t\n\r\f\v]*$' or rec.m1 is null) then
+		if(rec.m2 ~ '^[\t\n\r\f\v]*$' or rec.m2 is null) then
+			return rec.count || '';
+		else
+			return rec.count || ' ' || rec.m2;
+		end if;
+	else
+		return rec.count || ' ' || rec.m1;
+	end if;
+end;
+$$ language plpgsql;	
+				");
 				#endregion
 
 				#region Views
@@ -538,7 +569,7 @@ group by ml.material order by ml.material
 ercount as (
 select  er.material, sum(er.count) count from 
 extradationrequest as er
-where er.enddate is not null
+where er.enddate is not null and Status = 'Done'
 group by er.material order by er.material
 ),
 counter as
@@ -547,7 +578,7 @@ select m.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcoun
 union
 select e.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcount as m right join ercount as e on m.material = e.material
 )
-select distinct m.id material, coalesce(ar.count, 0) count from 
+select distinct m.id material, coalesce(ar.count, 0) count, materialmetric(m.id, coalesce(ar.count, 0)) format  from 
 	material as m left join counter as ar on m.id = ar.material
 	order by m.id
 );
@@ -573,6 +604,33 @@ Create or replace View Staff as (
 
 ");
 
+
+
+                #endregion
+
+				#region Triggers
+				//Триггер на выдачу материалов при нехватке
+				dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ER1()
+	returns trigger
+as $$
+begin 
+	if ( exists 
+				 (
+					 select * from availableresources as ar
+					 where New.material = ar.material and ar.count - New.count < 0 and New.Status = 'Done'
+				 )
+				) 
+	then raise exception 'Не хватает материалов при попытке выдачи #%', New.ID;
+	end if;
+	return new;
+end;
+$$ language plpgsql;	
+
+create trigger ExtradationAvailableMaterials
+Before insert or update on ExtradationRequest 
+for each row execute function ER1();
+				");
 
 
                 #endregion
@@ -1068,9 +1126,9 @@ values
 ('19-01-2019', '25-04-2019', '25-02-2019',	'Canceled', 15, 3, 4, 2),
 ('19-01-2019', '25-04-2019', '25-02-2019',	'Canceled', 1, 8, 4, 2),
 ('19-01-2019', '25-04-2019', '25-02-2019',	'Canceled', 1, 6, 4, 2),
-('01-07-2019', '20-07-2019', '02-07-2019',  'Done', 2, 3, 16, 3),
+('01-07-2019', '20-07-2019', '02-07-2019',  'Waits', 2, 3, 16, 3),
 ('24-06-2019', '10-07-2019', '24-07-2019',  'Done', 10, 4, 4, 4),
-('12-10-2021',		   null, '12-12-2021',  'Awaits', 1, 10, 16, 5)
+('12-10-2021',		   null, '12-12-2021',  'Waits', 1, 10, 16, 5)
 ;
 				");
 				
@@ -1221,7 +1279,7 @@ values
 ('25-04-2019', '21-06-2019', '21-06-2019', 'Done', 'Long journey', 400000.0, 22, 6, 5),
 ('07-01-2020', '21-02-2020', '21-02-2020', 'Done', 'Long journey', 350000.0, 22, 6, 5),
 ('01-07-2020', '05-08-2020', '05-08-2020', 'Done', 'Long journey', 200000.0, 22, 5, 5),
-('09-05-2021', '09-05-2021', '09-05-2021', 'Done', 'No specials', 1000.0, 26, 4, 5),
+('09-05-2021', '09-05-2021', '09-05-2021', 'Done', 'No specials', 1000.0, 1, 4, 5),
 ('09-10-2021', null, '10-10-2022', 'Done', 'Long journey', 5000, 22, 4, 3),
 ('25-12-2021', null, '10-10-2022', 'Done', 'No specials', 2000, 23, 7, 4),
 ('27-12-2021', null, '10-10-2022', 'Done', 'No specials', 5000, 24, 3, 5)
