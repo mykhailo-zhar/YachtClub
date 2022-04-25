@@ -18,64 +18,64 @@ namespace Project.Controllers
             Context = context;
         }
         
-        #region Client
-        public IActionResult Client()
+        #region Person
+        public IActionResult Person()
         {
-            var Client = Context.Client.OrderBy(p => p.Id);
-            return View(Client);
+            var Person = Context.Person.OrderBy(p => p.Id);
+            return View(Person);
         }
 
-        public IActionResult EditClient(string id)
+        public IActionResult EditPerson(string id)
         {
-            var Client = Context.Client.First(p => p.Id == int.Parse(id));
-            return View("ClientEditor", ObjectViewModelFactory<Client>.Edit(Client));
+            var Person = Context.Person.First(p => p.Id == int.Parse(id));
+            return View("PersonEditor", ObjectViewModelFactory<Person>.Edit(Person));
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditClient([FromForm] ObjectViewModel<Client> staff)
+        public async Task<IActionResult> EditPerson([FromForm] ObjectViewModel<Person> Person)
         {
             if (ModelState.IsValid)
             {
-                Context.Client.Update(staff.Object);
+                Context.Person.Update(Person.Object);
                 await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Client));
+                return RedirectToAction(nameof(Person));
             }
 
-            return View("ClientEditor", ObjectViewModelFactory<Client>.Edit(staff.Object));
+            return View("PersonEditor", ObjectViewModelFactory<Person>.Edit(Person.Object));
         }
 
-        public IActionResult CreateClient()
+        public IActionResult CreatePerson()
         {
-            var Client = new Client();
-            return View("ClientEditor", ObjectViewModelFactory<Client>.Create(Client));
+            var Person = new Person();
+            return View("PersonEditor", ObjectViewModelFactory<Person>.Create(Person));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateClient([FromForm] ObjectViewModel<Client> staff)
+        public async Task<IActionResult> CreatePerson([FromForm] ObjectViewModel<Person> Person)
         {
             if (ModelState.IsValid)
             {
-                staff.Object.Registrydate = DateTime.Now;
-                Context.Client.Add(staff.Object);
+                Person.Object.Registrydate = DateTime.Now;
+                Context.Person.Add(Person.Object);
                 await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Client));
+                return RedirectToAction(nameof(Person));
             }
 
-            return View("ClientEditor", ObjectViewModelFactory<Client>.Create(staff.Object));
+            return View("PersonEditor", ObjectViewModelFactory<Person>.Create(Person.Object));
         }
-        public IActionResult DeleteClient(string id)
+        public IActionResult DeletePerson(string id)
         {
-            var Client = Context.Client.First(p => p.Id == int.Parse(id));
-            return View("ClientEditor", ObjectViewModelFactory<Client>.Delete(Client));
+            var Person = Context.Person.First(p => p.Id == int.Parse(id));
+            return View("PersonEditor", ObjectViewModelFactory<Person>.Delete(Person));
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteClient([FromForm] ObjectViewModel<Client> staff)
+        public async Task<IActionResult> DeletePerson([FromForm] ObjectViewModel<Person> Person)
         {
 
-            Context.Client.Remove(staff.Object);
+            Context.Person.Remove(Person.Object);
             await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(Client));
+            return RedirectToAction(nameof(Person));
 
         }
         #endregion
@@ -173,7 +173,7 @@ namespace Project.Controllers
             var Model = ObjectViewModelFactory<Yacht>.Edit(Yacht);
             Model.Option[0] = Yacht.Rentable.Value;
             ViewData["Type"] = Context.Yachttype;
-            ViewData["Yachtowner"] = Context.Client;
+            ViewData["Yachtowner"] = Context.Person;
             return View("YachtEditor", Model);
         }
 
@@ -192,7 +192,7 @@ namespace Project.Controllers
             var Model = ObjectViewModelFactory<Yacht>.Edit(Yacht.Object);
             Model.Option[0] = Yacht.Object.Rentable.Value;
             ViewData["Type"] = Context.Yachttype;
-            ViewData["Yachtowner"] = Context.Client;
+            ViewData["Yachtowner"] = Context.Person;
             return View("YachtEditor", Model);
         }
 
@@ -203,7 +203,7 @@ namespace Project.Controllers
             Yacht.Rentable = true;
             Model.Option[0] = true;
             ViewData["Type"] = Context.Yachttype;
-            ViewData["Yachtowner"] = Context.Client;
+            ViewData["Yachtowner"] = Context.Person;
             return View("YachtEditor", Model);
         }
 
@@ -222,7 +222,7 @@ namespace Project.Controllers
             var Model = ObjectViewModelFactory<Yacht>.Create(Yacht.Object);
             Model.Option[0] = true;
             ViewData["Type"] = Context.Yachttype;
-            ViewData["Yachtowner"] = Context.Client;
+            ViewData["Yachtowner"] = Context.Person;
             return View("YachtEditor", Model);
         }
         public IActionResult DeleteYacht(string id)

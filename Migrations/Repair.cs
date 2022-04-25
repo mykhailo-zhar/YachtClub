@@ -11,7 +11,7 @@ namespace Project.Migrations
         public Repair()
         {
             Extradationrequest = new HashSet<Extradationrequest>();
-            RepairMen1 = new HashSet<RepairMen>();
+            RepairMen = new HashSet<RepairMen>();
         }
 
         [Key]

@@ -15,7 +15,7 @@ namespace Project.Database
 				#region Удаление старой базы и доменов
 				//Удаление Виртуальных Поименованых Производных Таблиц
 				dbContext.Database.ExecuteSqlRaw(@"
-					drop view if exists  AvailableResources, repairmen;
+					drop view if exists  AvailableResources, repairstaff, staff ;
 				");
 
 				//Удаление триггеров 
@@ -561,6 +561,19 @@ staff_position as sp join position as p on sp.positionid = p.id
 where p.name = 'Repairman' and sp.enddate is null
 	);
 ");
+				//Персонал
+				dbContext.Database.ExecuteSqlRaw(@"
+Create or replace View Staff as (
+	select * from person as p
+	where p.id in (
+		select p1.id from
+		person as p1 join staff_position as sp on p1.id = sp.staffid
+	)
+);
+
+");
+
+
 
                 #endregion
             }

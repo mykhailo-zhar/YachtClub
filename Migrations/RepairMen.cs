@@ -17,7 +17,7 @@ namespace Project.Migrations
         public int Staffid { get; set; }
 
         [ForeignKey(nameof(Repairid))]
-        [InverseProperty("RepairMen1")]
+        [InverseProperty("RepairMen")]
         public virtual Repair Repair { get; set; }
         [ForeignKey(nameof(Staffid))]
         [InverseProperty(nameof(StaffPosition.RepairMen))]

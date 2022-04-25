@@ -65,7 +65,7 @@
         @if (Model.Object.Yachtowner != null)
     {
         <div class="dropdown-divider"></div>
-        <label>@typeof(Client).Name</label>
+        <label>@typeof(Person).Name</label>
         <div class="form-group">
             <label asp-for="Object.Yachtowner.Name"></label>
             <div>
@@ -88,7 +88,7 @@
     {
         <div class="form-group">
             <label>Изменить объект</label>
-            <select class="form-control" asp-for="Object.Yachtownerid" asp-items="@(((ViewData["Yachtowner"] as IEnumerable<Client>) ?? Enumerable.Empty<Client>()).Select(p =>
+            <select class="form-control" asp-for="Object.Yachtownerid" asp-items="@(((ViewData["Yachtowner"] as IEnumerable<Person>) ?? Enumerable.Empty<Person>()).Select(p =>
                 {
             var item = new SelectListItem();
             item.Text = $"{p.Name} {p.Surname} {p.Phone}";

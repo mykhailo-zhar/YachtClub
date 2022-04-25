@@ -11,7 +11,7 @@ namespace Project.Migrations
         public StaffPosition()
         {
             Extradationrequest = new HashSet<Extradationrequest>();
-            RepairMen1 = new HashSet<RepairMen>();
+            RepairMen = new HashSet<RepairMen>();
             ReviewCaptain = new HashSet<ReviewCaptain>();
             YachtCrew = new HashSet<YachtCrew>();
             Yachttest = new HashSet<Yachttest>();

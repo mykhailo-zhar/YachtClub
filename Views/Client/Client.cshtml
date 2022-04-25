@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Client>
+﻿@model IEnumerable<Person>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
@@ -60,17 +60,17 @@
                     @Person.Registrydate
                 </td>
                 <td align="center">
-                    <a class="btn btn-info" asp-action="EditClient" asp-route-id="@Person.Id"> Изменить </a>
+                    <a class="btn btn-info" asp-action="EditPerson" asp-route-id="@Person.Id"> Изменить </a>
                 </td>
                 <td align="center">
-                    <a class="btn btn-danger" asp-action="DeleteClient" asp-route-id="@Person.Id">Удалить</a>
+                    <a class="btn btn-danger" asp-action="DeletePerson" asp-route-id="@Person.Id">Удалить</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
 
-<a asp-action="CreateClient" class="btn btn-primary">
+<a asp-action="CreatePerson" class="btn btn-primary">
     <div style="width: 50vw;">
         Создать
     </div>
