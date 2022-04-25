@@ -11,7 +11,7 @@ namespace Project.Migrations
         public StaffPosition()
         {
             Extradationrequest = new HashSet<Extradationrequest>();
-            RepairMen = new HashSet<RepairMen>();
+            RepairMen1 = new HashSet<RepairMen1>();
             ReviewCaptain = new HashSet<ReviewCaptain>();
             YachtCrew = new HashSet<YachtCrew>();
             Yachttest = new HashSet<Yachttest>();
@@ -24,9 +24,9 @@ namespace Project.Migrations
         public int Staffid { get; set; }
         [Column("positionid")]
         public int Positionid { get; set; }
-        [Column("startdate", TypeName = "date")]
+        [Column("startdate")]
         public DateTime Startdate { get; set; }
-        [Column("enddate", TypeName = "date")]
+        [Column("enddate")]
         public DateTime? Enddate { get; set; }
         [Column("description")]
         public string Description { get; set; }
@@ -35,12 +35,12 @@ namespace Project.Migrations
         [InverseProperty("StaffPosition")]
         public virtual Position Position { get; set; }
         [ForeignKey(nameof(Staffid))]
-        [InverseProperty("StaffPosition")]
-        public virtual Staff Staff { get; set; }
+        [InverseProperty(nameof(Person.StaffPosition))]
+        public virtual Person Staff { get; set; }
         [InverseProperty("Staff")]
         public virtual ICollection<Extradationrequest> Extradationrequest { get; set; }
         [InverseProperty("Staff")]
-        public virtual ICollection<RepairMen> RepairMen { get; set; }
+        public virtual ICollection<RepairMen1> RepairMen1 { get; set; }
         [InverseProperty("Captain")]
         public virtual ICollection<ReviewCaptain> ReviewCaptain { get; set; }
         [InverseProperty("Crew")]

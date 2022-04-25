@@ -22,11 +22,11 @@ namespace Project.Migrations
         public int Contracttypeid { get; set; }
         [Column("yachtwithcrewid")]
         public int Yachtwithcrewid { get; set; }
-        [Column("startdate", TypeName = "date")]
+        [Column("startdate")]
         public DateTime Startdate { get; set; }
-        [Column("enddate", TypeName = "date")]
+        [Column("enddate")]
         public DateTime? Enddate { get; set; }
-        [Column("duration", TypeName = "date")]
+        [Column("duration")]
         public DateTime Duration { get; set; }
         [Required]
         [Column("specials")]
@@ -38,8 +38,8 @@ namespace Project.Migrations
         public decimal Averallprice { get; set; }
 
         [ForeignKey(nameof(Clientid))]
-        [InverseProperty("Contract")]
-        public virtual Client Client { get; set; }
+        [InverseProperty(nameof(Person.Contract))]
+        public virtual Person Client { get; set; }
         [ForeignKey(nameof(Contracttypeid))]
         [InverseProperty("Contract")]
         public virtual Contracttype Contracttype { get; set; }

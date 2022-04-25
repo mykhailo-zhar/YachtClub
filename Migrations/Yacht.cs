@@ -30,7 +30,7 @@ namespace Project.Migrations
         [Required]
         [Column("rentable")]
         public bool? Rentable { get; set; }
-        [Column("registrydate", TypeName = "timestamp")]
+        [Column("registrydate")]
         public DateTime Registrydate { get; set; }
         [Column("typeid")]
         public int Typeid { get; set; }
@@ -41,8 +41,8 @@ namespace Project.Migrations
         [InverseProperty(nameof(Yachttype.Yacht))]
         public virtual Yachttype Type { get; set; }
         [ForeignKey(nameof(Yachtownerid))]
-        [InverseProperty(nameof(Client.Yacht))]
-        public virtual Client Yachtowner { get; set; }
+        [InverseProperty(nameof(Person.Yacht))]
+        public virtual Person Yachtowner { get; set; }
         [InverseProperty("Yacht")]
         public virtual ICollection<Repair> Repair { get; set; }
         [InverseProperty("Yacht")]

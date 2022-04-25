@@ -11,27 +11,28 @@ namespace Project.Migrations
         public Repair()
         {
             Extradationrequest = new HashSet<Extradationrequest>();
-            RepairMen = new HashSet<RepairMen>();
+            RepairMen1 = new HashSet<RepairMen1>();
         }
 
         [Key]
         [Column("id")]
         public int Id { get; set; }
-        [Column("startdate", TypeName = "date")]
+        [Column("startdate")]
         public DateTime Startdate { get; set; }
-        [Column("enddate", TypeName = "date")]
+        [Column("enddate")]
         public DateTime? Enddate { get; set; }
-        [Column("duration", TypeName = "date")]
+        [Column("duration")]
         public DateTime Duration { get; set; }
         [Required]
         [Column("status", TypeName = "character varying")]
         public string Status { get; set; }
         [Column("personnel")]
         public int Personnel { get; set; }
-        [Column("yachtid")]
-        public int Yachtid { get; set; }
+        [Required]
         [Column("description")]
         public string Description { get; set; }
+        [Column("yachtid")]
+        public int Yachtid { get; set; }
 
         [ForeignKey(nameof(Yachtid))]
         [InverseProperty("Repair")]
@@ -39,6 +40,6 @@ namespace Project.Migrations
         [InverseProperty("Repair")]
         public virtual ICollection<Extradationrequest> Extradationrequest { get; set; }
         [InverseProperty("Repair")]
-        public virtual ICollection<RepairMen> RepairMen { get; set; }
+        public virtual ICollection<RepairMen1> RepairMen1 { get; set; }
     }
 }

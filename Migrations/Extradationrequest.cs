@@ -19,11 +19,11 @@ namespace Project.Migrations
         public int Staffid { get; set; }
         [Column("repairid")]
         public int Repairid { get; set; }
-        [Column("startdate", TypeName = "date")]
+        [Column("startdate")]
         public DateTime Startdate { get; set; }
-        [Column("enddate", TypeName = "date")]
+        [Column("enddate")]
         public DateTime? Enddate { get; set; }
-        [Column("duration", TypeName = "date")]
+        [Column("duration")]
         public DateTime Duration { get; set; }
         [Required]
         [Column("status", TypeName = "character varying")]

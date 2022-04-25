@@ -10,8 +10,6 @@ namespace Project.Migrations
     {
         public Position()
         {
-            PositionEquivalentPosition = new HashSet<PositionEquivalent>();
-            PositionEquivalentPositionequivalent = new HashSet<PositionEquivalent>();
             PositionYachttype = new HashSet<PositionYachttype>();
             StaffPosition = new HashSet<StaffPosition>();
         }
@@ -25,10 +23,6 @@ namespace Project.Migrations
         [Column("salary", TypeName = "numeric")]
         public decimal Salary { get; set; }
 
-        [InverseProperty(nameof(PositionEquivalent.Position))]
-        public virtual ICollection<PositionEquivalent> PositionEquivalentPosition { get; set; }
-        [InverseProperty(nameof(PositionEquivalent.Positionequivalent))]
-        public virtual ICollection<PositionEquivalent> PositionEquivalentPositionequivalent { get; set; }
         [InverseProperty("Position")]
         public virtual ICollection<PositionYachttype> PositionYachttype { get; set; }
         [InverseProperty("Position")]

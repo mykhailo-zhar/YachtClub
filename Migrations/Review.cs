@@ -21,7 +21,7 @@ namespace Project.Migrations
         public int Clientid { get; set; }
         [Column("contractid")]
         public int Contractid { get; set; }
-        [Column("date", TypeName = "date")]
+        [Column("date")]
         public DateTime Date { get; set; }
         [Required]
         [Column("text")]
@@ -30,8 +30,8 @@ namespace Project.Migrations
         public int Rate { get; set; }
 
         [ForeignKey(nameof(Clientid))]
-        [InverseProperty("Review")]
-        public virtual Client Client { get; set; }
+        [InverseProperty(nameof(Person.Review))]
+        public virtual Person Client { get; set; }
         [ForeignKey(nameof(Contractid))]
         [InverseProperty("Review")]
         public virtual Contract Contract { get; set; }

@@ -14,6 +14,8 @@ namespace Project.Migrations
         [Key]
         [Column("yachttypeid")]
         public int Yachttypeid { get; set; }
+        [Column("count")]
+        public int Count { get; set; }
 
         [ForeignKey(nameof(Positionid))]
         [InverseProperty("PositionYachttype")]

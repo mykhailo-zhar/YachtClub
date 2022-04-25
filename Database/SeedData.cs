@@ -27,11 +27,11 @@ namespace Project.Database
 				dbContext.Database.ExecuteSqlRaw(@"
 drop table if exists 
   	Position, YachtType, ContractType, MaterialType, YachtLeaseType,
-  	Staff, Event, Client, Seller,
+  	Staff, Event, Client, Seller, Person,
 	Material, Yacht,
 	MaterialLease, YachtTest, Repair, ExtradationRequest, YachtLease,
 	Contract, Review,
-	Winner, Staff_Position, Yacht_Crew, Repair_Men, Review_Contract, Review_Yacht, Review_Captain, Position_YachtType, Position_Equivalent
+	Winner, Staff_Position, Yacht_Crew, Repair_Men, Review_Contract, Review_Yacht, Review_Captain, Position_YachtType, Position_Equivalent, HiredStaff
 Cascade;
 
 				");
@@ -133,25 +133,11 @@ CREATE TABLE Seller (
                 #endregion
 
                 #region Блок основных таблиц
-
 				#region Блок независимых таблиц
-                //Персонал
-                dbContext.Database.ExecuteSqlRaw(@"
-CREATE TABLE Staff (
-	ID     			serial     	NOT Null	Primary Key,
-	Name     		varchar   	NOT Null,
-	Surname     	varchar   	NOT Null,
-	BirthDate    	timestamp    	NOT Null	check(extract( year from age( cast(BirthDate  as timestamp))) >= 18),
-	Sex      	 	SEX     	NOT Null,  
-	Email			Mail		NOT Null	unique,
-	Phone			PhoneNumber	Not Null	unique,
-	HiringDate		timestamp		Not Null	check(BirthDate < HiringDate)	Default current_timestamp
-);
-				");
 
-				//Клиент
+				//Персона
 				dbContext.Database.ExecuteSqlRaw(@"
-CREATE TABLE Client(
+CREATE TABLE Person(
   	ID    			serial    	Not Null	Primary Key,
   	Name      		varchar    	Not Null,
   	Surname      	varchar    	Not Null,
@@ -177,20 +163,9 @@ CREATE TABLE Event(
 );
 				");
 
-                /*
-				YachtOwner - это тоже клиент, только у которого есть яхты
-				CREATE TABLE YachtOwner(
-					ID			serial		Not Null	Primary Key,
-					Name		varchar		Not Null,
-					Surname		varchar		Not Null,
-					BirthDate	timestamp		Not Null,
-					Email		Mail		Not Null	unique,
-					Phone		PhoneNumber	Not Null	unique,
-					Sex			Sex			Not Null
-				);
-				*/
                 #endregion
-
+					
+				
                 #region Блок зависимых таблиц
 
                 #region Поколение 1
@@ -199,7 +174,7 @@ CREATE TABLE Event(
 Create TABLE Staff_Position(
 	ID				serial		Not Null	Primary Key,
 	StaffID			int			Not Null
-	References 	Staff(ID)	
+	References 	Person(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 	
@@ -240,7 +215,7 @@ Create TABLE Yacht(
 	On Delete Cascade,
 	
 	YachtOwnerID	int			Not Null
-	References 	Client(ID)	
+	References 	Person(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 	
@@ -403,7 +378,7 @@ CREATE TABLE YachtLease(
 CREATE TABLE Contract(
 	ID				serial		Not Null	Primary Key,
 	ClientID		int			Not Null
-	References 	Client(ID)	
+	References 	Person(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 	
@@ -435,7 +410,7 @@ CREATE TABLE Contract(
 CREATE TABLE Review(
 	ID				serial		Not Null	Primary Key,
 	ClientID		int			Not Null
-	References 	Client(ID)	
+	References 	Person(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 	
@@ -476,23 +451,6 @@ CREATE TABLE Repair_Men(
 );
 				");
 
-/*				//Обзоры на контракт
-				dbContext.Database.ExecuteSqlRaw(@"
-CREATE TABLE Review_Contract(
-	ReviewID	int			Not Null
-	References 	Review(ID)	
-	On Update Cascade	
-	On Delete Cascade,
-
-	ContractID	int			Not Null
-	References 	Contract(ID)	
-	On Update Cascade	
-	On Delete Cascade,
-
-	Primary Key ( ReviewID, ContractID )
-);
-				");*/
-
 				//Обзоры на яхту
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Review_Yacht(
@@ -530,41 +488,40 @@ CREATE TABLE Review_Captain(
 				//Список должностей, обязательно присутствующих на яхте
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Position_YachtType(
-	PositionID	int			Not Null
+	PositionID	int		Not Null
 	References 	Position(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 
-	YachtTypeID	int				Not Null
+	YachtTypeID	int		Not Null
 	References 	YachtType(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 
+	Count		int		Not Null	check (Count > 0),
+
 	Primary Key ( PositionID, YachtTypeID )
 );
 				");
-				
-				//Эквиваленты должностей
+
+				//Наёмный персонал
 				dbContext.Database.ExecuteSqlRaw(@"
-CREATE TABLE Position_Equivalent(
-	PositionID				int				Not Null
-	References 	Position(ID)	
+CREATE TABLE HiredStaff(
+	Yacht_CrewID	int		Not Null
+	References  Yacht_Crew(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 
-	PositionEquivalentID	int				Not Null
-	References 	Position(ID)	
+	ClientID	int		Not Null
+	References 	Person(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 
-	Primary Key ( PositionID, PositionEquivalentID )
+	Primary Key ( Yacht_CrewID, ClientID)
 );
 				");
-
-
+				
 				#endregion
-
-
 
 				#endregion
 
@@ -703,7 +660,7 @@ values
 
 				//Персонал
 				dbContext.Database.ExecuteSqlRaw($@"
-insert into staff (name, surname, sex, BirthDate, HiringDate, email, phone)
+insert into Person (name, surname, sex, BirthDate, RegistryDate,email, phone)
 values 
 ('Tatiana'	, 	'Sparklovna'	, 'Female'	, '07-01-2001', '07-01-2019', 't.sparkle@gmail.com',	'+380982334566'	),
 ('Anatoliy'	, 	'Egorov'		, 'Male'	, '08-01-2001', '07-01-2019', 'a.gorov@gmail.com',		'+380432343566'	),
@@ -724,21 +681,15 @@ values
 ('Jim'		, 	'Morzhov'		, 'Male'	, '15-03-2001', '24-04-2019', 'dafasda@gmail.com',		'+380925557666'	),
 ('Lina'		, 	'Krest'			, 'Female'	, '10-01-2002',	'25-04-2019', 'na42221da@gmail.com',	'+380982376896' ),
 ('Denis'	, 	'Smirk'			, 'Male'	, '10-01-2002',	'26-04-2019', 'den123s2@gmail.com',		'+380981343565' );
-				");
 
-				//Покупатели
-				dbContext.Database.ExecuteSqlRaw($@"
-insert into client(name, surname, sex, birthdate, email, phone)
+insert into Person (name, surname, sex, BirthDate, RegistryDate, email, phone)
 values
-('Yachtclub', 	'',				'Other', 	'07-01-2019',		'yacht_club@gmail.com',  '+380983334590'	),
-('Alexei', 		'Britov', 		'Male', 	'02-03-1947', 		'a_brit@gmail.com',		 '+380986769990'	),
-('Melnik', 		'Baranov', 		'Male', 	'05-04-1967', 		'mebar@mail.ru',		 '+380986888990'	),
-('Dmitriy', 	'Bideshev', 	'Male', 	'15-01-1989', 		'biDeshev777@gmail.com', '+380986868990'	),
-('Gomel', 		'Bogdanov', 	'Male', 	'16-10-1963', 		'kosolov@gmail.com',	 '+380986765560'	),
-('Jamala', 		'Nebinarna', 	'Female', 	'23-09-1954', 		'j_4354@gmail.com',		 '+380986768991'	),
-('Tatiana'	, 	'Sparklovna', 	'Female', 	'07-01-2001', 		't.sparkle@gmail.com',	 '+380982334566'	),
-('Christina', 	'Hrizaleva',  	'Female',	'08-05-2001',	 	'chrysalis@gmail.com',	 '+380986766778'	),
-('Dimetrius', 	'Zhbanov',  	'Male',		'30-11-2000',	 	'd-zhb11@gmail.com',	 '+380943222990'	);
+('Yachtclub', 	'',				'Other', 	'07-01-2019',	'08-01-2019',	'yacht_club@gmail.com',  '+380983334590'	),
+('Alexei', 		'Britov', 		'Male', 	'02-03-1947', 	'08-01-2019',	'a_brit@gmail.com',		 '+380986769990'	),
+('Melnik', 		'Baranov', 		'Male', 	'05-04-1967', 	'08-01-2019',	'mebar@mail.ru',		 '+380986888990'	),
+('Dmitriy', 	'Bideshev', 	'Male', 	'15-01-1989', 	'08-01-2019',	'biDeshev777@gmail.com', '+380986868990'	),
+('Gomel', 		'Bogdanov', 	'Male', 	'16-10-1963', 	'08-01-2019',	'kosolov@gmail.com',	 '+380986765560'	),
+('Jamala', 		'Nebinarna', 	'Female', 	'23-09-1954', 	'08-01-2019',	'j_4354@gmail.com',		 '+380986768991'	);
 				");
 				
 				//События
@@ -882,15 +833,15 @@ values
 
 insert into Yacht(Name, Status, TypeId, YachtOwnerID)
 values
-('Alpha',			'Online',		1, 7),
-('Storm',			'Canceled',		1, 1),
-('Adelaida',		'Online',		4, 1),
-('Latnyk',			'Online',		5, 8),
-('Storm',			'Online',		7, 9),
-('Infernal Rage',	'Online',		4, 1),
-('Hello Kitty',		'Online',		5, 9),
-('Beda',			'Online',		4, 1),
-('Moby Dick',		'Online',		1, 8)
+('Alpha',			'Online',		1, 1),
+('Storm',			'Canceled',		1, 20),
+('Adelaida',		'Online',		4, 20),
+('Latnyk',			'Online',		5, 14),
+('Storm',			'Online',		7, 15),
+('Infernal Rage',	'Online',		4, 20),
+('Hello Kitty',		'Online',		5, 15),
+('Beda',			'Online',		4, 20),
+('Moby Dick',		'Online',		1, 14)
 ;
 				");
 				#endregion
@@ -1250,17 +1201,17 @@ values
 
 insert into Contract(Startdate, enddate, duration, status, specials, averallprice, ClientID, ContractTypeID, YachtWithCrewID)
 values 
-('10-02-2019','11-02-2019', '11-02-2019', 'Done', 'No specials', 1500.0, 1, 2, 3),
-('17-02-2019','17-02-2019', '17-02-2019', 'Done','No specials', 400.0, 2, 1, 4),
-('18-02-2019','18-03-2019', '18-03-2019', 'Done','Long journey', 120000.0, 3, 3, 5),
-('13-02-2019', '17-02-2019', '17-02-2019', 'Done', 'No specials', 8000.0, 4, 4, 4 ),
-('25-04-2019', '21-06-2019', '21-06-2019', 'Done', 'Long journey', 400000.0, 3, 6, 5),
-('07-01-2020', '21-02-2020', '21-02-2020', 'Done', 'Long journey', 350000.0, 3, 6, 5),
-('01-07-2020', '05-08-2020', '05-08-2020', 'Done', 'Long journey', 200000.0, 3, 5, 5),
-('09-05-2021', '09-05-2021', '09-05-2021', 'Done', 'No specials', 1000.0, 4, 7, 5),
-('09-10-2021', null, '10-10-2022', 'Done', 'Long journey', 5000, 3, 4, 3),
-('25-12-2021', null, '10-10-2022', 'Done', 'No specials', 2000, 4, 7, 4),
-('27-12-2021', null, '10-10-2022', 'Done', 'No specials', 5000, 5, 3, 5)
+('10-02-2019','11-02-2019', '11-02-2019', 'Done', 'No specials', 1500.0, 20, 2, 3),
+('17-02-2019','17-02-2019', '17-02-2019', 'Done','No specials', 400.0, 21, 1, 4),
+('18-02-2019','18-03-2019', '18-03-2019', 'Done','Long journey', 120000.0, 22, 3, 5),
+('13-02-2019', '17-02-2019', '17-02-2019', 'Done', 'No specials', 8000.0, 23, 4, 4 ),
+('25-04-2019', '21-06-2019', '21-06-2019', 'Done', 'Long journey', 400000.0, 22, 6, 5),
+('07-01-2020', '21-02-2020', '21-02-2020', 'Done', 'Long journey', 350000.0, 22, 6, 5),
+('01-07-2020', '05-08-2020', '05-08-2020', 'Done', 'Long journey', 200000.0, 22, 5, 5),
+('09-05-2021', '09-05-2021', '09-05-2021', 'Done', 'No specials', 1000.0, 26, 4, 5),
+('09-10-2021', null, '10-10-2022', 'Done', 'Long journey', 5000, 22, 4, 3),
+('25-12-2021', null, '10-10-2022', 'Done', 'No specials', 2000, 23, 7, 4),
+('27-12-2021', null, '10-10-2022', 'Done', 'No specials', 5000, 24, 3, 5)
 ;
 				");
 

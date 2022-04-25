@@ -11,7 +11,7 @@ namespace Project.Migrations
         [Key]
         [Column("id")]
         public int Id { get; set; }
-        [Column("date", TypeName = "date")]
+        [Column("date")]
         public DateTime Date { get; set; }
         [Required]
         [Column("results")]

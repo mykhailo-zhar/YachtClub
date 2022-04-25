@@ -11,15 +11,15 @@ namespace Project.Migrations
         [Key]
         [Column("id")]
         public int Id { get; set; }
-        [Required]
-        [Column("startdate", TypeName = "date")]
+        [Column("startdate")]
         public DateTime Startdate { get; set; }
-        [Column("enddate", TypeName = "date")]
+        [Column("enddate")]
         public DateTime? Enddate { get; set; }
-        [Column("duration", TypeName = "date")]
+        [Column("duration")]
         public DateTime Duration { get; set; }
         [Column("overallprice", TypeName = "numeric")]
         public decimal Overallprice { get; set; }
+        [Required]
         [Column("specials")]
         public string Specials { get; set; }
         [Column("yachtid")]

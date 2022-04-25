@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Linq;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-
-using Project.Models;
 
 namespace Project.Migrations
 {
@@ -20,25 +16,24 @@ namespace Project.Migrations
         }
 
         public virtual DbSet<Availableresources> Availableresources { get; set; }
-        public virtual DbSet<RepairStaff> RepairStaff { get; set; }
-        public virtual DbSet<Client> Client { get; set; }
         public virtual DbSet<Contract> Contract { get; set; }
         public virtual DbSet<Contracttype> Contracttype { get; set; }
         public virtual DbSet<Event> Event { get; set; }
         public virtual DbSet<Extradationrequest> Extradationrequest { get; set; }
+        public virtual DbSet<Hiredstaff> Hiredstaff { get; set; }
         public virtual DbSet<Material> Material { get; set; }
         public virtual DbSet<Materiallease> Materiallease { get; set; }
         public virtual DbSet<Materialtype> Materialtype { get; set; }
+        public virtual DbSet<Person> Person { get; set; }
         public virtual DbSet<Position> Position { get; set; }
-        public virtual DbSet<PositionEquivalent> PositionEquivalent { get; set; }
         public virtual DbSet<PositionYachttype> PositionYachttype { get; set; }
         public virtual DbSet<Repair> Repair { get; set; }
-        public virtual DbSet<RepairMen> RepairMen { get; set; }
+        public virtual DbSet<RepairMen1> RepairMen1 { get; set; }
+        public virtual DbSet<Repairmen> Repairmen { get; set; }
         public virtual DbSet<Review> Review { get; set; }
         public virtual DbSet<ReviewCaptain> ReviewCaptain { get; set; }
         public virtual DbSet<ReviewYacht> ReviewYacht { get; set; }
         public virtual DbSet<Seller> Seller { get; set; }
-        public virtual DbSet<Staff> Staff { get; set; }
         public virtual DbSet<StaffPosition> StaffPosition { get; set; }
         public virtual DbSet<Winner> Winner { get; set; }
         public virtual DbSet<Yacht> Yacht { get; set; }
@@ -62,22 +57,6 @@ namespace Project.Migrations
             modelBuilder.Entity<Availableresources>(entity =>
             {
                 entity.HasNoKey();
-            });
-            
-            modelBuilder.Entity<RepairStaff>(entity =>
-            {
-                entity.HasNoKey();
-            });
-
-            modelBuilder.Entity<Client>(entity =>
-            {
-                entity.HasIndex(e => e.Email)
-                    .HasName("client_email_key")
-                    .IsUnique();
-
-                entity.HasIndex(e => e.Phone)
-                    .HasName("client_phone_key")
-                    .IsUnique();
             });
 
             modelBuilder.Entity<Contract>(entity =>
@@ -134,6 +113,22 @@ namespace Project.Migrations
                     .HasConstraintName("extradationrequest_staffid_fkey");
             });
 
+            modelBuilder.Entity<Hiredstaff>(entity =>
+            {
+                entity.HasKey(e => new { e.YachtCrewid, e.Clientid })
+                    .HasName("hiredstaff_pkey");
+
+                entity.HasOne(d => d.Client)
+                    .WithMany(p => p.Hiredstaff)
+                    .HasForeignKey(d => d.Clientid)
+                    .HasConstraintName("hiredstaff_clientid_fkey");
+
+                entity.HasOne(d => d.YachtCrew)
+                    .WithMany(p => p.Hiredstaff)
+                    .HasForeignKey(d => d.YachtCrewid)
+                    .HasConstraintName("hiredstaff_yacht_crewid_fkey");
+            });
+
             modelBuilder.Entity<Material>(entity =>
             {
                 entity.HasIndex(e => e.Name)
@@ -165,8 +160,20 @@ namespace Project.Migrations
                     .HasName("materialtype_name_key")
                     .IsUnique();
 
-                entity.Property(e => e.Description)
-                .HasDefaultValueSql("' '::text");
+                entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
+            });
+
+            modelBuilder.Entity<Person>(entity =>
+            {
+                entity.HasIndex(e => e.Email)
+                    .HasName("person_email_key")
+                    .IsUnique();
+
+                entity.HasIndex(e => e.Phone)
+                    .HasName("person_phone_key")
+                    .IsUnique();
+
+                entity.Property(e => e.Registrydate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
             modelBuilder.Entity<Position>(entity =>
@@ -174,22 +181,6 @@ namespace Project.Migrations
                 entity.HasIndex(e => e.Name)
                     .HasName("position_name_key")
                     .IsUnique();
-            });
-
-            modelBuilder.Entity<PositionEquivalent>(entity =>
-            {
-                entity.HasKey(e => new { e.Positionid, e.Positionequivalentid })
-                    .HasName("position_equivalent_pkey");
-
-                entity.HasOne(d => d.Positionequivalent)
-                    .WithMany(p => p.PositionEquivalentPositionequivalent)
-                    .HasForeignKey(d => d.Positionequivalentid)
-                    .HasConstraintName("position_equivalent_positionequivalentid_fkey");
-
-                entity.HasOne(d => d.Position)
-                    .WithMany(p => p.PositionEquivalentPosition)
-                    .HasForeignKey(d => d.Positionid)
-                    .HasConstraintName("position_equivalent_positionid_fkey");
             });
 
             modelBuilder.Entity<PositionYachttype>(entity =>
@@ -210,6 +201,8 @@ namespace Project.Migrations
 
             modelBuilder.Entity<Repair>(entity =>
             {
+                entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
+
                 entity.Property(e => e.Personnel).HasDefaultValueSql("1");
 
                 entity.Property(e => e.Status).HasDefaultValueSql("'New'::character varying");
@@ -218,26 +211,28 @@ namespace Project.Migrations
                     .WithMany(p => p.Repair)
                     .HasForeignKey(d => d.Yachtid)
                     .HasConstraintName("repair_yachtid_fkey");
-
-                entity.Property(e => e.Description)
-               .HasDefaultValueSql("' '::text");
             });
 
-            modelBuilder.Entity<RepairMen>(entity =>
+            modelBuilder.Entity<RepairMen1>(entity =>
             {
                 entity.HasIndex(e => new { e.Repairid, e.Staffid })
-                  .HasName("repair_men_repairid_staffid_key")
-                  .IsUnique();
+                    .HasName("repair_men_repairid_staffid_key")
+                    .IsUnique();
 
                 entity.HasOne(d => d.Repair)
-                    .WithMany(p => p.RepairMen)
+                    .WithMany(p => p.RepairMen1)
                     .HasForeignKey(d => d.Repairid)
                     .HasConstraintName("repair_men_repairid_fkey");
 
                 entity.HasOne(d => d.Staff)
-                    .WithMany(p => p.RepairMen)
+                    .WithMany(p => p.RepairMen1)
                     .HasForeignKey(d => d.Staffid)
                     .HasConstraintName("repair_men_staffid_fkey");
+            });
+
+            modelBuilder.Entity<Repairmen>(entity =>
+            {
+                entity.HasNoKey();
             });
 
             modelBuilder.Entity<Review>(entity =>
@@ -294,17 +289,6 @@ namespace Project.Migrations
                 entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
             });
 
-            modelBuilder.Entity<Staff>(entity =>
-            {
-                entity.HasIndex(e => e.Email)
-                    .HasName("staff_email_key")
-                    .IsUnique();
-
-                entity.HasIndex(e => e.Phone)
-                    .HasName("staff_phone_key")
-                    .IsUnique();
-            });
-
             modelBuilder.Entity<StaffPosition>(entity =>
             {
                 entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
@@ -342,6 +326,8 @@ namespace Project.Migrations
                     .HasName("yacht_name_typeid_key")
                     .IsUnique();
 
+                entity.Property(e => e.Registrydate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                 entity.Property(e => e.Rentable).HasDefaultValueSql("true");
 
                 entity.HasOne(d => d.Type)
@@ -372,6 +358,8 @@ namespace Project.Migrations
 
             modelBuilder.Entity<Yachtlease>(entity =>
             {
+                entity.Property(e => e.Specials).HasDefaultValueSql("' '::text");
+
                 entity.HasOne(d => d.Yacht)
                     .WithMany(p => p.Yachtlease)
                     .HasForeignKey(d => d.Yachtid)
@@ -381,9 +369,6 @@ namespace Project.Migrations
                     .WithMany(p => p.Yachtlease)
                     .HasForeignKey(d => d.Yachtleasetypeid)
                     .HasConstraintName("yachtlease_yachtleasetypeid_fkey");
-
-                entity.Property(e => e.Specials)
-               .HasDefaultValueSql("' '::text");
             });
 
             modelBuilder.Entity<Yachtleasetype>(entity =>
@@ -392,8 +377,7 @@ namespace Project.Migrations
                     .HasName("yachtleasetype_name_key")
                     .IsUnique();
 
-                entity.Property(e => e.Description)
-                .HasDefaultValueSql("' '::text");
+                entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
             });
 
             modelBuilder.Entity<Yachttest>(entity =>
@@ -407,9 +391,6 @@ namespace Project.Migrations
                     .WithMany(p => p.Yachttest)
                     .HasForeignKey(d => d.Yachtid)
                     .HasConstraintName("yachttest_yachtid_fkey");
-
-                entity.Property(e => e.Results)
-               .HasDefaultValueSql("' '::text");
             });
 
             modelBuilder.Entity<Yachttype>(entity =>
