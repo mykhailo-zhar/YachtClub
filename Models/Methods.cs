@@ -28,6 +28,9 @@ namespace Project.Models
             return IsStr(metric) ? $"{metric}" : "";
         }
 
+        public static string PersonEmail(Person person) => $"{person.Name} {person.Surname} {person.Email}";
+        public static string PersonPhone(Person person) => $"{person.Name} {person.Surname} {person.Phone}";
+
         public static string YesNo(bool Bool) => Bool ? "Да" : "Нет";
 
         public static string CoalesceString(string str) => IsStr(str) ? str : string.Empty;

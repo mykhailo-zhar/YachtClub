@@ -125,7 +125,7 @@ namespace Project.Controllers
 
                 if (Repair.Option[0]) {
                     Repair.Object.Enddate = DateTime.Now;
-                    Repair.Object.Status = "Завершен";
+                    Repair.Object.Status = "Done";
                 }
                 Repair.Object.Description = Methods.CoalesceString(Repair.Object.Description);
                 Context.Repair.Update(Repair.Object);
@@ -151,6 +151,8 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
+                Repair.Object.Startdate = default;
+                Repair.Object.Status = default;
                 Repair.Object.Description = Methods.CoalesceString(Repair.Object.Description);
                 Context.Repair.Add(Repair.Object);
                 await Context.SaveChangesAsync();
@@ -243,5 +245,104 @@ namespace Project.Controllers
         }
 
         #endregion
+
+        #region Extradationrequest
+        public IActionResult Extradationrequest()
+        {
+            var Extradationrequest = Context.Extradationrequest
+                .Include(p => p.Staff)
+                    .ThenInclude(p => p.Staff)
+                .Include(p => p.MaterialNavigation)
+                    .ThenInclude(p => p.Type)
+                .OrderBy(p => p.Id);
+            return View(Extradationrequest);
+        }
+
+        public IActionResult DetailsExtradationrequest(string id)
+        {
+            var Extradationrequest = Context.Extradationrequest.First(p => p.Id == int.Parse(id));
+            return View("_Details", new DetailsViewModel
+            {
+                Description = Extradationrequest.Description,
+                ButtonsViewModel = new EditorBottomButtonsViewModel
+                {
+                    BackAction = typeof(Extradationrequest).Name
+                }
+            });
+        }
+
+        private IActionResult LocalEditExtradationrequest(string id, Extradationrequest Extradationrequest = null)
+        {
+            Extradationrequest = Extradationrequest ?? Context.Extradationrequest
+               .Include(p => p.Staff)
+                    .ThenInclude(p => p.Staff)
+                .Include(p => p.MaterialNavigation)
+                    .ThenInclude(p => p.Type)
+               .First(p => p.Id == int.Parse(id));
+
+            ViewData["StaffPosition"] = Context.RepairStaff.Include(p => p.Staff).ToList();
+            ViewData["Material"] = Context.Material.Include(p => p.Type).ToList();
+            var Model = ObjectViewModelFactory<Extradationrequest>.Edit(Extradationrequest);
+            return View("ExtradationrequestEditor", Model);
+        }
+
+        public IActionResult EditExtradationrequest(string id) => LocalEditExtradationrequest(id);
+
+        [HttpPost]
+        public async Task<IActionResult> EditExtradationrequest([FromForm] ObjectViewModel<Extradationrequest> Extradationrequest)
+        {
+            if (ModelState.IsValid)
+            {
+                Extradationrequest.Object.Description = Methods.CoalesceString(Extradationrequest.Object.Description);
+                Context.Extradationrequest.Update(Extradationrequest.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Extradationrequest));
+            }
+
+            return LocalEditExtradationrequest($"{Extradationrequest.Object.Id}", Extradationrequest.Object);
+        }
+
+        private IActionResult LocalCreateExtradationrequest(Extradationrequest Extradationrequest = null)
+        {
+            Extradationrequest = Extradationrequest ?? new Extradationrequest();
+            ViewData["StaffPosition"] = Context.RepairStaff.Include(p => p.Staff).ToList();
+            ViewData["Repair"] = Context.Repair.ToList();
+            ViewData["Material"] = Context.Material.Include(p => p.Type).ToList();
+            var Model = ObjectViewModelFactory<Extradationrequest>.Create(Extradationrequest);
+            return View("ExtradationrequestEditor", Model);
+        }
+
+        public IActionResult CreateExtradationrequest() => LocalCreateExtradationrequest(null);
+
+        [HttpPost]
+        public async Task<IActionResult> CreateExtradationrequest([FromForm] ObjectViewModel<Extradationrequest> Extradationrequest)
+        {
+            if (ModelState.IsValid)
+            {
+                if (Extradationrequest.Option[0]) Extradationrequest.Object.Status = "Done";
+                Extradationrequest.Object.Startdate = DateTime.Now;
+                Context.Extradationrequest.Add(Extradationrequest.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Extradationrequest));
+            }
+            return LocalCreateExtradationrequest(Extradationrequest.Object);
+        }
+        public IActionResult DeleteExtradationrequest(string id)
+        {
+            var Extradationrequest = Context.Extradationrequest
+                .First(p => p.Id == int.Parse(id));
+            return View("ExtradationrequestEditor", ObjectViewModelFactory<Extradationrequest>.Delete(Extradationrequest));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteExtradationrequest([FromForm] ObjectViewModel<Extradationrequest> Extradationrequest)
+        {
+            Context.Extradationrequest.Remove(Extradationrequest.Object);
+            await Context.SaveChangesAsync();
+            return RedirectToAction(nameof(Extradationrequest));
+
+        }
+        #endregion
+
     }
 }

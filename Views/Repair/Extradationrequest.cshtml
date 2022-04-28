@@ -1,0 +1,98 @@
+﻿@model IEnumerable<Extradationrequest>
+
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <td>
+                ID
+            </td>
+            <td>
+                Количество материала
+            </td>
+            <td>
+                Материал
+            </td>
+             <td>
+                Статус
+            </td>
+            <td>
+                Сотрудник
+            </td>
+            <td>
+                Номер ремонта
+            </td>
+            <td>
+                Дата формирования выдачи
+            </td>
+            <td>
+                Дата фактической выдачи
+            </td>
+            <td>
+                Ориентировочная дата выдачи
+            </td>
+            <td colspan="3"></td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sp in Model)
+        {
+            <tr class="text-black btn-area-3">
+                <td>
+                    @sp.Id
+                </td>
+                <td>
+                    @sp.Count @Methods.Metric(sp.MaterialNavigation)
+                </td>
+                <td>
+                    @sp.MaterialNavigation.Name
+                </td>
+                <td>
+                    @sp.Status
+                </td>
+                <td>
+                    @Methods.PersonEmail(sp.Staff.Staff)
+                </td>
+                <td>
+                    @sp.Repairid
+                </td>
+                <td>
+                    @sp.Startdate
+                </td>
+                <td>
+                    @Methods.CoalesceDateTime(sp.Enddate)
+                </td>
+                <td>
+                    @sp.Duration
+                </td>
+                 <td align="center">
+                        @if (!Methods.IsStr(sp.Description))
+                        {
+                            <a class="btn btn-secondary"> Детали </a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-primary" asp-action="DetailsExtradationrequest" asp-route-id="@sp.Id"> Детали </a>
+                        }
+                    </td>
+                    <td align="center">
+                        <a class="btn btn-info" asp-action="EditExtradationrequest" asp-route-id="@sp.Id"> Изменить </a>
+                    </td>
+                    <td align="center">
+                        <a class="btn btn-danger" asp-action="DeleteExtradationrequest" asp-route-id="@sp.Id">Удалить</a>
+                    </td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+             <td colspan="10" align="center">
+                    <a asp-action="CreateExtradationrequest" class="btn btn-primary">
+                        <div style="width: 50vw;">
+                            Создать
+                        </div>
+                    </a>
+                </td>
+        </tr>
+    </tfoot>
+</table>
+

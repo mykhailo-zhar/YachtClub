@@ -20,8 +20,11 @@ namespace Project.Database
 
 				//Удаление триггеров 
 				dbContext.Database.ExecuteSqlRaw(@"
-					-- Триггер на нехватку материалов
-					drop function if exists ER1() CASCADE;
+					drop function if exists ER1(), ER2(), ER3(), ER4(),
+											REP1(), REP2(),
+											P1(),
+											SP1()
+					CASCADE;
 				");
 
 				//Удаление таблиц
@@ -142,11 +145,11 @@ CREATE TABLE Person(
   	ID    			serial    	Not Null	Primary Key,
   	Name      		varchar    	Not Null,
   	Surname      	varchar    	Not Null,
-  	BirthDate    	timestamp   Not Null,
+  	BirthDate    	timestamp(2)   Not Null,
 	Sex				Sex			Not Null,	
   	Email      		Mail    	Not Null	unique,
 	Phone			PhoneNumber	Not Null	unique,
-	RegistryDate	timestamp	Not Null	check(BirthDate < RegistryDate)	Default current_timestamp
+	RegistryDate	timestamp(2)	Not Null	check(BirthDate < RegistryDate)	Default current_timestamp
 );
 				");
 
@@ -155,9 +158,9 @@ CREATE TABLE Person(
 CREATE TABLE Event(
 	ID			serial		Not Null	Primary Key,
 	Name		varchar		Not Null,
-	StartDate	timestamp		Not Null,
-	EndDate		timestamp		check(StartDate <= EndDate ),
-	Duration	timestamp		Not Null	check(StartDate <= Duration),
+	StartDate	timestamp(2)		Not Null,
+	EndDate		timestamp(2)		check(StartDate <= EndDate ),
+	Duration	timestamp(2)		Not Null	check(StartDate <= Duration),
 	Status		varchar		Not Null	Default 'Created',
 
 	unique(Name,StartDate)
@@ -183,8 +186,9 @@ Create TABLE Staff_Position(
 	References 	Position(ID)	
 	On Update Cascade	
 	On Delete Cascade,
-	StartDate		timestamp		Not Null,
-	EndDate			timestamp		check(StartDate <= EndDate),
+	StartDate		timestamp(2)		Not Null,
+	EndDate			timestamp(2)		check(StartDate <= EndDate),
+	Salary        	My_Money,
 	Description		Text		Default ' '
 );
 				");
@@ -209,7 +213,7 @@ Create TABLE Yacht(
 	Name				varchar		Not Null,
 	Status				varchar		Not Null,
 	Rentable			bool		Not Null	Default TRUE,
-	Registrydate		timestamp	Not Null	Default current_timestamp,
+	Registrydate		timestamp(2)	Not Null	Default current_timestamp,
 	TypeID				int			Not Null
 	References 	YachtType(ID)	
 	On Update Cascade	
@@ -243,8 +247,8 @@ CREATE TABLE MaterialLease(
 	PricePerUnit			My_Money	Not Null,
 	Count 					int			Not Null	check(Count > 0),
 	OverallPrice			My_Money	Not Null	check(OverallPrice = Count * PricePerUnit),
-	StartDate				timestamp		Not Null,
-	DeliveryDate			timestamp		check(StartDate <= DeliveryDate)
+	StartDate				timestamp(2)		Not Null,
+	DeliveryDate			timestamp(2)		check(StartDate <= DeliveryDate)
 );
 				");
 
@@ -252,7 +256,7 @@ CREATE TABLE MaterialLease(
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtTest(
 	ID			serial		Not Null	Primary Key,
-	Date		timestamp		Not Null,
+	Date		timestamp(2)		Not Null,
 	Results		text		Not Null,
 	YachtID		int			Not Null
 	References 	Yacht(ID)	
@@ -269,14 +273,14 @@ CREATE TABLE YachtTest(
 				//Ремонт
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Repair(
-	ID			serial		Not Null	Primary Key,
-	StartDate	timestamp		Not Null,
-	EndDate		timestamp		check(StartDate <= EndDate ),
-	Duration	timestamp		Not Null	check(StartDate <= Duration),
-	Status		varchar		Not Null	Default 'New',
-	Personnel	int			Not Null	check(Personnel > 0)	Default 1,
-	Description	text		Not Null	Default ' ',
-	YachtID		int			Not Null
+	ID			serial			Not Null	Primary Key,
+	StartDate	timestamp(2)		Not Null	Default current_timestamp,
+	EndDate		timestamp(2)		check(StartDate <= EndDate )	Default null,
+	Duration	timestamp(2)		Not Null	check(StartDate <= Duration)	Default current_timestamp,
+	Status		varchar			Not Null	check(Status in ('Created','Waits', 'Canceled', 'In Progress','Done'))	Default 'Created',
+	Personnel	int				Not Null	check(Personnel > 0)	Default 1,
+	Description	text			Not Null	Default ' ',
+	YachtID		int				Not Null
 	References 	Yacht(ID)	
 	On Update Cascade	
 	On Delete Cascade
@@ -297,8 +301,8 @@ CREATE TABLE Yacht_Crew(
 	On Update Cascade	
 	On Delete Cascade,
 	
-	StartDate	timestamp		Not Null,
-	EndDate		timestamp		check(StartDate <= EndDate),
+	StartDate	timestamp(2)		Not Null,
+	EndDate		timestamp(2)		check(StartDate <= EndDate),
 	Description text		Default ' '
 );
 				");
@@ -342,9 +346,10 @@ CREATE TABLE ExtradationRequest(
 	On Update Cascade	
 	On Delete Cascade,
 	
-	StartDate	timestamp		Not Null,
-	EndDate		timestamp		check(StartDate <= EndDate),
-	Duration	timestamp		Not Null	check(StartDate <= Duration),
+	StartDate	timestamp(2)		Not Null,
+	EndDate		timestamp(2)		check(StartDate <= EndDate),
+	Duration	timestamp(2)		Not Null	check(StartDate <= Duration),
+	Description text			Not Null	Default ' ',
 	Status		varchar			Not Null	check(Status in ('Created', 'Canceled', 'Waits', 'Done'))
 );
 				");
@@ -353,9 +358,9 @@ CREATE TABLE ExtradationRequest(
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtLease(
 	ID				serial			Not Null	Primary Key,
-	StartDate		timestamp		Not Null,
-	EndDate			timestamp		check(StartDate <= EndDate ),
-	Duration		timestamp		Not Null	check(StartDate <= Duration),
+	StartDate		timestamp(2)		Not Null,
+	EndDate			timestamp(2)		check(StartDate <= EndDate ),
+	Duration		timestamp(2)		Not Null	check(StartDate <= Duration),
 	OverallPrice	My_Money		Not Null,
 	Specials		text			Not Null	Default ' ',
 	YachtID			int				Not Null
@@ -393,9 +398,9 @@ CREATE TABLE Contract(
 	On Update Cascade	
 	On Delete Cascade,
 
-	StartDate		timestamp		Not Null,
-	EndDate			timestamp		check(StartDate <= EndDate ),
-	Duration		timestamp		Not Null	check(StartDate <= Duration),
+	StartDate		timestamp(2)		Not Null,
+	EndDate			timestamp(2)		check(StartDate <= EndDate ),
+	Duration		timestamp(2)		Not Null	check(StartDate <= Duration),
 	Specials		text		Not Null,
 	Status			varchar		Not Null,
 	AverallPrice	My_Money	Not Null
@@ -420,7 +425,7 @@ CREATE TABLE Review(
 	On Update Cascade	
 	On Delete Cascade,
 	
-	Date			timestamp		Not Null,
+	Date			timestamp(2)		Not Null,
 	Text			text		Not Null,
 	Rate			int 		Not Null 	check(Rate > 0 AND Rate <= 5)
 );
@@ -525,118 +530,9 @@ CREATE TABLE HiredStaff(
 				#endregion
 
 				#endregion
+			}
 
-				#region Функции и процедурки
-				//Доступные материалы
-				dbContext.Database.ExecuteSqlRaw(@"
-create or replace function MaterialMetric(
-	material_id bigint,
-	count decimal
-)
-	returns varchar
-as $$
-declare 
-	rec RECORD;
-begin 
-	select count, m.metric m1, t.metric m2 into rec
-	from material as m join materialtype as t on m.typeid = t.id
-	where m.id = material_id and m.id = material_id;
-	
-	if(rec.m1 ~ '^[\t\n\r\f\v]*$' or rec.m1 is null) then
-		if(rec.m2 ~ '^[\t\n\r\f\v]*$' or rec.m2 is null) then
-			return rec.count || '';
-		else
-			return rec.count || ' ' || rec.m2;
-		end if;
-	else
-		return rec.count || ' ' || rec.m1;
-	end if;
-end;
-$$ language plpgsql;	
-				");
-				#endregion
-
-				#region Views
-				//Доступные материалы
-				dbContext.Database.ExecuteSqlRaw(@"
-create or replace view AvailableResources as (
-with mlcount as(
-select  ml.material, sum(ml.count) count from 
-materiallease as ml
-where ml.deliverydate is not null
-group by ml.material order by ml.material
-),
-ercount as (
-select  er.material, sum(er.count) count from 
-extradationrequest as er
-where er.enddate is not null and Status = 'Done'
-group by er.material order by er.material
-),
-counter as
-(
-select m.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcount as m left join ercount as e on m.material = e.material
-union
-select e.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcount as m right join ercount as e on m.material = e.material
-)
-select distinct m.id material, coalesce(ar.count, 0) count, materialmetric(m.id, coalesce(ar.count, 0)) format  from 
-	material as m left join counter as ar on m.id = ar.material
-	order by m.id
-);
-				");
-
-				//Товарищи ремонтники
-				dbContext.Database.ExecuteSqlRaw(@"
-Create or replace view Repair_Staff as (
-select sp.id, sp.staffid, sp.positionid, sp.startdate, sp.enddate, sp.description from
-staff_position as sp join position as p on sp.positionid = p.id 
-where p.name = 'Repairman' and sp.enddate is null
-	);
-");
-				//Персонал
-				dbContext.Database.ExecuteSqlRaw(@"
-Create or replace View Staff as (
-	select * from person as p
-	where p.id in (
-		select p1.id from
-		person as p1 join staff_position as sp on p1.id = sp.staffid
-	)
-);
-
-");
-
-
-
-                #endregion
-
-				#region Triggers
-				//Триггер на выдачу материалов при нехватке
-				dbContext.Database.ExecuteSqlRaw(@"
-create or replace function ER1()
-	returns trigger
-as $$
-begin 
-	if ( exists 
-				 (
-					 select * from availableresources as ar
-					 where New.material = ar.material and ar.count - New.count < 0 and New.Status = 'Done'
-				 )
-				) 
-	then raise exception 'Не хватает материалов при попытке выдачи #%', New.ID;
-	end if;
-	return new;
-end;
-$$ language plpgsql;	
-
-create trigger ExtradationAvailableMaterials
-Before insert or update on ExtradationRequest 
-for each row execute function ER1();
-				");
-
-
-                #endregion
-            }
-
-            #endregion
+			#endregion
         }
 		public static void SeedWithData(DataContext dbContext, bool Force = false)
         {
@@ -1079,12 +975,12 @@ values
                 dbContext.Database.ExecuteSqlRaw($@"
 insert into Repair(startdate, enddate, duration, status, personnel, yachtid)
 values
-('17-01-2019', '19-04-2019',	'19-04-2019',	'Cancel',	3, 2),
-('19-04-2019', '25-04-2019',	'25-04-2019',	'Cancel',	3, 2),
-('21-06-2019', '24-07-2019',	'24-07-2019',	'Ended',	3, 3),
-('21-06-2019', '23-07-2019',	'23-07-2019',	'Ended',	3, 5),
-('12-10-2021', null,	'14-01-2022',	'Waiting for materials',	3,	3),
-('10-10-2021', null,	'14-01-2022',	'Waiting for materials',	3,	6)
+('17-01-2019', '19-04-2019',	'19-04-2019',	'Canceled',	3, 2),
+('19-04-2019', '25-04-2019',	'25-04-2019',	'Canceled',	3, 2),
+('21-06-2019', '24-07-2019',	'24-07-2019',	'Done',	3, 3),
+('21-06-2019', '23-07-2019',	'23-07-2019',	'Done',	3, 5),
+('12-10-2021', null,	'14-01-2022',	'Waits',	3,	3),
+('10-10-2021', null,	'14-01-2022',	'Waits',	3,	6)
 ;
 				");
 				
@@ -1305,5 +1201,419 @@ values
 
 			}
         }
+
+		public static void SeedWithProcedure(DataContext dbContext )
+        {
+			#region Функции и процедурки
+			//Доступные материалы
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function MaterialMetric(
+	material_id bigint,
+	count decimal
+)
+	returns varchar
+as $$
+declare 
+	rec RECORD;
+begin 
+	select count, m.metric m1, t.metric m2 into rec
+	from material as m join materialtype as t on m.typeid = t.id
+	where m.id = material_id and m.id = material_id;
+	
+	if(rec.m1 ~ '^[\t\n\r\f\v]*$' or rec.m1 is null) then
+		if(rec.m2 ~ '^[\t\n\r\f\v]*$' or rec.m2 is null) then
+			return rec.count || '';
+		else
+			return rec.count || ' ' || rec.m2;
+		end if;
+	else
+		return rec.count || ' ' || rec.m1;
+	end if;
+end;
+$$ language plpgsql;	
+				");
+			//Проверка статусов заявок ремонта
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function CHECK_ER_FOR_REPS(
+closed boolean,
+repair_id int
+)
+returns boolean
+as $$
+begin 
+	if(closed) then
+		return not ( select count(er.id) from extradationrequest as er where er.repairid = repair_id) = 
+		( select count(id) from extradationrequest as er where er.repairid = repair_id and (er.status in ('Canceled', 'Done')));
+	else 
+		return exists ( select * from extradationrequest as er where er.repairid = repair_id and er.status not in ('Canceled', 'Done'));
+	end if;
+end;
+$$ language plpgsql;
+				");
+			//Действующие сотрудники
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE or replace Function StaffPositionListByPositionList (pos varchar[])
+	Returns Table (staffid int)
+as $$
+Begin
+	Return query 
+		Select sf.id staffid from staff_position sf join position p on p.id = sf.positionid
+		where p.name in (select unnest(pos)) and sf.enddate is null;
+	
+END;
+$$ language plpgsql;
+
+CREATE or replace Function StaffPositionListByPosition (pos varchar)
+	Returns Table (staffid int)
+as $$
+Begin
+	Return query select StaffPositionListByPositionList(Array[pos]);
+END;
+$$ language plpgsql;
+				");
+
+
+			#endregion
+
+			#region Views
+			//Доступные материалы
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace view AvailableResources as (
+with mlcount as(
+select  ml.material, sum(ml.count) count from 
+materiallease as ml
+where ml.deliverydate is not null
+group by ml.material order by ml.material
+),
+ercount as (
+select  er.material, sum(er.count) count from 
+extradationrequest as er
+where er.enddate is not null and Status = 'Done'
+group by er.material order by er.material
+),
+counter as
+(
+select m.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcount as m left join ercount as e on m.material = e.material
+union
+select e.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcount as m right join ercount as e on m.material = e.material
+)
+select distinct m.id material, coalesce(ar.count, 0) count, materialmetric(m.id, coalesce(ar.count, 0)) format  from 
+	material as m left join counter as ar on m.id = ar.material
+	order by m.id
+);
+				");
+
+			//Товарищи ремонтники
+			dbContext.Database.ExecuteSqlRaw(@"
+Create or replace view Repair_Staff as (
+select sp.id, sp.staffid, sp.positionid, sp.startdate, sp.enddate, sp.description from
+staff_position as sp join position as p on sp.positionid = p.id 
+where sp.id in (select StaffPositionListByPosition('Repairman'))
+	);
+");
+
+			//Персонал
+			dbContext.Database.ExecuteSqlRaw(@"
+Create or replace View Staff as (
+		select * from person where id in (
+		select distinct sp.staffid from
+		staff_position as sp
+		)
+);
+
+");
+
+			#endregion
+
+			#region Triggers
+
+			#region ExtradationRequest
+
+			//Триггер проверки завершённых заявок
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ER1()
+	returns trigger
+as $$
+declare
+	rec RECORD;
+begin 	
+		IF (TG_OP = 'UPDATE') THEN 
+			if(old.status in ('Canceled','Done')) then 
+				raise exception 'Попытка изменения закрытой заявки';			
+			end if;
+			rec := new;
+			rec.duration := old.duration;
+			rec.enddate := old.enddate;
+			rec.personnel := old.personnel;
+			rec.description := old.description;
+			rec.status := old.status;
+			if(rec <> old) then raise exception 'Изменены запрещенные поля';
+			end if;
+			if(new.personnel < old.personnel) then raise exception 'Количество персонала занимающегося ремонтом может только увеличиваться';
+			end if;
+			return new;
+        ELSIF (TG_OP = 'INSERT') then
+			New.startdate = current_timestamp;
+			if( new.duration < current_timestamp or new.duration is null) then new.duration = current_timestamp; end if;
+			New.enddate = null;
+			New.Status = 'Created';
+            RETURN NEW;
+		ELSIF (TG_OP = 'DELETE') THEN
+			if(old.status in ('Done')) then 
+				raise exception 'Попытка удаления закрытой заявки';			
+			end if;
+			return old;
+        END IF;
+		return new;
+end;
+$$ language plpgsql;	
+
+create trigger ReadonlyConstraint
+Before insert or update or delete on ExtradationRequest 
+for each row execute function ER1();
+				");
+			//Закрывать заявку, в случае если статус в Отменённых или Выполненных
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ER2()
+	returns trigger
+as $$
+begin 
+	if (new.Status = 'Created' ) then 
+		new.Status = 'Waits';
+	end if;
+	if (not exists (select * from repair_men rm where new.Staffid = rm.staffid and rm.repairid = new.repairid) ) then
+		raise exception 'От имени данного сотрудника нельзя добавить или изменить заявку';
+	end if;
+
+	if(new.status in ('Canceled','Done') and new.enddate is null) then
+		new.enddate = current_timestamp;			
+	elsif(new.status not in ('Canceled','Done') and new.enddate is not null) then
+		new.enddate = null;
+	end if;
+	return new;
+end;
+$$ language plpgsql;	
+
+create trigger Closer
+Before insert or update on ExtradationRequest 
+for each row execute function ER2();
+				");
+			//Триггер на выдачу материалов при нехватке
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ER3()
+	returns trigger
+as $$
+begin 
+	if ( exists 
+				 (
+					 select * from availableresources as ar
+					 where New.material = ar.material and ar.count - New.count < 0 and New.Status = 'Done'
+				 )
+				) 
+	then raise exception 'Не хватает материалов при попытке выдачи #%', New.ID;
+	end if;
+	return new;
+end;
+$$ language plpgsql;	
+
+create trigger ExtradationAvailableMaterials
+Before insert or update on ExtradationRequest 
+for each row execute function ER3();
+				");	
+			//Триггер на добавление 
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ER4()
+	returns trigger
+as $$
+begin 
+	if( exists (select * from repair r where r.id = new.repairid and r.status in ('Created','In Progress'))) then
+	update Repair set Status='Waits' where id = new.repairid;
+	end if;
+	return new;
+end;
+$$ language plpgsql;	
+
+create trigger UpdateRepairAfterInsert
+After insert on ExtradationRequest 
+for each row execute function ER4();
+				");
+
+			#endregion
+
+			#region Repair
+
+			//Триггер проверки завершённых заявок
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function REP1()
+	returns trigger
+as $$
+declare
+	rec RECORD;
+begin 	
+		IF (TG_OP = 'UPDATE') THEN 
+			if(old.status in ('Canceled','Done')) then 
+				raise exception 'Попытка изменения закрытого ремонта';			
+			end if;
+			rec := new;
+			if(old.startdate > current_timestamp and new.startdate > current_timestamp) then
+				rec.startdate := old.startdate;	
+			end if;
+			rec.duration := old.duration;
+			rec.enddate := old.enddate;
+			rec.personnel := old.personnel;
+			rec.description := old.description;
+			rec.status := old.status;
+			if(rec <> old) then raise exception 'Изменены запрещенные поля';
+			end if;
+			return new;
+        ELSIF (TG_OP = 'INSERT') then
+			if( new.startdate < current_timestamp or new.startdate is null) then new.startdate = current_timestamp; end if;
+			if( new.duration < current_timestamp or new.duration is null) then new.duration = current_timestamp; end if;
+			New.enddate = null;
+			New.Status = 'Created';
+            RETURN NEW;
+		ELSIF (TG_OP = 'DELETE') THEN
+			if(old.status in ('Done')) then 
+				raise exception 'Попытка удаления закрытой заявки';			
+			end if;
+			return old;
+        END IF;
+		return new;
+end;
+$$ language plpgsql;	
+
+create trigger ReadonlyConstraint
+Before insert or update or delete on Repair
+for each row execute function REP1();
+				");
+			//Изменение статуса
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function REP2()
+	returns trigger
+as $$
+begin 
+	/*Создан -> (ОЖИДАЕТ МАТЕРИАЛОВ ЛИБО ОТМЕНЁН)*/
+	if (old.status = 'Created' and new.Status not in ( 'Waits' , 'Canceled', 'Created') ) then 
+		raise exception 'Переход из статуса создан, может быть только в статус Ожидает или Отменён';
+	elsif(old.status = 'Created' and new.Status = 'Waits' and 
+		 not CHECK_ER_FOR_RER(false, new.id) ) then
+		raise exception 'Переход в статус Ожидает невозможен, ведь отсутствуют активные заявки';
+	/*ОЖИДАЕТ МАТЕРИАЛОВ -> (В ПРОЦЕССЕ ЛИБО ОТМЕНЁН)*/
+	elsif (old.status = 'Waits' and new.Status not in ('In Progress' , 'Canceled', 'Waits') ) then
+		raise exception 'Переход из статуса Ожидает, может быть только в статус В Процессе или Отменён';
+	elsif(old.status = 'Waits' and new.Status = 'In Progress' and 
+		 not CHECK_ER_FOR_RER(true, new.id) ) then
+		raise exception 'Переход в статус В Процессе невозможен, ведь отсутствуют закрытые заявки';
+	/*В ПРОЦЕССЕ -> (ОЖИДАЕТ МАТЕРИАЛОВ ЛИБО ГОТОВ ЛИБО ОТМЕНЁН)*/
+	elsif (old.status = 'In Progress' and new.Status not in ('Waits', 'Done', 'Canceled', 'In Progress') ) then
+		raise exception 'Переход из статуса В Процессе, может быть только в статус Ожидает или Готов или Отменён';	
+	elsif(old.status = 'In Progress' and new.Status = 'Waits' and 
+		 not CHECK_ER_FOR_RER(false, new.id) ) then
+		raise exception 'Переход в статус Ожидает невозможен, ведь отсутствуют активные заявки';
+	end if;
+	
+	if(new.status in ('Canceled','Done') and new.enddate is null) then
+			update ExtradationRequest set status = 'Canceled' 
+			where repairid = new.id and status not in ('Canceled','Done');
+		new.enddate = current_timestamp;			
+	elsif(new.status not in ('Canceled','Done') and new.enddate is not null) then
+		new.enddate = null;
+	end if;
+	return new;
+end;
+$$ language plpgsql;	
+
+
+create trigger Closer
+Before insert or update or delete on Repair
+for each row execute function REP2();
+				");
+
+			#endregion
+
+			#region Person
+
+			//Триггер начальной проверки персон
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function P1()
+	returns trigger
+as $$
+begin 	
+		IF (TG_OP = 'UPDATE') THEN 
+			if(old.registrydate <> new.registrydate or old.id <> new.id) then 
+				raise exception 'Изменены запрещённые поля';
+			end if;
+			return new;
+        ELSIF (TG_OP = 'INSERT') then
+			new.registrydate = current_timestamp;
+            RETURN NEW;
+        END IF;
+		return new;
+end;
+$$ language plpgsql;	
+
+create trigger ReadonlyConstraint
+Before insert or update or delete on Person
+for each row execute function P1();
+				");
+
+			#endregion
+
+			#region Staff_Position
+
+			//Триггер начальной проверки персон
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function SP1()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+begin 	
+		IF (TG_OP = 'UPDATE') THEN 
+			if(old.enddate is not null) then 
+				raise exception 'Попытка изменения закрытой должности';
+			end if;
+			rec := new;
+			rec.enddate = old.enddate;
+			rec.description = old.description;
+			rec.salary = old.salary;
+			if(rec <> old) then 
+				raise exception 'Изменены запрещённые поля';
+			end if;
+			
+			if(new.enddate is not null) then 
+				new.enddate = current_timestamp;
+			end if;
+			
+			return new;
+        ELSIF (TG_OP = 'INSERT') then
+			--Выставление стандартной даты
+			new.startdate = current_timestamp; 
+			--Стандартная запрлата
+			if(new.salary is null) then
+				new.salary = (select p.salary from position p where p.id = new.positionid);
+			end if;
+			--Проверка открытых записей на должность
+			if( (select count(sp.id) from staff_position sp 
+				 where sp.staffid = new.staffid and sp.positionid = new.positionid and sp.enddate is null) >= 1) then
+				 raise exception 'Уже присутствует открытая запись человека на данной должности, закройте предыдущую и повторите попытку';
+			end if;
+            RETURN NEW;
+        END IF;
+		return new;
+end;
+$$ language plpgsql;	
+
+create trigger ReadonlyConstraint
+Before insert or update or delete on Staff_Position
+for each row execute function SP1();
+				");
+
+			#endregion
+
+
+
+			#endregion
+		}
     }
 }

@@ -26,6 +26,7 @@ namespace Project.Controllers
         {
             SeedData.RestartDatabase(Context);
             SeedData.SeedWithData(Context);
+            SeedData.SeedWithProcedure(Context);
             return View(nameof(Index));
         }
     }

@@ -12,7 +12,7 @@ namespace Project.Migrations
         [Column("id")]
         public int Id { get; set; }
         [Column("count")]
-        public int Count { get; set; }
+        public int Count { get; set; } = 1;
         [Column("material")]
         public int Material { get; set; }
         [Column("staffid")]
@@ -24,7 +24,9 @@ namespace Project.Migrations
         [Column("enddate")]
         public DateTime? Enddate { get; set; }
         [Column("duration")]
-        public DateTime Duration { get; set; }
+        public DateTime Duration { get; set; } = DateTime.Now;
+        [Column("description")]
+        public string Description{ get; set; }
         [Required]
         [Column("status", TypeName = "character varying")]
         public string Status { get; set; }

@@ -22,13 +22,12 @@ namespace Project.Migrations
         [Column("enddate")]
         public DateTime? Enddate { get; set; }
         [Column("duration")]
-        public DateTime Duration { get; set; }
+        public DateTime Duration { get; set; } = DateTime.Now;
         [Required]
         [Column("status", TypeName = "character varying")]
         public string Status { get; set; }
         [Column("personnel")]
         public int Personnel { get; set; }
-        [Required]
         [Column("description")]
         public string Description { get; set; }
         [Column("yachtid")]

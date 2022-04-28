@@ -112,6 +112,8 @@ namespace Project.Migrations
                     .WithMany(p => p.Extradationrequest)
                     .HasForeignKey(d => d.Staffid)
                     .HasConstraintName("extradationrequest_staffid_fkey");
+
+                entity.Property(e => e.Description).HasDefaultValueSql("' '::character varying");
             });
 
             modelBuilder.Entity<Hiredstaff>(entity =>

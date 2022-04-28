@@ -17,6 +17,7 @@
         </div>
     }
 
+    <input hidden readonly asp-for="Object.Startdate"/>
 
     @if (Model.Action != "Create")
     {
@@ -69,7 +70,10 @@
                         <span asp-validation-for="Object.Status" class="text-danger"></span>
                     </div>
                     <select class="form-control" asp-for="Object.Status"
-                            asp-items="@(new List<SelectListItem> { new SelectListItem {Text = "Ожидание материалов", Selected = true }, new SelectListItem { Text = "В процессе" }, })"
+                            asp-items="@(new List<SelectListItem> { 
+    new SelectListItem {Text = "Ожидание материалов", Value="Waits", Selected = true },
+    new SelectListItem { Text = "В процессе", Value="In Progress" },
+    new SelectListItem { Text = "Отменён", Value="Canceled" },})"
                             disabled="@Model.ReadOnly">
                     </select>
                 </div>
