@@ -18,15 +18,6 @@ namespace Project.Database
 					drop view if exists  AvailableResources, repair_staff, staff ;
 				");
 
-				//Удаление триггеров 
-				dbContext.Database.ExecuteSqlRaw(@"
-					drop function if exists ER1(), ER2(), ER3(), ER4(),
-											REP1(), REP2(),
-											P1(),
-											SP1()
-					CASCADE;
-				");
-
 				//Удаление таблиц
 				dbContext.Database.ExecuteSqlRaw(@"
 drop table if exists 
@@ -161,7 +152,9 @@ CREATE TABLE Event(
 	StartDate	timestamp(2)		Not Null,
 	EndDate		timestamp(2)		check(StartDate <= EndDate ),
 	Duration	timestamp(2)		Not Null	check(StartDate <= Duration),
-	Status		varchar		Not Null	Default 'Created',
+	Description		text		Default ' ',
+	UserRate		int			Default 0,
+	CanHaveWinners	boolean		not null	Default true,
 
 	unique(Name,StartDate)
 );
@@ -211,9 +204,10 @@ CREATE TABLE Material(
 Create TABLE Yacht(
 	ID					Serial		Not Null	Primary Key,
 	Name				varchar		Not Null,
-	Status				varchar		Not Null,
+	Status				varchar		Not Null	check(Status in ('Valid', 'Invalid')),
 	Rentable			bool		Not Null	Default TRUE,
 	Registrydate		timestamp(2)	Not Null	Default current_timestamp,
+	Description			text		Not Null	Default ' ',
 	TypeID				int			Not Null
 	References 	YachtType(ID)	
 	On Update Cascade	
@@ -363,6 +357,7 @@ CREATE TABLE YachtLease(
 	Duration		timestamp(2)		Not Null	check(StartDate <= Duration),
 	OverallPrice	My_Money		Not Null,
 	Specials		text			Not Null	Default ' ',
+	Paid			bool			Not Null	Default False,
 	YachtID			int				Not Null
 	References 	Yacht(ID)	
 	On Update Cascade	
@@ -403,6 +398,7 @@ CREATE TABLE Contract(
 	Duration		timestamp(2)		Not Null	check(StartDate <= Duration),
 	Specials		text		Not Null,
 	Status			varchar		Not Null,
+	Paid			bool		Not Null	Default False,
 	AverallPrice	My_Money	Not Null
 );
 				");
@@ -420,13 +416,10 @@ CREATE TABLE Review(
 	On Update Cascade	
 	On Delete Cascade,
 	
-	ContractID		int			Not Null
-	References 	Contract(ID)	
-	On Update Cascade	
-	On Delete Cascade,
-	
 	Date			timestamp(2)		Not Null,
 	Text			text		Not Null,
+	Public			bool		Not Null	Default true,
+	UserRate		int			Not Null	Default 0,
 	Rate			int 		Not Null 	check(Rate > 0 AND Rate <= 5)
 );
 
@@ -671,8 +664,6 @@ values
 ('International Regatta	#457', 		'07-09-2019', 	'04-10-2019', 	'04-10-2019'),
 ('Anniversary Event',				'07-01-2021', 	'10-01-2021', 	'10-01-2021')
 ;
-
-Update event set status='Ended'
 				");
                 #endregion
 
@@ -800,15 +791,15 @@ values
 
 insert into Yacht(Name, Status, TypeId, YachtOwnerID)
 values
-('Alpha',			'Online',		1, 1),
-('Storm',			'Canceled',		1, 20),
-('Adelaida',		'Online',		4, 20),
-('Latnyk',			'Online',		5, 14),
-('Storm',			'Online',		7, 15),
-('Infernal Rage',	'Online',		4, 20),
-('Hello Kitty',		'Online',		5, 15),
-('Beda',			'Online',		4, 20),
-('Moby Dick',		'Online',		1, 14)
+('Alpha',			'Valid',		1, 1),
+('Storm',			'Invalid',		1, 20),
+('Adelaida',		'Valid',		4, 20),
+('Latnyk',			'Valid',		5, 14),
+('Storm',			'Valid',		7, 15),
+('Infernal Rage',	'Valid',		4, 20),
+('Hello Kitty',		'Valid',		5, 15),
+('Beda',			'Valid',		4, 20),
+('Moby Dick',		'Valid',		1, 14)
 ;
 				");
 				#endregion
@@ -1188,11 +1179,11 @@ values
 
 				//Отзывы
 				dbContext.Database.ExecuteSqlRaw($@"
-insert into Review(ClientId, ContractID, date, text, rate)
+insert into Review(ClientId,  date, text, rate, userrate)
 values
-( 4, 4, '25-02-2019', 'Некогда больше не поеду на этой яхте', 1 ) ,
-( 3, 6, '25-02-2019', 'Превосходный капитан', 5 ) ,
-( 4, 8, '19-05-2021', 'Как же хорошо', 5 ) 
+( 4, '25-02-2019', 'Некогда больше не поеду на этой яхте', 1 , 0) ,
+( 3, '25-02-2019', 'Превосходный капитан', 5 , 0) ,
+( 4, '19-05-2021', 'Как же хорошо', 5 , 0) 
 ;
 				");
 
@@ -1271,7 +1262,58 @@ Begin
 END;
 $$ language plpgsql;
 				");
-
+			//Пересечение дат
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function IsInTerm(
+	_s1 timestamp,
+	_s2 timestamp,
+	_e2 timestamp,
+	_e1 timestamp
+) returns boolean
+as $$
+begin 	
+	return _s1 <= _e2 and _s2 <= _e1;
+end;
+$$ language plpgsql;
+				");
+			//Активные контракты яхты
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ActiveContractByYachtID (
+	yid int
+)
+	returns table(cid int, startdate timestamp)
+as $$
+begin 	
+	return query select c.id cid, c.startdate startdate
+		   	from contract c join yacht_crew ywc on c.yachtwithcrewid = ywc.id 
+			where ywc.yachtid = yid and c.enddate is null
+		   ;
+end; 
+$$ language plpgsql;
+				");	
+			//Активные ремонты яхты
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ActiveRepairByYachtID (
+	yid int
+)
+	returns table(rid int, startdate timestamp)
+as $$
+begin 	
+	return query select r.id cid, r.startdate
+		   	from repair r 
+			where r.yachtid = yid and r.enddate is null
+		   ;
+end; 
+$$ language plpgsql;
+				");
+			//Current_Timestamp::timestamp
+			dbContext.Database.ExecuteSqlRaw(@"
+			create or replace function CurStmp() returns timestamp 
+			as $$
+			begin return current_timestamp::timestamp(2); end;
+			$$ language plpgsql;
+				");
+			
 
 			#endregion
 
@@ -1525,7 +1567,7 @@ $$ language plpgsql;
 
 
 create trigger Closer
-Before insert or update or delete on Repair
+Before update on Repair
 for each row execute function REP2();
 				");
 
@@ -1540,7 +1582,7 @@ create or replace function P1()
 as $$
 begin 	
 		IF (TG_OP = 'UPDATE') THEN 
-			if(old.registrydate <> new.registrydate or old.id <> new.id) then 
+			if(old.registrydate <> new.registrydate) then 
 				raise exception 'Изменены запрещённые поля';
 			end if;
 			return new;
@@ -1611,9 +1653,398 @@ for each row execute function SP1();
 
 			#endregion
 
+			#region Repair_Men
 
+			//Триггер начальной проверки ремонтников на ремонте
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function RM1()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+pers int;
+begin 	
+		IF (TG_OP = 'UPDATE') THEN 
+			raise exception 'Запрещено изменение данной сущности';
+        ELSIF (TG_OP = 'INSERT') then
+			pers = (select r.personnel from repair r where r.id = new.repairid) ;
+			if ( (select r.status from repair r where r.id = new.repairid) in ('Canceled','Done') ) then 
+				raise exception 'Отсутствует возможность добавить персонал на закрытый ремонт';
+			elsif( (select count(*) from repair_men rm where rm.repairid = new.repairid ) >
+			   pers ) then
+			   raise exception 'Количество персонала на данном ремонте не должно превышать %', pers;
+			end if;
+			--Добавление залогиненого сотрудника
+            RETURN new;
+		ELSIF (TG_OP = 'DELETE') then 
+			if ( ( select r.status from repair r where r.id = old.repairid) in ('Canceled','Done')  ) then 
+				raise exception 'Отсутствует возможность убрать персонал с закрытого ремонта';
+			end if;
+			return old;
+        END IF;
+end;
+$$ language plpgsql;	
+
+create trigger ReadonlyConstraint
+Before insert or update or delete on Repair_Men
+for each row execute function RM1();
+				");
 
 			#endregion
-		}
+
+			#region MaterialLease
+
+			//Триггер начальной проверки контракта на выдачу материалов
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ML1 ()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+pers int;
+begin 	
+		IF (TG_OP = 'UPDATE') THEN 
+			if(old.deliverydate is not null) then 
+				raise exception 'Попытка изменения закрытого контракта на материалы';			
+			end if;
+			rec := new;
+			rec.deliverydate := old.deliverydate;
+			rec.overallprice := old.overallprice;
+			rec.count := old.count;
+			rec.priceperunit := old.priceperunit;
+			if(rec <> old) 
+				then raise exception 'Изменены запрещенные поля';
+			end if;	
+        ELSIF (TG_OP = 'INSERT') then
+			new.startdate = current_timestamp;
+		ELSIF (TG_OP = 'DELETE') then 
+			if(old.deliverydate is not null) then 
+				raise exception 'Попытка удаления закрытого контракта на материалы';			
+			end if;
+			return old;
+        END IF;
+		new.overallprice = new.count * new.priceperunit;
+		RETURN new;
+end;
+$$ language plpgsql;	
+
+create trigger ReadonlyConstraint
+Before insert or update or delete on MaterialLease
+for each row execute function ML1 ();
+				");
+
+			#endregion
+
+			#region Yacht_Crew
+
+			//Триггер начальной проверки экипажа
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YC1 ()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+pers int;
+begin 	
+		IF (TG_OP = 'UPDATE') THEN 
+			if(old.enddate is not null) then 
+				raise exception 'Попытка изменения уволеного члена экипажа';			
+			end if;
+			rec := new;
+			rec.enddate := old.enddate;
+			rec.description := old.description;
+			if(rec <> old) 
+				then raise exception 'Изменены запрещенные поля';
+			end if;	
+        ELSIF (TG_OP = 'INSERT') then
+			new.startdate = current_timestamp;
+		ELSIF (TG_OP = 'DELETE') then 
+			if(old.deliverydate is not null) then 
+				raise exception 'Попытка удаления закрытого контракта на материалы';			
+			end if;
+			return old;
+        END IF;
+		RETURN new;
+end;
+$$ language plpgsql;	
+
+create trigger ReadonlyConstraint
+Before insert or update or delete on Yacht_Crew
+for each row execute function YC1 ();
+				");
+
+			#endregion
+			
+			#region Event
+
+			//Триггер начальной проверки событий
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function E1 ()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+pers int;
+begin 	
+		IF (TG_OP = 'UPDATE') THEN 
+			if(old.enddate is not null) then 
+				raise exception 'Попытка изменения закрытого события';			
+			end if;
+			rec := new;
+			if(new.startdate >= current_timestamp and old.startdate >= current_timestamp) then
+				rec.startdate := old.startdate;
+			end if;
+			rec.enddate := old.enddate;
+			rec.duration := old.duration;
+			rec.description := old.description;
+			if(rec <> old) 
+				then raise exception 'Изменены запрещенные поля';
+			end if;
+		ELSIF (TG_OP = 'INSERT') then
+			if(new.startdate <= current_timestamp or new.startdate is null) then
+			new.startdate = current_timestamp;
+			end if;
+		ELSIF (TG_OP = 'DELETE') then 
+			if(old.enddate is not null) then 
+				raise exception 'Попытка удаления закрытого события';			
+			end if;
+			return old;
+        END IF;
+		RETURN new;
+end;
+$$ language plpgsql;	
+
+create trigger ReadonlyConstraint
+Before insert or update or delete on Event
+for each row execute function E1 ();
+				");
+
+			#endregion			
+
+			#region Winner
+
+			//Триггер начальной проверки потенциальных победителей
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function W1 ()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+begin 	
+		IF (TG_OP = 'UPDATE') THEN 
+			if( not exists ( select * from event e where e.id = old.eventid and e.enddate is null) )then 
+				raise exception 'Попытка изменения закрытого события';			
+			end if;
+			rec := new;
+			rec.place := old.place;
+			if(rec <> old) 
+				then raise exception 'Изменены запрещенные поля';
+			end if;	
+			
+			if( not (select canhavewinners from winner) ) then 
+				new.place := null;
+			end if;
+		ELSIF (TG_OP = 'INSERT') then
+				select * into rec from event e where new.eventid = e.id ; 
+				if(rec.enddate is not null) then raise exception 'Попытка участия в закрытом событии'; end if;
+				if( exists (
+					select cid from ActiveContractByYachtID(new.yachtid) where IsInTerm(  rec.startdate, startdate, 
+									  current_timestamp::timestamp, rec.duration  )
+				) or exists
+				   (
+				   select rid from ActiveRepairByYachtID(new.yachtid) where IsInTerm(  rec.startdate, startdate, 
+									  current_timestamp::timestamp,rec.duration )
+				   ) 
+				  ) then
+				  raise exception 'Попытка участия в событии при ремонте/контракте';
+				end if;
+				if(not rec.canhavewinners) then 
+					new.place := null;
+				end if;
+		ELSIF (TG_OP = 'DELETE') then 
+			if( not exists ( select * from event e where e.id = old.eventid and e.enddate is null)) then 
+				raise exception 'Попытка удаления закрытого события';			
+			end if;
+			return old;
+        END IF;
+		RETURN new;
+end;
+$$ language plpgsql;
+
+create trigger ReadonlyConstraint
+Before insert or update or delete on Winner
+for each row execute function W1 ();
+				");
+
+            #endregion
+
+            #region YachtLease
+			//Триггер начальной проверки договоров на яхты
+            dbContext.Database.ExecuteSqlRaw(@"
+			create or replace function YL1 ()
+				returns trigger
+			as $$
+			declare 
+			rec RECORD;
+			begin 	
+					IF (TG_OP = 'UPDATE') THEN 
+						if( old.enddate is not null )then 
+							raise exception 'Попытка изменения закрытого договора на яхту';			
+						end if;
+						rec := new;
+						if(not old.paid) then
+							rec.paid = old.paid;
+						end if;
+						rec.enddate := old.enddate;
+						rec.overallprice := old.overallprice;
+						rec.specials := old.specials;
+						if(rec <> old) 
+							then raise exception 'Изменены запрещенные поля';
+						end if;	
+					ELSIF (TG_OP = 'INSERT') then
+						if(exists (select * from yachtlease where yachtid = new.yachtid and enddate is null) ) then
+							raise exception 'невозможно заключить новый контракт, если старый ещё не завершён';
+						end if;
+						if(new.startdate <= current_timestamp or new.startdate is null) then
+							new.startdate = current_timestamp;
+						end if;
+						new.overallprice = (select ylt.price from yachtleasetype ylt where ylt.id = new.yachtleasetypeid) * 
+							 abs( extract(day from new.startdate - new.duration ) );	 
+					ELSIF (TG_OP = 'DELETE') then 
+						if(old.enddate is not null) then 
+							raise exception 'Попытка удаления закрытого контракта на пирс';			
+						end if;
+						return old;
+					END IF;
+					RETURN new;
+			end;
+			$$ language plpgsql;
+
+			create trigger ReadonlyConstraint
+			Before insert or update or delete on YachtLease
+			for each row execute function YL1 ();
+							");
+			//Триггер начальной проверки изменение статусов яхт
+            dbContext.Database.ExecuteSqlRaw(@"
+			create or replace function YL2 ()
+				returns trigger
+			as $$
+			declare 
+			rec RECORD;
+			begin 
+				if(
+					isinterm(new.startdate, CurStmp(), CurStmp(), coalesce(new.enddate, CurStmp())) and
+					new.paid
+				) then
+					update Yacht set Status = 'Valid' where id = new.yachtid;
+				end if;
+				if(
+					new.enddate is not null and new.enddate <= CurStmp()					
+				) then
+					update Yacht set Status = 'Invalid' where id = new.yachtid;
+				end if;
+				return new;
+			end;
+			$$ language plpgsql;
+
+			create trigger StatusChecker
+			After update or insert on YachtLease
+			for each row execute function YL2 ();
+							");
+            #endregion
+
+            #region Yacht
+			//Триггер начальной проверки на яхты
+            dbContext.Database.ExecuteSqlRaw(@"
+			 create or replace function Y1 ()
+				 returns trigger
+			 as $$
+			 declare 
+			 rec RECORD;
+			 begin 	
+					 IF (TG_OP = 'UPDATE') THEN 
+						 if(new.name <> old.name or
+							new.registrydate <> old.registrydate or 
+							new.typeid <> old.typeid
+						   ) 
+							 then raise exception 'Изменены запрещенные поля';
+						 end if;	
+					 ELSIF (TG_OP = 'INSERT') then
+						 new.registrydate = current_timestamp;
+						 new.status = 'Invalid';
+					 END IF;
+					 RETURN new;
+			 end;
+			 $$ language plpgsql;
+
+			 create trigger ReadonlyConstraint
+			 Before insert or update on Yacht
+			 for each row execute function Y1 ();
+							 "); 
+			//Триггер проверки статуса яхт
+			dbContext.Database.ExecuteSqlRaw(@"
+			 create or replace function Y2 ()
+				returns trigger
+			as $$
+			declare 
+			rec RECORD;
+			begin 	
+				if (old.status = 'Invalid' and new.Status in ( 'Valid') 
+					and not exists( 
+						select * from yachtlease yl where yl.paid and new.id = yl.yachtid and
+						isinterm(yl.startdate, CurStmp(), CurStmp(), coalesce(yl.enddate, CurStmp()))
+					)
+				   ) then 
+				   raise exception 'Невозможно перейти из статуса Недействителен в статус Действителен, ведь
+				   отсутствуют текущие оплаченные контракты';
+				elsif(
+					old.status = 'Valid' and new.Status in ( 'Invalid') and 
+					not exists (
+						select * from yachtlease yl where yl.paid and new.id = yl.yachtid and yl.enddate <= CurStmp()
+					)
+				) then 				
+					raise exception 'Невозможно перейти из статуса Действителен в статус Недействителен, ведь
+				  	присутствуют текущие оплаченные контракты';
+				end if;
+				return new;
+			end;
+			$$ language plpgsql;
+
+			create trigger StatusChecker
+			Before update on Yacht
+			for each row execute function Y2 ();
+							 ");
+            #endregion
+
+    //        #region Contract
+    //        dbContext.Database.ExecuteSqlRaw(@"
+			 //create or replace function  ()
+				// returns trigger
+			 //as $$
+			 //declare 
+			 //rec RECORD;
+			 //begin 	
+				//	 IF (TG_OP = 'UPDATE') THEN 
+
+				//	 ELSIF (TG_OP = 'INSERT') then
+
+				//	 ELSIF (TG_OP = 'DELETE') then 
+				//		 if(old.enddate is not null) then 
+				//			 raise exception 'Попытка удаления закрытого события';			
+				//		 end if;
+				//		 return old;
+				//	 END IF;
+				//	 RETURN new;
+			 //end;
+			 //$$ language plpgsql;
+
+			 //create trigger ReadonlyConstraint
+			 //Before insert or update or delete on Winner
+			 //for each row execute function  ();
+				//			 ");
+    //        #endregion
+
+            #endregion
+        }
     }
 }
