@@ -182,7 +182,6 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Yacht.Object.Status = "[]";
                 Yacht.Object.Rentable = Yacht.Option[0];
                 Yacht.Object.Registrydate = DateTime.Now;
                 Context.Yacht.Update(Yacht.Object);
@@ -212,7 +211,6 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Yacht.Object.Status = "[]";
                 Yacht.Object.Rentable = Yacht.Option[0];
                 Yacht.Object.Registrydate = DateTime.Now;
                 Context.Yacht.Add(Yacht.Object);

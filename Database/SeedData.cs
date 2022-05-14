@@ -6,20 +6,20 @@ namespace Project.Database
 {
     public class SeedData
     {
-		public static void RestartDatabase(DataContext dbContext, bool ToSeed = true)
+        public static void RestartDatabase(DataContext dbContext, bool ToSeed = true)
         {
-			#region Создание базы
+            #region Создание базы
 
-			if (ToSeed)
-			{
-				#region Удаление старой базы и доменов
-				//Удаление Виртуальных Поименованых Производных Таблиц
-				dbContext.Database.ExecuteSqlRaw(@"
+            if (ToSeed)
+            {
+                #region Удаление старой базы и доменов
+                //Удаление Виртуальных Поименованых Производных Таблиц
+                dbContext.Database.ExecuteSqlRaw(@"
 					drop view if exists  AvailableResources, repair_staff, staff ;
 				");
 
-				//Удаление таблиц
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Удаление таблиц
+                dbContext.Database.ExecuteSqlRaw(@"
 drop table if exists 
   	Position, YachtType, ContractType, MaterialType, YachtLeaseType,
   	Staff, Event, Client, Seller, Person,
@@ -31,15 +31,15 @@ Cascade;
 
 				");
 
-				//Удаление доменов
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Удаление доменов
+                dbContext.Database.ExecuteSqlRaw(@"
 drop domain if exists Sex, My_Money, Mail, Phonenumber
 ;
 				");
                 #endregion
 
                 #region Создание доменов
-				//Создание доменов
+                //Создание доменов
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE Domain SEX as varchar
 CHECK (Value in ('Male','Female','Other'));
@@ -60,17 +60,18 @@ set datestyle = 'iso, dmy';
 
                 #region Таблицы типов
 
-				//Должность
+                //Должность
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Position (
   ID    			serial    		Not Null  	Primary Key,
   Name   			varchar   		Not Null  	Unique,
+  CrewPosition		boolean			Not Null	Default false,
   Salary        	My_Money    	Not Null
 );
 				");
 
-				//Тип материала
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Тип материала
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE MaterialType(
   ID		serial     Not Null		Primary Key,
   Name		varchar    Not Null		Unique,
@@ -79,8 +80,8 @@ CREATE TABLE MaterialType(
 );
 				");
 
-				//Тип яхты
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Тип яхты
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtType(
   	ID        			serial     	Not Null		Primary Key,
   	Name        		varchar     Not Null		Unique,
@@ -94,8 +95,8 @@ CREATE TABLE YachtType(
 );
 				");
 
-				//Тип контракта
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Тип контракта
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE ContractType(
   ID    		serial    	Not Null	Primary Key,
   Name     	  	varchar   	Not Null	Unique,
@@ -103,9 +104,9 @@ CREATE TABLE ContractType(
   Description	text	Default ' '
 );
 				");
-				
-				//Тип аренды яхты
-				dbContext.Database.ExecuteSqlRaw(@"
+
+                //Тип аренды яхты
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtLeaseType(
   ID    		serial    	Not Null	Primary Key,
   Name     	  	varchar   	Not Null	Unique,
@@ -114,9 +115,9 @@ CREATE TABLE YachtLeaseType(
   Description	text	Default ' '
 );
 				");
-				
-				//Тип продавца
-				dbContext.Database.ExecuteSqlRaw(@"
+
+                //Тип продавца
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Seller (
 	ID			serial		Not Null	primary key,
 	Name		varchar		Not Null	unique,
@@ -128,10 +129,10 @@ CREATE TABLE Seller (
                 #endregion
 
                 #region Блок основных таблиц
-				#region Блок независимых таблиц
+                #region Блок независимых таблиц
 
-				//Персона
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Персона
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Person(
   	ID    			serial    	Not Null	Primary Key,
   	Name      		varchar    	Not Null,
@@ -144,8 +145,8 @@ CREATE TABLE Person(
 );
 				");
 
-				//Событие
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Событие
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Event(
 	ID			serial		Not Null	Primary Key,
 	Name		varchar		Not Null,
@@ -161,8 +162,8 @@ CREATE TABLE Event(
 				");
 
                 #endregion
-					
-				
+
+
                 #region Блок зависимых таблиц
 
                 #region Поколение 1
@@ -186,8 +187,8 @@ Create TABLE Staff_Position(
 );
 				");
 
-				//Материал
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Материал
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Material(
 	ID		serial		Not Null	Primary Key,
 	Name	varchar		Not Null	Unique,
@@ -199,12 +200,11 @@ CREATE TABLE Material(
 );
 				");
 
-				//Яхта
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Яхта
+                dbContext.Database.ExecuteSqlRaw(@"
 Create TABLE Yacht(
 	ID					Serial		Not Null	Primary Key,
 	Name				varchar		Not Null,
-	Status				varchar		Not Null	check(Status in ('Valid', 'Invalid')),
 	Rentable			bool		Not Null	Default TRUE,
 	Registrydate		timestamp(2)	Not Null	Default current_timestamp,
 	Description			text		Not Null	Default ' ',
@@ -221,11 +221,11 @@ Create TABLE Yacht(
 	Unique(Name,TypeID)
 );
 				");
-				#endregion
+                #endregion
 
-				#region Поколение 2
-				//Договор на поставку материала
-				dbContext.Database.ExecuteSqlRaw(@"
+                #region Поколение 2
+                //Договор на поставку материала
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE MaterialLease(
 	ID				serial		Not Null	Primary Key,
 	Material		int			Not Null	
@@ -246,8 +246,8 @@ CREATE TABLE MaterialLease(
 );
 				");
 
-				//Тестовый заплыв яхты
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Тестовый заплыв яхты
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtTest(
 	ID			serial		Not Null	Primary Key,
 	Date		timestamp(2)		Not Null,
@@ -264,8 +264,8 @@ CREATE TABLE YachtTest(
 );
 				");
 
-				//Ремонт
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Ремонт
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Repair(
 	ID			serial			Not Null	Primary Key,
 	StartDate	timestamp(2)		Not Null	Default current_timestamp,
@@ -280,9 +280,9 @@ CREATE TABLE Repair(
 	On Delete Cascade
 );
 				");
-				
-				//Команда судна
-				dbContext.Database.ExecuteSqlRaw(@"
+
+                //Команда судна
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Yacht_Crew(
 	ID			serial		Not Null	Primary Key,
 	YachtID		int			Not Null
@@ -300,9 +300,9 @@ CREATE TABLE Yacht_Crew(
 	Description text		Default ' '
 );
 				");
-				
-				//Список учавствовавших в мероприятии
-				dbContext.Database.ExecuteSqlRaw(@"
+
+                //Список учавствовавших в мероприятии
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Winner(
 	EventID		int		Not Null
 	References 	Event(ID)	
@@ -318,9 +318,9 @@ CREATE TABLE Winner(
 	Primary Key (EventID, YachtID)
 );
 				");
-				
-				//Заявка на выдачу
-				dbContext.Database.ExecuteSqlRaw(@"
+
+                //Заявка на выдачу
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE ExtradationRequest(
 	ID			serial		Not Null	Primary Key,
 	Count		int			Not Null	check(Count > 0),
@@ -347,9 +347,9 @@ CREATE TABLE ExtradationRequest(
 	Status		varchar			Not Null	check(Status in ('Created', 'Canceled', 'Waits', 'Done'))
 );
 				");
-				
-				//Договор на аренду места
-				dbContext.Database.ExecuteSqlRaw(@"
+
+                //Договор на аренду места
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtLease(
 	ID				serial			Not Null	Primary Key,
 	StartDate		timestamp(2)		Not Null,
@@ -370,12 +370,12 @@ CREATE TABLE YachtLease(
 );
 				");
 
-				#endregion
+                #endregion
 
-				#region Поколение 3
+                #region Поколение 3
 
-				//Контракт
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Контракт
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Contract(
 	ID				serial		Not Null	Primary Key,
 	ClientID		int			Not Null
@@ -388,7 +388,7 @@ CREATE TABLE Contract(
 	On Update Cascade	
 	On Delete Cascade,
 	
-	YachtWithCrewID	int			Not Null
+	CaptainInYachtID	int			Not Null
 	References 	Yacht_Crew(ID)	
 	On Update Cascade	
 	On Delete Cascade,
@@ -397,18 +397,17 @@ CREATE TABLE Contract(
 	EndDate			timestamp(2)		check(StartDate <= EndDate ),
 	Duration		timestamp(2)		Not Null	check(StartDate <= Duration),
 	Specials		text		Not Null,
-	Status			varchar		Not Null,
 	Paid			bool		Not Null	Default False,
 	AverallPrice	My_Money	Not Null
 );
 				");
 
-				#endregion
+                #endregion
 
-				#region Поколение 4
+                #region Поколение 4
 
-				//Отзыв
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Отзыв
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Review(
 	ID				serial		Not Null	Primary Key,
 	ClientID		int			Not Null
@@ -426,13 +425,13 @@ CREATE TABLE Review(
 				");
 
 
-				#endregion
+                #endregion
 
-				#endregion
+                #endregion
 
-				#region Справочные таблицы
-				//Справочная таблица ремонтников
-				dbContext.Database.ExecuteSqlRaw(@"
+                #region Справочные таблицы
+                //Справочная таблица ремонтников
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Repair_Men(
 	ID			serial		Not Null	Primary Key,	
 
@@ -450,8 +449,8 @@ CREATE TABLE Repair_Men(
 );
 				");
 
-				//Обзоры на яхту
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Обзоры на яхту
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Review_Yacht(
 	ReviewID	int			Not Null
 	References 	Review(ID)	
@@ -467,8 +466,8 @@ CREATE TABLE Review_Yacht(
 );
 				");
 
-				//Обзоры на капитана
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Обзоры на капитана
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Review_Captain(
 	ReviewID	int			Not Null
 	References 	Review(ID)	
@@ -476,16 +475,16 @@ CREATE TABLE Review_Captain(
 	On Delete Cascade,
 
 	CaptainID	int			Not Null
-	References 	Staff_Position(ID)	
+	References 	Person(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 
 	Primary Key ( ReviewID, CaptainID )
 );
 				");
-				
-				//Список должностей, обязательно присутствующих на яхте
-				dbContext.Database.ExecuteSqlRaw(@"
+
+                //Список должностей, обязательно присутствующих на яхте
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Position_YachtType(
 	PositionID	int		Not Null
 	References 	Position(ID)	
@@ -503,11 +502,11 @@ CREATE TABLE Position_YachtType(
 );
 				");
 
-				//Наёмный персонал
-				dbContext.Database.ExecuteSqlRaw(@"
+                //Наёмный персонал
+                dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE HiredStaff(
-	Yacht_CrewID	int		Not Null
-	References  Yacht_Crew(ID)	
+	StaffID	int		Not Null
+	References  Staff_Position(ID)	
 	On Update Cascade	
 	On Delete Cascade,
 
@@ -516,22 +515,22 @@ CREATE TABLE HiredStaff(
 	On Update Cascade	
 	On Delete Cascade,
 
-	Primary Key ( Yacht_CrewID, ClientID)
+	Primary Key ( StaffID, ClientID)
 );
 				");
 
-				#endregion
+                #endregion
 
-				#endregion
-			}
+                #endregion
+            }
 
-			#endregion
+            #endregion
         }
-		public static void SeedWithData(DataContext dbContext, bool Force = false)
+        public static void SeedWithData(DataContext dbContext, bool Force = false)
         {
-			dbContext.Database.EnsureCreated();
-			if (dbContext.Position.Count() == 0 || false)
-			{
+            dbContext.Database.EnsureCreated();
+            if (dbContext.Position.Count() == 0 || false)
+            {
                 #region Типы
                 //Должности
                 dbContext.Database.ExecuteSqlRaw($@"
@@ -544,17 +543,15 @@ CREATE TABLE HiredStaff(
                                ('Captain', 				3500.0),
                                ('Boatswain',				2500.0),
                                ('Cook', 					1500.0),
-                               ('Shipboy', 				  0.0),
-                               ('Hired Captain',			0.0),
-                ('Hired Boatswain',			   0.0),
-                               ('Hired Cook', 				0.0),
-                               ('Hired Shipboy', 			0.0),
+                               ('Shipboy', 				    0.0),
                                ('None', 					0.0),
                                ('Fired', 					0.0);
+
+								update Position set CrewPosition = true where id in (5, 6, 7, 8);
                            ");
 
-				//Типы яхт
-				dbContext.Database.ExecuteSqlRaw($@"
+                //Типы яхт
+                dbContext.Database.ExecuteSqlRaw($@"
 INSERT INTO YachtType(name,frame,goal,class,crewcapacity, capacity, sails)
 values
 ('KA-6',	'Single', 	'Cruise', 	'Kiel', 		3, 3, 1),
@@ -567,8 +564,8 @@ values
 ;
 				");
 
-				//Типы материалов
-				dbContext.Database.ExecuteSqlRaw($@"
+                //Типы материалов
+                dbContext.Database.ExecuteSqlRaw($@"
 INSERT INTO MaterialType(name)
 values
 ('Fuel'),
@@ -580,8 +577,8 @@ values
 UPDATE MaterialType SET Metric = 'kg' where Name = 'Fuel'
 				");
 
-				//Типы контрактов
-				dbContext.Database.ExecuteSqlRaw($@"
+                //Типы контрактов
+                dbContext.Database.ExecuteSqlRaw($@"
 Insert INTO ContractType(name,price)
 values
 ('Standart'			, 400.0),
@@ -593,8 +590,8 @@ values
 ('Family Trip'		, 1000.0);
 				");
 
-				//Типы договоров на аренду яхту
-				dbContext.Database.ExecuteSqlRaw($@"
+                //Типы договоров на аренду яхту
+                dbContext.Database.ExecuteSqlRaw($@"
 Insert INTO YachtLeaseType(name,price)
 values
 ('Standart'				, 0.0),
@@ -618,8 +615,8 @@ values
 ;
 				");
 
-				//Персонал
-				dbContext.Database.ExecuteSqlRaw($@"
+                //Персонал
+                dbContext.Database.ExecuteSqlRaw($@"
 insert into Person (name, surname, sex, BirthDate, RegistryDate,email, phone)
 values 
 ('Tatiana'	, 	'Sparklovna'	, 'Female'	, '07-01-2001', '07-01-2019', 't.sparkle@gmail.com',	'+380982334566'	),
@@ -651,9 +648,9 @@ values
 ('Gomel', 		'Bogdanov', 	'Male', 	'16-10-1963', 	'08-01-2019',	'kosolov@gmail.com',	 '+380986765560'	),
 ('Jamala', 		'Nebinarna', 	'Female', 	'23-09-1954', 	'08-01-2019',	'j_4354@gmail.com',		 '+380986768991'	);
 				");
-				
-				//События
-				dbContext.Database.ExecuteSqlRaw($@"
+
+                //События
+                dbContext.Database.ExecuteSqlRaw($@"
 insert into event(name, startdate, enddate, duration)
 values 
 ('First YachtClub Event', 			'01-02-2019', 	'03-02-2019', 	'03-02-2019'),
@@ -698,8 +695,8 @@ values
 ('Crowbar',						5)
 ;
 				");
-				//Персонал на должностях
-				dbContext.Database.ExecuteSqlRaw($@"
+                //Персонал на должностях
+                dbContext.Database.ExecuteSqlRaw($@"
 /*
 ('Tatiana'	, 	'Sparklovna'	, 'Female'	, '07-01-2001', '07-01-2019', 't.sparkle@gmail.com',	'+380982334566'	),1
 ('Anatoliy'	, 	'Egorov'		, 'Male'	, '08-01-2001', '07-01-2019', 'a.gorov@gmail.com',		'+380435657566'	),2
@@ -730,12 +727,8 @@ values
 ('Boatswain',			2500.0),6
 ('Cook', 				1500.0),7
 ('Shipboy', 			500.0),8
-('Hired Captain',		0.0),9
-('Hired Boatswain',		2500.0),10
-('Hired Cook', 			1500.0),11
-('Hired Shipboy', 		500.0),12
-('None', 				100.0),13
-('Fired', 				0.0);14
+('None', 				100.0),9
+('Fired', 				0.0);10
 */
 
 insert into Staff_Position(Startdate, enddate, Staffid, positionid)
@@ -747,7 +740,7 @@ values
 ('13-01-2019',	null, 4, 4),
 ('15-01-2019',	null, 5, 5),
 ('15-01-2019',	'23-01-2019', 6, 6),
-('23-01-2019',	'15-02-2019', 6, 14),
+('23-01-2019',	'15-02-2019', 6, 10),
 ('12-02-2019',	null, 7, 5),
 ('15-02-2019',	null, 8, 6),
 ('13-02-2019',	null, 9, 5),
@@ -757,16 +750,16 @@ values
 ('20-03-2019',	null, 11, 6),
 ('23-03-2019',	null, 12, 7),
 ('23-03-2019',	null, 13, 4),
-('24-03-2019',	null, 14, 9), 
-('24-03-2019',	null, 15, 9), 
+('24-03-2019',	null, 14, 5), 
+('24-03-2019',	null, 15, 5), 
 ('24-04-2019',	null, 16, 5),
 ('24-04-2019',	null, 17, 5),
-('24-04-2019',	'27-04-2019', 18, 9),
+('24-04-2019',	'27-04-2019', 18, 5),
 ('27-04-2019',	null, 18, 6),
 ('27-04-2019',	null, 19, 4);
 				");
-				//Яхты
-				dbContext.Database.ExecuteSqlRaw($@"
+                //Яхты
+                dbContext.Database.ExecuteSqlRaw($@"
 /*
 ('KA-6',	'Single', 	'Cruise', 	'Kiel', 		3, 3, 1),1
 ('KA-5',	'Single', 	'Cruise', 	'Kiel', 		3, 2, 1),2
@@ -789,25 +782,25 @@ values
 ('Dimetrius', 	'Zhbanov',  	'Male',		'30-11-2000',	 	'd-zhb11@gmail.com',	 '+380943222990'	);9
 */
 
-insert into Yacht(Name, Status, TypeId, YachtOwnerID)
+insert into Yacht(Name, TypeId, YachtOwnerID)
 values
-('Alpha',			'Valid',		1, 1),
-('Storm',			'Invalid',		1, 20),
-('Adelaida',		'Valid',		4, 20),
-('Latnyk',			'Valid',		5, 14),
-('Storm',			'Valid',		7, 15),
-('Infernal Rage',	'Valid',		4, 20),
-('Hello Kitty',		'Valid',		5, 15),
-('Beda',			'Valid',		4, 20),
-('Moby Dick',		'Valid',		1, 14)
+('Alpha',					1, 1),
+('Storm',					1, 20),
+('Adelaida',				4, 20),
+('Latnyk',					5, 14),
+('Storm',					7, 15),
+('Infernal Rage',			4, 20),
+('Hello Kitty',				5, 15),
+('Beda',					4, 20),
+('Moby Dick',				1, 14)
 ;
 				");
-				#endregion
+                #endregion
 
-				#region Второе поколение
+                #region Второе поколение
 
-				//Договоры на поставку материалов
-				dbContext.Database.ExecuteSqlRaw($@"
+                //Договоры на поставку материалов
+                dbContext.Database.ExecuteSqlRaw($@"
 /*
 ('Diesel Fuel 1', 				(select id from materialtype where name = 'Fuel')),1
 ('Diesel Fuel 2', 				(select id from materialtype where name = 'Fuel')),2
@@ -912,7 +905,7 @@ values
 (7, 18, '24-03-2019', null);
 				");
 
-				//Тесты работоспособности яхт
+                //Тесты работоспособности яхт
                 dbContext.Database.ExecuteSqlRaw($@"
 /*
 ('Alpha', 'Online', 1, 2), 1
@@ -961,8 +954,8 @@ values
 ('11-10-2021', 'Massive problems with engine', 3, 5)
 ;
 				");
-				
-				//Ремонты
+
+                //Ремонты
                 dbContext.Database.ExecuteSqlRaw($@"
 insert into Repair(startdate, enddate, duration, status, personnel, yachtid)
 values
@@ -974,8 +967,8 @@ values
 ('10-10-2021', null,	'14-01-2022',	'Waits',	3,	6)
 ;
 				");
-				
-				//Запросы на выдачу материалов
+
+                //Запросы на выдачу материалов
                 dbContext.Database.ExecuteSqlRaw($@"
 /*
 ('Diesel Fuel 1', 				(select id from materialtype where name = 'Fuel')),1
@@ -1018,8 +1011,8 @@ values
 ('12-10-2021',		   null, '12-12-2021',  'Waits', 1, 10, 16, 5)
 ;
 				");
-				
-				//Победитель
+
+                //Победитель
                 dbContext.Database.ExecuteSqlRaw($@"
 /*
 ('First YachtClub Event', 			'01-02-2019', 	'03-02-2019'),	1
@@ -1055,8 +1048,8 @@ values
 (7, 5, null),
 (7, 4, null);
 				");
-				
-				//Договор на аренду яхты
+
+                //Договор на аренду яхты
                 dbContext.Database.ExecuteSqlRaw($@"
 /*Insert INTO YachtLeaseType(name,price)
 values
@@ -1078,6 +1071,8 @@ values
 ('31-03-2021', null,			'12-12-2022', 30000, 4, 3),
 ('01-04-2021', null,			'12-12-2022', 40000, 5, 3)
 ;
+
+update YachtLease set paid = true;
 				");
 
                 #endregion
@@ -1096,7 +1091,7 @@ values
 (5, 17);
 				");
 
-				//Контракты
+                //Контракты
                 dbContext.Database.ExecuteSqlRaw($@"
 /*
 ('Alexei', 		'Britov', 		'Male', 	'02-03-1947', 	'a_brit@gmail.com'),1
@@ -1157,28 +1152,30 @@ values
 ('Moby Dick', 'Online', 1, 3)9
 */
 
-insert into Contract(Startdate, enddate, duration, status, specials, averallprice, ClientID, ContractTypeID, YachtWithCrewID)
+insert into Contract(Startdate, enddate, duration, specials, averallprice, ClientID, ContractTypeID, CaptainInYachtID)
 values 
-('10-02-2019','11-02-2019', '11-02-2019', 'Done', 'No specials', 1500.0, 20, 2, 3),
-('17-02-2019','17-02-2019', '17-02-2019', 'Done','No specials', 400.0, 21, 1, 4),
-('18-02-2019','18-03-2019', '18-03-2019', 'Done','Long journey', 120000.0, 22, 3, 5),
-('13-02-2019', '17-02-2019', '17-02-2019', 'Done', 'No specials', 8000.0, 23, 4, 4 ),
-('25-04-2019', '21-06-2019', '21-06-2019', 'Done', 'Long journey', 400000.0, 22, 6, 5),
-('07-01-2020', '21-02-2020', '21-02-2020', 'Done', 'Long journey', 350000.0, 22, 6, 5),
-('01-07-2020', '05-08-2020', '05-08-2020', 'Done', 'Long journey', 200000.0, 22, 5, 5),
-('09-05-2021', '09-05-2021', '09-05-2021', 'Done', 'No specials', 1000.0, 1, 4, 5),
-('09-10-2021', null, '10-10-2022', 'Done', 'Long journey', 5000, 22, 4, 3),
-('25-12-2021', null, '10-10-2022', 'Done', 'No specials', 2000, 23, 7, 4),
-('27-12-2021', null, '10-10-2022', 'Done', 'No specials', 5000, 24, 3, 5)
+('10-02-2019','11-02-2019', '11-02-2019', 'No specials', 1500.0, 20, 2, 3),
+('17-02-2019','17-02-2019', '17-02-2019', 'No specials', 400.0, 21, 1, 4),
+('18-02-2019','18-03-2019', '18-03-2019', 'Long journey', 120000.0, 22, 3, 5),
+('13-02-2019', '17-02-2019', '17-02-2019', 'No specials', 8000.0, 23, 4, 4 ),
+('25-04-2019', '21-06-2019', '21-06-2019',  'Long journey', 400000.0, 22, 6, 5),
+('07-01-2020', '21-02-2020', '21-02-2020',  'Long journey', 350000.0, 22, 6, 5),
+('01-07-2020', '05-08-2020', '05-08-2020',  'Long journey', 200000.0, 22, 5, 5),
+('09-05-2021', '09-05-2021', '09-05-2021',  'No specials', 1000.0, 1, 4, 5),
+('09-10-2021', null, '10-10-2022', 'Long journey', 5000, 22, 4, 3),
+('25-12-2021', null, '10-10-2022', 'No specials', 2000, 23, 7, 6),
+('27-12-2021', null, '10-10-2022', 'No specials', 5000, 24, 3, 5)
 ;
+
+update Contract set paid = true where enddate is null;
 				");
 
-				#endregion
+                #endregion
 
-				#region Четвёртое поколение
+                #region Четвёртое поколение
 
-				//Отзывы
-				dbContext.Database.ExecuteSqlRaw($@"
+                //Отзывы
+                dbContext.Database.ExecuteSqlRaw($@"
 insert into Review(ClientId,  date, text, rate, userrate)
 values
 ( 4, '25-02-2019', 'Некогда больше не поеду на этой яхте', 1 , 0) ,
@@ -1187,17 +1184,17 @@ values
 ;
 				");
 
-				#endregion
-				#endregion
+                #endregion
+                #endregion
 
-			}
+            }
         }
 
-		public static void SeedWithProcedure(DataContext dbContext )
+        public static void SeedWithProcedure(DataContext dbContext)
         {
-			#region Функции и процедурки
-			//Доступные материалы
-			dbContext.Database.ExecuteSqlRaw(@"
+            #region Функции и процедурки
+            //Доступные материалы
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function MaterialMetric(
 	material_id bigint,
 	count decimal
@@ -1223,8 +1220,8 @@ begin
 end;
 $$ language plpgsql;	
 				");
-			//Проверка статусов заявок ремонта
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Проверка статусов заявок ремонта
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function CHECK_ER_FOR_REPS(
 closed boolean,
 repair_id int
@@ -1241,8 +1238,8 @@ begin
 end;
 $$ language plpgsql;
 				");
-			//Действующие сотрудники
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Действующие сотрудники
+            dbContext.Database.ExecuteSqlRaw(@"
 CREATE or replace Function StaffPositionListByPositionList (pos varchar[])
 	Returns Table (staffid int)
 as $$
@@ -1262,8 +1259,8 @@ Begin
 END;
 $$ language plpgsql;
 				");
-			//Пересечение дат
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Пересечение дат
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function IsInTerm(
 	_s1 timestamp,
 	_s2 timestamp,
@@ -1276,8 +1273,8 @@ begin
 end;
 $$ language plpgsql;
 				");
-			//Активные контракты яхты
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Активные контракты яхты
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function ActiveContractByYachtID (
 	yid int
 )
@@ -1285,14 +1282,14 @@ create or replace function ActiveContractByYachtID (
 as $$
 begin 	
 	return query select c.id cid, c.startdate startdate
-		   	from contract c join yacht_crew ywc on c.yachtwithcrewid = ywc.id 
+		   	from contract c join yacht_crew ywc on c.CaptainInYachtID = ywc.id 
 			where ywc.yachtid = yid and c.enddate is null
 		   ;
 end; 
 $$ language plpgsql;
-				");	
-			//Активные ремонты яхты
-			dbContext.Database.ExecuteSqlRaw(@"
+				");
+            //Активные ремонты яхты
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function ActiveRepairByYachtID (
 	yid int
 )
@@ -1306,20 +1303,20 @@ begin
 end; 
 $$ language plpgsql;
 				");
-			//Current_Timestamp::timestamp
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Current_Timestamp::timestamp
+            dbContext.Database.ExecuteSqlRaw(@"
 			create or replace function CurStmp() returns timestamp 
 			as $$
 			begin return current_timestamp::timestamp(2); end;
 			$$ language plpgsql;
 				");
-			
 
-			#endregion
 
-			#region Views
-			//Доступные материалы
-			dbContext.Database.ExecuteSqlRaw(@"
+            #endregion
+
+            #region Views
+            //Доступные материалы
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace view AvailableResources as (
 with mlcount as(
 select  ml.material, sum(ml.count) count from 
@@ -1345,8 +1342,8 @@ select distinct m.id material, coalesce(ar.count, 0) count, materialmetric(m.id,
 );
 				");
 
-			//Товарищи ремонтники
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Товарищи ремонтники
+            dbContext.Database.ExecuteSqlRaw(@"
 Create or replace view Repair_Staff as (
 select sp.id, sp.staffid, sp.positionid, sp.startdate, sp.enddate, sp.description from
 staff_position as sp join position as p on sp.positionid = p.id 
@@ -1354,8 +1351,8 @@ where sp.id in (select StaffPositionListByPosition('Repairman'))
 	);
 ");
 
-			//Персонал
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Персонал
+            dbContext.Database.ExecuteSqlRaw(@"
 Create or replace View Staff as (
 		select * from person where id in (
 		select distinct sp.staffid from
@@ -1365,14 +1362,141 @@ Create or replace View Staff as (
 
 ");
 
-			#endregion
+            //Морские волки
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace view yacht_crew_position as (
+	select yc.id, yc.yachtid, yc.crewid, p.id positionid, p.name positionname from yacht_crew yc 
+	join staff_position sp on yc.crewid = sp.id  
+	join position p on sp.positionid = p.id
+	);
 
-			#region Triggers
+");
 
-			#region ExtradationRequest
+            //Приключения яхт
+            dbContext.Database.ExecuteSqlRaw(@"
+			--Яхты с действительными контрактами на аренду
+			create or replace view YachtLeaseStatus as (
+				with openlease as (
+					select * from yachtlease yl where yl.paid and yl.enddate is null and yl.startdate <= current_timestamp
+				),
+					yachtinopenlease as (
+					select * from yacht where id in (select yachtid from openlease)
+				)
+				select *,
+				case when id in (select id from yachtinopenlease) then 'Free'
+					 else 'Invalid'
+				end status
+				from yacht
+			);
+			--Яхты, находящиеся в ремонте
+			create or replace view YachtInRepair as (
+				with openrepair as (
+					select * from repair where enddate is null and startdate <= current_timestamp
+				),
+				yachtinrepair as (
+					select * from yacht where id in (select yachtid from openrepair)
+				)
+				select *, 
+				case when id in (select id from yachtinrepair) then 'Repairing'
+					 else 'Free'
+				end status
+				from yacht
+			);
+			--Яхты, выполняющие контракт
+			create or replace view YachtInContract as (
+				with yachtincontract as (
+					select yc.yachtid from yacht_crew yc join contract c on c.CaptainInYachtID = yc.id 
+					where c.paid and c.startdate <= current_timestamp and c.enddate is null
+				),
+				yachtfaraway as (
+					select * from yacht where yacht.id in ( select yachtid from yachtincontract )
+				)
+				select *, 
+				case when id in (select id from yachtfaraway ) then 'Far Away'
+					 else 'Free'
+				end status
+				from yacht order by id
+			);
+			--Яхты, учавствующие в событии
+			create or replace view YachtInEvent as (
+				with yachtincontract as (
+					select w.yachtid from winner w join event e on e.id = w.eventid
+					where e.startdate <= current_timestamp and e.enddate is null
+				),
+				yachtfaraway as (
+					select * from yacht where yacht.id in ( select yachtid from yachtincontract )
+				)
+				select *, 
+				case when id in (select id from yachtfaraway ) then 'Participating'
+					 else 'Free'
+				end status
+				from yacht order by id
+			);
+			--Яхты у которых есть минимум экипажа
+			create or replace view ReadyToContract as (
+				with 
+				--Яхты с перечнем должностей, которые должны на ней находится
+				yachtpositions as (
+					select distinct y.id, pyt.positionid pid, pyt.count from position_yachttype pyt 
+					join yachttype yt on pyt.yachttypeid = yt.id 
+					join yacht y on y.typeid = yt.id order by y.id
+				),
+				--Перечень должностей находящихся на яхте и количество человек, которые находятся на должности X
+				crewpositions as (
+					select distinct yc.yachtid id, p.id pid, count(p.id) over (partition by yc.yachtid, p.id) count 
+					from yacht_crew yc join 
+					staff_position sp on yc.crewid = sp.id 
+					join position p on sp.positionid = p.id where yc.enddate is null
+				)
+				,
+				--Проверка каждой из должностей, соответствует ли та необходимому минимуму
+				neccessaryareincrew as (
+					select id, pid, case when yp.count <= cp.count then true else false end hascrew
+					from yachtpositions yp left join crewpositions cp using(id, pid)
+				),
+				allincrew as (
+					select id, bool_and(hascrew) status from neccessaryareincrew group by id
+				) 
+				select *, 
+				case when not (select status from allincrew a where a.id = y.id ) then 'Filling' else 'Filled' end 
+				status
+				from yacht y
+			);
+			
+			Create or replace view BusyYacht as (
+				with 
+				InRepair as (
+					select id, case when status = 'Free' then false else true end from YachtInRepair 
+				),
+				InContract as (
+					select id, case when status = 'Free' then false else true end from YachtInContract 
+				),
+				InEvent as (
+					select id, case when status = 'Free' then false else true end from YachtInEvent
+				),
+				IsValid as (
+					select id, case when status = 'Free' then true else false end from YachtLeaseStatus
+				),
+				IsFilled as (
+					select id, case when status = 'Filled' then true else false end from ReadyToContract
+				)
+				select id, r.case r, c.case c, e.case e, i.case val, f.case filled from yacht 
+				join InRepair r using(id) 
+				join InContract c using (id) 
+				join InEvent e using(id) 
+				join IsValid i using(id)
+				join IsFilled f using(id)
+			);
+");
 
-			//Триггер проверки завершённых заявок
-			dbContext.Database.ExecuteSqlRaw(@"
+            #endregion
+
+            #region Triggers
+
+            #region ExtradationRequest
+
+            //Триггер проверки завершённых заявок
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function ER1()
 	returns trigger
 as $$
@@ -1414,8 +1538,8 @@ create trigger ReadonlyConstraint
 Before insert or update or delete on ExtradationRequest 
 for each row execute function ER1();
 				");
-			//Закрывать заявку, в случае если статус в Отменённых или Выполненных
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Закрывать заявку, в случае если статус в Отменённых или Выполненных
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function ER2()
 	returns trigger
 as $$
@@ -1440,8 +1564,8 @@ create trigger Closer
 Before insert or update on ExtradationRequest 
 for each row execute function ER2();
 				");
-			//Триггер на выдачу материалов при нехватке
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Триггер на выдачу материалов при нехватке
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function ER3()
 	returns trigger
 as $$
@@ -1461,9 +1585,9 @@ $$ language plpgsql;
 create trigger ExtradationAvailableMaterials
 Before insert or update on ExtradationRequest 
 for each row execute function ER3();
-				");	
-			//Триггер на добавление 
-			dbContext.Database.ExecuteSqlRaw(@"
+				");
+            //Триггер на добавление 
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function ER4()
 	returns trigger
 as $$
@@ -1480,12 +1604,12 @@ After insert on ExtradationRequest
 for each row execute function ER4();
 				");
 
-			#endregion
+            #endregion
 
-			#region Repair
+            #region Repair
 
-			//Триггер проверки завершённых заявок
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Триггер проверки завершённых заявок
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function REP1()
 	returns trigger
 as $$
@@ -1513,6 +1637,12 @@ begin
 			if( new.duration < current_timestamp or new.duration is null) then new.duration = current_timestamp; end if;
 			New.enddate = null;
 			New.Status = 'Created';
+			select * into rec from busyyacht b where b.id = new.yachtid;
+			if(not rec.val) then raise exception 'Недействительные яхты не обслуживаются';
+			elsif(rec.r) then raise exception 'Яхта уже ремонтируется';
+			elsif(rec.e) then raise exception 'Дождитесь окончания события, чтобы отремонтировать яхту';
+			elsif(rec.c) then raise exception 'Дождитесь возвращения яхты с контракта';
+			end if;
             RETURN NEW;
 		ELSIF (TG_OP = 'DELETE') THEN
 			if(old.status in ('Done')) then 
@@ -1528,8 +1658,8 @@ create trigger ReadonlyConstraint
 Before insert or update or delete on Repair
 for each row execute function REP1();
 				");
-			//Изменение статуса
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Изменение статуса
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function REP2()
 	returns trigger
 as $$
@@ -1571,12 +1701,12 @@ Before update on Repair
 for each row execute function REP2();
 				");
 
-			#endregion
+            #endregion
 
-			#region Person
+            #region Person
 
-			//Триггер начальной проверки персон
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Триггер начальной проверки персон
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function P1()
 	returns trigger
 as $$
@@ -1599,12 +1729,12 @@ Before insert or update or delete on Person
 for each row execute function P1();
 				");
 
-			#endregion
+            #endregion
 
-			#region Staff_Position
+            #region Staff_Position
 
-			//Триггер начальной проверки персон
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Триггер начальной проверки персон
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function SP1()
 	returns trigger
 as $$
@@ -1613,7 +1743,7 @@ rec RECORD;
 begin 	
 		IF (TG_OP = 'UPDATE') THEN 
 			if(old.enddate is not null) then 
-				raise exception 'Попытка изменения закрытой должности';
+				raise exception 'Попытка изменения уволенного сотрудника';
 			end if;
 			rec := new;
 			rec.enddate = old.enddate;
@@ -1622,12 +1752,10 @@ begin
 			if(rec <> old) then 
 				raise exception 'Изменены запрещённые поля';
 			end if;
-			
+
 			if(new.enddate is not null) then 
-				new.enddate = current_timestamp;
+				update Yacht_Crew set enddate = new.enddate where crewid = new.id;
 			end if;
-			
-			return new;
         ELSIF (TG_OP = 'INSERT') then
 			--Выставление стандартной даты
 			new.startdate = current_timestamp; 
@@ -1640,7 +1768,12 @@ begin
 				 where sp.staffid = new.staffid and sp.positionid = new.positionid and sp.enddate is null) >= 1) then
 				 raise exception 'Уже присутствует открытая запись человека на данной должности, закройте предыдущую и повторите попытку';
 			end if;
-            RETURN NEW;
+			new.enddate = null;
+		ELSIF (TG_OP = 'DELETE') then
+			if(old.enddate is not null) then 
+				raise exception 'Попытка удаления уволенного сотрудника';
+			end if;
+			return old;
         END IF;
 		return new;
 end;
@@ -1651,12 +1784,12 @@ Before insert or update or delete on Staff_Position
 for each row execute function SP1();
 				");
 
-			#endregion
+            #endregion
 
-			#region Repair_Men
+            #region Repair_Men
 
-			//Триггер начальной проверки ремонтников на ремонте
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Триггер начальной проверки ремонтников на ремонте
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function RM1()
 	returns trigger
 as $$
@@ -1690,12 +1823,12 @@ Before insert or update or delete on Repair_Men
 for each row execute function RM1();
 				");
 
-			#endregion
+            #endregion
 
-			#region MaterialLease
+            #region MaterialLease
 
-			//Триггер начальной проверки контракта на выдачу материалов
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Триггер начальной проверки контракта на выдачу материалов
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function ML1 ()
 	returns trigger
 as $$
@@ -1733,12 +1866,12 @@ Before insert or update or delete on MaterialLease
 for each row execute function ML1 ();
 				");
 
-			#endregion
+            #endregion
 
-			#region Yacht_Crew
+            #region Yacht_Crew
 
-			//Триггер начальной проверки экипажа
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Триггер начальной проверки экипажа
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function YC1 ()
 	returns trigger
 as $$
@@ -1758,9 +1891,10 @@ begin
 			end if;	
         ELSIF (TG_OP = 'INSERT') then
 			new.startdate = current_timestamp;
+			new.enddate = null;
 		ELSIF (TG_OP = 'DELETE') then 
-			if(old.deliverydate is not null) then 
-				raise exception 'Попытка удаления закрытого контракта на материалы';			
+			if(old.enddate is not null) then 
+				raise exception 'Попытка удаления уволенного члена экипажа ';			
 			end if;
 			return old;
         END IF;
@@ -1773,12 +1907,73 @@ Before insert or update or delete on Yacht_Crew
 for each row execute function YC1 ();
 				");
 
-			#endregion
-			
-			#region Event
+            //Триггер проверки экипажа
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YC2 ()
+	returns trigger
+as $$
+begin 	
+		if(TG_OP = 'INSERT') then
+			  if( exists 
+				   (
+						select * from staff_position sp join position p on sp.positionid = p.id where not p.crewposition
+						and new.crewid = sp.id
+				   ) 
+				  ) then raise exception 'Вы добавляете не моряка на должность члена экипажа';
+			  elsif ( exists (select * from staff_position sp where new.crewid = sp.id and sp.enddate is not null) ) then
+				raise exception 'Попытка добавить переведённого на другую должность сотрудника';
+			  elsif ( exists (select * from yacht_crew yc where yc.crewid = new.crewid and yc.enddate is null ) ) then
+				raise exception 'Данный моряк уже служит на другой яхте';
+			  end if;
+		elsif(TG_OP = 'UPDATE') then
+			  if ( (select b.c from busyyacht b where b.id = new.yachtid and new.enddate is not null ) ) then
+				raise exception 'Невозможно перевести сотрудника с яхты во время выполнения контракта';
+			  elsif ( (
+					select b.e from busyyacht b join yacht_crew_position ycp on ycp.yachtid = b.id
+					   where b.id = new.yachtid and ycp.crewid = new.crewid and new.enddate is not null 
+						and ycp.positionname = 'Captain'
+					  ) ) then
+				raise 		exception 'Невозможно перевести капитана с яхты во время мероприятия';
+			  end if;
+		end if;
+		RETURN new;
+end;
+$$ language plpgsql;	
 
-			//Триггер начальной проверки событий
-			dbContext.Database.ExecuteSqlRaw(@"
+create trigger CrewConstaraint
+Before insert or update on Yacht_Crew
+for each row execute function YC2 ();
+				");
+
+            //Триггер проверки количества экипажа
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YC3 ()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+begin 	
+		select yt.crewcapacity cap into rec from yacht y join yachttype yt on y.typeid = yt.id where y.id = new.yachtid;		
+		if( rec.cap - (
+			select count(yc.id) from yacht_crew yc where yc.yachtid = new.yachtid and yc.enddate is null 
+		) - 1 <= 0 ) then 
+			 raise exception 'Данная яхта не поддерживает более % членов экипажа', rec.cap;
+		end if;
+		RETURN new;
+end;
+$$ language plpgsql;	
+
+create trigger PersonnelChecker
+Before insert on Yacht_Crew
+for each row execute function YC3 ();
+				");
+
+            #endregion
+
+            #region Event
+
+            //Триггер начальной проверки событий
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function E1 ()
 	returns trigger
 as $$
@@ -1819,12 +2014,12 @@ Before insert or update or delete on Event
 for each row execute function E1 ();
 				");
 
-			#endregion			
+            #endregion
 
-			#region Winner
+            #region Winner
 
-			//Триггер начальной проверки потенциальных победителей
-			dbContext.Database.ExecuteSqlRaw(@"
+            //Триггер начальной проверки потенциальных победителей
+            dbContext.Database.ExecuteSqlRaw(@"
 create or replace function W1 ()
 	returns trigger
 as $$
@@ -1847,20 +2042,17 @@ begin
 		ELSIF (TG_OP = 'INSERT') then
 				select * into rec from event e where new.eventid = e.id ; 
 				if(rec.enddate is not null) then raise exception 'Попытка участия в закрытом событии'; end if;
-				if( exists (
-					select cid from ActiveContractByYachtID(new.yachtid) where IsInTerm(  rec.startdate, startdate, 
-									  current_timestamp::timestamp, rec.duration  )
-				) or exists
-				   (
-				   select rid from ActiveRepairByYachtID(new.yachtid) where IsInTerm(  rec.startdate, startdate, 
-									  current_timestamp::timestamp,rec.duration )
-				   ) 
-				  ) then
-				  raise exception 'Попытка участия в событии при ремонте/контракте';
-				end if;
 				if(not rec.canhavewinners) then 
 					new.place := null;
 				end if;
+				
+				select * into rec from busyyacht b where new.yachtid = b.id;
+				if(not rec.val) then 
+					raise exception 'Яхта недействительна и не может учавствовать в мероприятии';
+				elsif( rec.r or rec.c) then
+				  	raise exception 'Попытка участия в событии при ремонте/контракте';
+				end if;
+				
 		ELSIF (TG_OP = 'DELETE') then 
 			if( not exists ( select * from event e where e.id = old.eventid and e.enddate is null)) then 
 				raise exception 'Попытка удаления закрытого события';			
@@ -1879,7 +2071,7 @@ for each row execute function W1 ();
             #endregion
 
             #region YachtLease
-			//Триггер начальной проверки договоров на яхты
+            //Триггер начальной проверки договоров на яхты
             dbContext.Database.ExecuteSqlRaw(@"
 			create or replace function YL1 ()
 				returns trigger
@@ -1898,6 +2090,10 @@ for each row execute function W1 ();
 						rec.enddate := old.enddate;
 						rec.overallprice := old.overallprice;
 						rec.specials := old.specials;
+						if(not old.paid) then
+								rec.startdate = old.startdate;
+								rec.paid = old.paid;
+						end if;
 						if(rec <> old) 
 							then raise exception 'Изменены запрещенные поля';
 						end if;	
@@ -1905,17 +2101,25 @@ for each row execute function W1 ();
 						if(exists (select * from yachtlease where yachtid = new.yachtid and enddate is null) ) then
 							raise exception 'невозможно заключить новый контракт, если старый ещё не завершён';
 						end if;
-						if(new.startdate <= current_timestamp or new.startdate is null) then
-							new.startdate = current_timestamp;
-						end if;
-						new.overallprice = (select ylt.price from yachtleasetype ylt where ylt.id = new.yachtleasetypeid) * 
-							 abs( extract(day from new.startdate - new.duration ) );	 
+						new.enddate = null;
 					ELSIF (TG_OP = 'DELETE') then 
 						if(old.enddate is not null) then 
 							raise exception 'Попытка удаления закрытого контракта на пирс';			
 						end if;
 						return old;
 					END IF;
+
+						if(new.startdate <= current_timestamp or new.startdate is null) then
+							new.startdate = current_timestamp;
+						end if;
+						if(new.duration <= current_timestamp or new.duration is null) then
+							new.duration = current_timestamp;
+						end if;
+						if(new.overallprice is null) then
+							new.overallprice = (select ylt.price from yachtleasetype ylt where ylt.id = new.yachtleasetypeid) * 
+								 abs( extract(day from new.startdate - new.duration ) );	
+						end if;
+
 					RETURN new;
 			end;
 			$$ language plpgsql;
@@ -1924,37 +2128,10 @@ for each row execute function W1 ();
 			Before insert or update or delete on YachtLease
 			for each row execute function YL1 ();
 							");
-			//Триггер начальной проверки изменение статусов яхт
-            dbContext.Database.ExecuteSqlRaw(@"
-			create or replace function YL2 ()
-				returns trigger
-			as $$
-			declare 
-			rec RECORD;
-			begin 
-				if(
-					isinterm(new.startdate, CurStmp(), CurStmp(), coalesce(new.enddate, CurStmp())) and
-					new.paid
-				) then
-					update Yacht set Status = 'Valid' where id = new.yachtid;
-				end if;
-				if(
-					new.enddate is not null and new.enddate <= CurStmp()					
-				) then
-					update Yacht set Status = 'Invalid' where id = new.yachtid;
-				end if;
-				return new;
-			end;
-			$$ language plpgsql;
-
-			create trigger StatusChecker
-			After update or insert on YachtLease
-			for each row execute function YL2 ();
-							");
             #endregion
 
             #region Yacht
-			//Триггер начальной проверки на яхты
+            //Триггер начальной проверки на яхты
             dbContext.Database.ExecuteSqlRaw(@"
 			 create or replace function Y1 ()
 				 returns trigger
@@ -1971,78 +2148,148 @@ for each row execute function W1 ();
 						 end if;	
 					 ELSIF (TG_OP = 'INSERT') then
 						 new.registrydate = current_timestamp;
-						 new.status = 'Invalid';
+					 ELSIF
+					 ELSIF (TG_OP = 'DELETE') then
+							if( exists (select * from yachtlease where yachtid = old.id) ) then 
+								raise exception 'Невозможно удалить яхту, если на неё были созданы договоры на аренду места';
+							end if;
+							return old;
 					 END IF;
 					 RETURN new;
 			 end;
 			 $$ language plpgsql;
 
 			 create trigger ReadonlyConstraint
-			 Before insert or update on Yacht
+			 Before insert or update or delete on Yacht
 			 for each row execute function Y1 ();
-							 "); 
-			//Триггер проверки статуса яхт
-			dbContext.Database.ExecuteSqlRaw(@"
-			 create or replace function Y2 ()
-				returns trigger
-			as $$
-			declare 
-			rec RECORD;
-			begin 	
-				if (old.status = 'Invalid' and new.Status in ( 'Valid') 
-					and not exists( 
-						select * from yachtlease yl where yl.paid and new.id = yl.yachtid and
-						isinterm(yl.startdate, CurStmp(), CurStmp(), coalesce(yl.enddate, CurStmp()))
-					)
-				   ) then 
-				   raise exception 'Невозможно перейти из статуса Недействителен в статус Действителен, ведь
-				   отсутствуют текущие оплаченные контракты';
-				elsif(
-					old.status = 'Valid' and new.Status in ( 'Invalid') and 
-					not exists (
-						select * from yachtlease yl where yl.paid and new.id = yl.yachtid and yl.enddate <= CurStmp()
-					)
-				) then 				
-					raise exception 'Невозможно перейти из статуса Действителен в статус Недействителен, ведь
-				  	присутствуют текущие оплаченные контракты';
-				end if;
-				return new;
-			end;
-			$$ language plpgsql;
-
-			create trigger StatusChecker
-			Before update on Yacht
-			for each row execute function Y2 ();
 							 ");
             #endregion
 
-    //        #region Contract
-    //        dbContext.Database.ExecuteSqlRaw(@"
-			 //create or replace function  ()
-				// returns trigger
-			 //as $$
-			 //declare 
-			 //rec RECORD;
-			 //begin 	
-				//	 IF (TG_OP = 'UPDATE') THEN 
+            #region Contract
+            dbContext.Database.ExecuteSqlRaw(@"
+            create or replace function C1()
+             returns trigger
+            as $$
+            declare
+            rec RECORD;
+            begin
 
-				//	 ELSIF (TG_OP = 'INSERT') then
+                 IF(TG_OP = 'UPDATE') THEN
+	
+						if(old.enddate is not null) then 
+							raise exception 'Попытка изменения закрытого контракта';
+						end if;
+						rec := new;
+						rec.enddate = old.enddate;
+						rec.duration = old.duration;
+						rec.specials = old.specials;
+						rec.averallprice = old.averallprice ;
+						if(not old.paid) then
+								rec.startdate = old.startdate;
+								rec.paid = old.paid;
+						end if;
 
-				//	 ELSIF (TG_OP = 'DELETE') then 
-				//		 if(old.enddate is not null) then 
-				//			 raise exception 'Попытка удаления закрытого события';			
-				//		 end if;
-				//		 return old;
-				//	 END IF;
-				//	 RETURN new;
-			 //end;
-			 //$$ language plpgsql;
+						if(rec <> old) then 
+							raise exception 'Изменены запрещённые поля';
+						end if;
 
-			 //create trigger ReadonlyConstraint
-			 //Before insert or update or delete on Winner
-			 //for each row execute function  ();
-				//			 ");
-    //        #endregion
+                 ELSIF(TG_OP = 'INSERT') then
+				 		if( not ( 
+							 select yp.positionname = 'Captain' from yacht_crew_position yp where yp.id = new.captaininyachtid
+							   ) ) then
+							   raise exception 'Невозможно создать новый контракт без капитана';
+						end if;
+						new.enddate = null;
+                 ELSIF(TG_OP = 'DELETE') then
+                     if (old.enddate is not null) then
+                          raise exception 'Попытка удаления закрытого контракта';
+					 end if;
+					 return old;
+           		 END IF;
+				 IF(new.paid) then
+					    if( (select b.c from busyyacht b join yacht_crew yc on yc.yachtid = b.id 
+							where yc.id = new.captaininyachtid
+							) ) then
+							raise exception 'Невозможно заключить новый контракт, если старый ещё не завершён';
+						elsif( ( 
+							select b.e from busyyacht b join yacht_crew yc on yc.yachtid = b.id 
+							where yc.id = new.captaininyachtid
+							   ) ) then
+							   raise exception 'Невозможно заключить новый контракт, если яхта участвует в мероприятии';
+						elsif( ( 
+							select b.r from busyyacht b join yacht_crew yc on yc.yachtid = b.id 
+							where yc.id = new.captaininyachtid
+							   ) ) then
+							   raise exception 'Невозможно заключить новый контракт, если яхта ремонтируется';
+						elsif( ( 
+							select not b.val from busyyacht b join yacht_crew yc on yc.yachtid = b.id 
+							where yc.id = new.captaininyachtid
+							   ) ) then
+							   raise exception 'Невозможно заключить новый контракт, если яхта недействительна';
+						elsif( ( 
+							select not b.filled from busyyacht b join yacht_crew yc on yc.yachtid = b.id 
+							where yc.id = new.captaininyachtid
+							   ) ) then
+							   raise exception 'Невозможно заключить новый контракт, если требуемый экипаж не собран';
+						elsif( ( 
+							select not y.rentable from yacht y join yacht_crew yc on yc.yachtid = y.id
+							where yc.id = new.captaininyachtid
+							   ) ) then
+							   raise exception 'Невозможно заключить новый контракт, если яхта не арендуема';
+						end if;
+				 end if;
+				 		if(new.specials is null) then
+							new.specials = ' ';
+						end if;
+					    if(new.startdate <= current_timestamp or new.startdate is null) then
+							new.startdate = current_timestamp;
+						end if;
+						if(new.duration <= current_timestamp or new.duration is null) then
+							new.duration = current_timestamp;
+						end if;
+						if(new.averallprice is null ) then 
+							new.averallprice = (select ct.price from contracttype ct where ct.id = new.contracttypeid) * 
+							 abs( extract(day from new.startdate - new.duration ) );
+						end if;
+            RETURN new;
+            end;
+            $$ language plpgsql;
+
+            create trigger ReadonlyConstraint
+            Before insert or update or delete on Contract
+            for each row execute function C1();
+            ");
+			#endregion
+
+			#region Position_Yachttype
+			//Триггер на добавление в таблицу допусков должностей.
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function PYT1 ()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+begin 	
+		if( new.positionid not in (select id from position where crewposition) ) then
+			raise exception 'Попытка добавить не морскую должность';
+		end if;
+	
+		select yt.crewcapacity cap into rec from yachttype yt where yt.id = new.yachttypeid;	
+		if( rec.cap - (
+			select coalesce(sum(pyt.count),0) from position_yachttype pyt where pyt.yachttypeid = new.yachttypeid
+		) - new.count < 0 ) then 
+			 raise exception 'Данная тип яхты не поддерживает более % членов экипажа', rec.cap;
+		end if;
+		RETURN new;
+end;
+$$ language plpgsql;	
+
+create trigger PersonnelChecker
+Before insert or update on position_yachttype
+for each row execute function PYT1 ();
+
+				");
+            #endregion
 
             #endregion
         }

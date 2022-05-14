@@ -16,9 +16,6 @@
                     Владелец яхты
                 </td>
                 <td>
-                    Статус
-                </td>
-                <td>
                     Арендуема
                 </td>
                 <td>
@@ -43,9 +40,6 @@
                 </td>
                 <td>
                     @($"{Person.Yachtowner.Name} {Person.Yachtowner.Surname} {Person.Yachtowner.Phone}")
-                </td>
-                <td>
-                   @Person.Status
                 </td>
                 <td>
                     @(Person.Rentable.Value ? "Да": "Нет")

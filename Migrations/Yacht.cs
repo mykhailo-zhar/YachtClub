@@ -25,9 +25,6 @@ namespace Project.Migrations
         [Column("name", TypeName = "character varying")]
         public string Name { get; set; }
         [Required]
-        [Column("status", TypeName = "character varying")]
-        public string Status { get; set; }
-        [Required]
         [Column("rentable")]
         public bool? Rentable { get; set; }
         [Column("registrydate")]
