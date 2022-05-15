@@ -1,19 +1,36 @@
 ﻿using Project.Migrations;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Project.Models
 {
+    public class CRUD
+    {
+        public static readonly string Create = "Create";
+        public static readonly string Edit = "Edit";
+        public static readonly string Details = "Details";
+        public static readonly string Delete = "Delete";
+    }
     public class ObjectViewModel<T>
     {
         public T Object { get; set; }
-        public string Action { get; set; } = "Create";
+        public bool[] Option { get; set; } = new bool[4];
         public bool ReadOnly { get; set; } = false;
-        public string Theme { get; set; } = "primary";
         public bool ShowAction { get; set; } = true;
         public bool ShowReadOnlyFields { get; set; } = true;
+
+        public string Action { get; set; } = CRUD.Create;
+        
+        public string Theme { get; set; } = "primary";
+
         public string ActionObjectName => Action + Object.GetType().Name;
 
-        public bool[] Option { get; set; } = new bool[4];
+        public string DisplayNone(bool Condition = false,params string[] actions) => actions.Contains(Action) || Condition? "d-none" : "";
+
+        public string HideOnCreate => DisplayNone(actions: CRUD.Create);
+        public string HideOnDelete => DisplayNone(actions: CRUD.Delete);
+        public string HideOnEdit => DisplayNone(actions: CRUD.Edit);
+        public string AlwaysHidden => DisplayNone(Condition: true);
     }
 
     public class ObjectViewModelFactory<T>
@@ -23,7 +40,7 @@ namespace Project.Models
             return new ObjectViewModel<T>
             {
                 Object = obj,
-                Action = "Edit"
+                Action = CRUD.Edit
             };
 
         }
@@ -32,7 +49,8 @@ namespace Project.Models
             return new ObjectViewModel<T>
             {
                 Object = obj,
-                ShowReadOnlyFields = false
+                ShowReadOnlyFields = false,
+                
             };
 
         }
@@ -41,7 +59,7 @@ namespace Project.Models
             return new ObjectViewModel<T>
             {
                 Object = obj,
-                Action = "Delete",
+                Action = CRUD.Delete,
                 Theme = "danger",
                 ShowReadOnlyFields = true,
                 ReadOnly = true
@@ -53,7 +71,7 @@ namespace Project.Models
             return new ObjectViewModel<T>
             {
                 Object = obj,
-                Action = "Details",
+                Action = CRUD.Details,
                 ReadOnly = true,
                 Theme = "info",
                 ShowAction = false,

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Mvc;
+using Npgsql;
 using Project.Migrations;
 
 namespace Project.Models
@@ -35,5 +36,17 @@ namespace Project.Models
 
         public static string CoalesceString(string str) => IsStr(str) ? str : string.Empty;
         public static string CoalesceDateTime(DateTime? dateTime) => dateTime == null ? "[Дата окончания отсутствует]" : dateTime.Value.ToString();
+
+        public static Exception ErrorCatcher(Action Vulnarable)
+        {
+            try
+            {
+                Vulnarable.Invoke();
+                return null;
+            }
+            catch(Exception exc){
+                return exc;
+            }
+        }
     }
 }

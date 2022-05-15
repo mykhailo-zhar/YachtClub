@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -45,6 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Migrations\Ready\" />
     <Folder Include="wwwRoot\lib\twitter-bootstrap\" />
   </ItemGroup>
 

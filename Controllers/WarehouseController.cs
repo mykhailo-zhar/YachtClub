@@ -25,18 +25,6 @@ namespace Project.Controllers
             return View(type);
         }
 
-        public IActionResult DetailsMaterialtype(string id)
-        {
-            var Materialtype = Context.Materialtype.First(p => p.Id == int.Parse(id));
-            return View("_Details", new DetailsViewModel
-            {
-                Description = Materialtype.Description,
-                ButtonsViewModel = new EditorBottomButtonsViewModel { 
-                    BackAction = typeof(Materialtype).Name
-                }
-            }) ;
-        }
-
         public IActionResult EditMaterialtype(string id)
         {
             var Materialtype = Context.Materialtype.First(p => p.Id == int.Parse(id));
@@ -48,11 +36,22 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Context.Materialtype.Update(Materialtype.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Materialtype));
+                try
+                {
+                    Context.Materialtype.Update(Materialtype.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Materialtype));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Materialtype));
+                }
+                return View("MaterialtypeEditor", ObjectViewModelFactory<Materialtype>.Edit(Materialtype.Object));
             }
-
             return View("MaterialtypeEditor", ObjectViewModelFactory<Materialtype>.Edit(Materialtype.Object));
         }
 
@@ -67,28 +66,24 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Materialtype.Object.Metric = string.IsNullOrEmpty(Materialtype.Object.Metric) ? null : Materialtype.Object.Metric;
-                Context.Materialtype.Add(Materialtype.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Materialtype));
+                try
+                {
+                    Materialtype.Object.Metric = string.IsNullOrEmpty(Materialtype.Object.Metric) ? null : Materialtype.Object.Metric;
+                    Context.Materialtype.Add(Materialtype.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Materialtype));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Materialtype));
+                }
+                return View("MaterialtypeEditor", ObjectViewModelFactory<Materialtype>.Create(Materialtype.Object));
             }
-
             return View("MaterialtypeEditor", ObjectViewModelFactory<Materialtype>.Create(Materialtype.Object));
-        }
-        public IActionResult DeleteMaterialtype(string id)
-        {
-            var Materialtype = Context.Materialtype.First(p => p.Id == int.Parse(id));
-            return View("MaterialtypeEditor", ObjectViewModelFactory<Materialtype>.Delete(Materialtype));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteMaterialtype([FromForm] ObjectViewModel<Materialtype> Materialtype)
-        {
-
-            Context.Materialtype.Remove(Materialtype.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(Materialtype));
-
         }
 
         #endregion
@@ -177,18 +172,6 @@ namespace Project.Controllers
             return View(new MaterialViewModel { Availableresources = res, Materials = type });
         }
 
-        //public IActionResult DetailsMaterial(string id)
-        //{
-        //    var Material = Context.Material.First(p => p.Id == int.Parse(id));
-        //    return View("_Details", new DetailsViewModel
-        //    {
-        //        Description = Material.Description,
-        //        ButtonsViewModel = new EditorBottomButtonsViewModel { 
-        //            BackAction = typeof(Material).Name
-        //        }
-        //    }) ;
-        //}
-
         public IActionResult EditMaterial(string id)
         {
             var Material = Context.Material.First(p => p.Id == int.Parse(id));
@@ -254,7 +237,8 @@ namespace Project.Controllers
                 .Include(p => p.MaterialNavigation)
                     .ThenInclude(p => p.Type)
                 .Include(p => p.SellerNavigation)
-                .OrderBy(p => p.Id);
+                .OrderBy(p => p.Id).ToList();
+            
             return View(type);
         }
 
@@ -299,7 +283,7 @@ namespace Project.Controllers
             {
                 Materiallease.Object.Startdate = DateTime.Now;
                 Materiallease.Object.Deliverydate = null;
-                Materiallease.Object.Overallprice = Materiallease.Object.Count * Materiallease.Object.Priceperunit;
+                Materiallease.Object.Overallprice = 0;
                 Context.Materiallease.Add(Materiallease.Object);
                 await Context.SaveChangesAsync();
                 return RedirectToAction(nameof(Materiallease));
@@ -317,11 +301,20 @@ namespace Project.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteMateriallease([FromForm] ObjectViewModel<Materiallease> Materiallease)
         {
-
-            Context.Materiallease.Remove(Materiallease.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(Materiallease));
-
+            try
+            {
+                Context.Materiallease.Remove(Materiallease.Object);
+                await Context.SaveChangesAsync();
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Materiallease));
+            }
+            return View("MaterialleaseEditor", ObjectViewModelFactory<Materiallease>.Delete(Materiallease.Object));
         }
 
         #endregion

@@ -1309,6 +1309,30 @@ $$ language plpgsql;
 			as $$
 			begin return current_timestamp::timestamp(2); end;
 			$$ language plpgsql;
+				"); 
+			//AUTOGRANTER
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace FUNCTION AUTOGRANTER(
+TAB varchar,
+SCHEM varchar,
+operation varchar,
+USSR varchar ) 
+RETURNS VOID
+as $$
+declare
+rec RECORD;
+begin
+	for rec in 
+	SELECT column_name
+  FROM information_schema.columns
+ WHERE table_schema = SCHEM
+   AND table_name   = TAB
+   loop 
+   		EXECUTE 'GRANT ' || operation || '(' || rec.column_name || ') ON ' || TAB || ' TO ' || USSR  || ';';
+   end loop;
+   return;
+end;
+$$ language plpgsql;
 				");
 
 
@@ -1507,14 +1531,6 @@ begin
 			if(old.status in ('Canceled','Done')) then 
 				raise exception 'Попытка изменения закрытой заявки';			
 			end if;
-			rec := new;
-			rec.duration := old.duration;
-			rec.enddate := old.enddate;
-			rec.personnel := old.personnel;
-			rec.description := old.description;
-			rec.status := old.status;
-			if(rec <> old) then raise exception 'Изменены запрещенные поля';
-			end if;
 			if(new.personnel < old.personnel) then raise exception 'Количество персонала занимающегося ремонтом может только увеличиваться';
 			end if;
 			return new;
@@ -1620,15 +1636,10 @@ begin
 			if(old.status in ('Canceled','Done')) then 
 				raise exception 'Попытка изменения закрытого ремонта';			
 			end if;
-			rec := new;
-			if(old.startdate > current_timestamp and new.startdate > current_timestamp) then
-				rec.startdate := old.startdate;	
+			rec := old;
+			if( not (old.startdate >= current_timestamp and new.startdate >= current_timestamp) ) then
+				rec.startdate := new.startdate;	
 			end if;
-			rec.duration := old.duration;
-			rec.enddate := old.enddate;
-			rec.personnel := old.personnel;
-			rec.description := old.description;
-			rec.status := old.status;
 			if(rec <> old) then raise exception 'Изменены запрещенные поля';
 			end if;
 			return new;
@@ -1712,9 +1723,7 @@ create or replace function P1()
 as $$
 begin 	
 		IF (TG_OP = 'UPDATE') THEN 
-			if(old.registrydate <> new.registrydate) then 
-				raise exception 'Изменены запрещённые поля';
-			end if;
+
 			return new;
         ELSIF (TG_OP = 'INSERT') then
 			new.registrydate = current_timestamp;
@@ -1745,14 +1754,6 @@ begin
 			if(old.enddate is not null) then 
 				raise exception 'Попытка изменения уволенного сотрудника';
 			end if;
-			rec := new;
-			rec.enddate = old.enddate;
-			rec.description = old.description;
-			rec.salary = old.salary;
-			if(rec <> old) then 
-				raise exception 'Изменены запрещённые поля';
-			end if;
-
 			if(new.enddate is not null) then 
 				update Yacht_Crew set enddate = new.enddate where crewid = new.id;
 			end if;
@@ -1797,9 +1798,7 @@ declare
 rec RECORD;
 pers int;
 begin 	
-		IF (TG_OP = 'UPDATE') THEN 
-			raise exception 'Запрещено изменение данной сущности';
-        ELSIF (TG_OP = 'INSERT') then
+        IF (TG_OP = 'INSERT') then
 			pers = (select r.personnel from repair r where r.id = new.repairid) ;
 			if ( (select r.status from repair r where r.id = new.repairid) in ('Canceled','Done') ) then 
 				raise exception 'Отсутствует возможность добавить персонал на закрытый ремонт';
@@ -1819,7 +1818,7 @@ end;
 $$ language plpgsql;	
 
 create trigger ReadonlyConstraint
-Before insert or update or delete on Repair_Men
+Before insert or delete on Repair_Men
 for each row execute function RM1();
 				");
 
@@ -1840,14 +1839,6 @@ begin
 			if(old.deliverydate is not null) then 
 				raise exception 'Попытка изменения закрытого контракта на материалы';			
 			end if;
-			rec := new;
-			rec.deliverydate := old.deliverydate;
-			rec.overallprice := old.overallprice;
-			rec.count := old.count;
-			rec.priceperunit := old.priceperunit;
-			if(rec <> old) 
-				then raise exception 'Изменены запрещенные поля';
-			end if;	
         ELSIF (TG_OP = 'INSERT') then
 			new.startdate = current_timestamp;
 		ELSIF (TG_OP = 'DELETE') then 
@@ -1882,12 +1873,6 @@ begin
 		IF (TG_OP = 'UPDATE') THEN 
 			if(old.enddate is not null) then 
 				raise exception 'Попытка изменения уволеного члена экипажа';			
-			end if;
-			rec := new;
-			rec.enddate := old.enddate;
-			rec.description := old.description;
-			if(rec <> old) 
-				then raise exception 'Изменены запрещенные поля';
 			end if;	
         ELSIF (TG_OP = 'INSERT') then
 			new.startdate = current_timestamp;
@@ -1985,13 +1970,10 @@ begin
 			if(old.enddate is not null) then 
 				raise exception 'Попытка изменения закрытого события';			
 			end if;
-			rec := new;
-			if(new.startdate >= current_timestamp and old.startdate >= current_timestamp) then
-				rec.startdate := old.startdate;
+			rec := old;
+			if( not (old.startdate >= current_timestamp and new.startdate >= current_timestamp)) then
+				rec.startdate := new.startdate;
 			end if;
-			rec.enddate := old.enddate;
-			rec.duration := old.duration;
-			rec.description := old.description;
 			if(rec <> old) 
 				then raise exception 'Изменены запрещенные поля';
 			end if;
@@ -2030,12 +2012,6 @@ begin
 			if( not exists ( select * from event e where e.id = old.eventid and e.enddate is null) )then 
 				raise exception 'Попытка изменения закрытого события';			
 			end if;
-			rec := new;
-			rec.place := old.place;
-			if(rec <> old) 
-				then raise exception 'Изменены запрещенные поля';
-			end if;	
-			
 			if( not (select canhavewinners from winner) ) then 
 				new.place := null;
 			end if;
@@ -2083,16 +2059,10 @@ for each row execute function W1 ();
 						if( old.enddate is not null )then 
 							raise exception 'Попытка изменения закрытого договора на яхту';			
 						end if;
-						rec := new;
-						if(not old.paid) then
-							rec.paid = old.paid;
-						end if;
-						rec.enddate := old.enddate;
-						rec.overallprice := old.overallprice;
-						rec.specials := old.specials;
-						if(not old.paid) then
-								rec.startdate = old.startdate;
-								rec.paid = old.paid;
+						rec := old;
+						if(old.paid) then
+								rec.startdate = new.startdate;
+								rec.paid = new.paid;
 						end if;
 						if(rec <> old) 
 							then raise exception 'Изменены запрещенные поля';
@@ -2140,12 +2110,7 @@ for each row execute function W1 ();
 			 rec RECORD;
 			 begin 	
 					 IF (TG_OP = 'UPDATE') THEN 
-						 if(new.name <> old.name or
-							new.registrydate <> old.registrydate or 
-							new.typeid <> old.typeid
-						   ) 
-							 then raise exception 'Изменены запрещенные поля';
-						 end if;	
+	
 					 ELSIF (TG_OP = 'INSERT') then
 						 new.registrydate = current_timestamp;
 					 ELSIF
@@ -2179,14 +2144,10 @@ for each row execute function W1 ();
 						if(old.enddate is not null) then 
 							raise exception 'Попытка изменения закрытого контракта';
 						end if;
-						rec := new;
-						rec.enddate = old.enddate;
-						rec.duration = old.duration;
-						rec.specials = old.specials;
-						rec.averallprice = old.averallprice ;
-						if(not old.paid) then
-								rec.startdate = old.startdate;
-								rec.paid = old.paid;
+						rec := old;
+						if(old.paid) then
+								rec.startdate = new.startdate;
+								rec.paid = new.paid;
 						end if;
 
 						if(rec <> old) then 
@@ -2289,9 +2250,20 @@ Before insert or update on position_yachttype
 for each row execute function PYT1 ();
 
 				");
-            #endregion
+			#endregion
 
-            #endregion
-        }
+			#endregion
+
+			#region BaseRoles
+
+			#region Repair_Men
+			dbContext.Database.ExecuteSqlRaw(@"
+				REVOKE UPDATE ON REPAIR_MEN FROM PUBLIC
+			");
+			#endregion
+
+
+			#endregion
+		}
     }
 }

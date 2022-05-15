@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Data.Entity.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Entity.Core.Objects;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Project.Migrations
 {
@@ -53,8 +56,12 @@ namespace Project.Migrations
             }
         }
 
+        public string MaterialMetric(int MaterialID) => throw new NotImplementedException() ;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasDbFunction(() => MaterialMetric(default));      
+                
             modelBuilder.Entity<Availableresources>(entity =>
             {
                 entity.HasNoKey();

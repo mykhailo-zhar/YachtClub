@@ -3,13 +3,12 @@
 <h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
 <form asp-action="@Model.Action" method="post">
 
-    @if (Model.ShowReadOnlyFields)
-    {
-        <div class="form-group">
-            <label asp-for="Object.Id"></label>
-            <input class="form-control" asp-for="Object.Id" readonly />
-        </div>
-    }
+
+    <div class="form-group @Model.AlwaysHidden">
+        <label asp-for="Object.Id"></label>
+        <input class="form-control" asp-for="Object.Id" readonly />
+    </div>
+
 
     <div class="form-group">
         <label asp-for="Object.Name"></label>
@@ -25,8 +24,8 @@
         <div>
             <span asp-validation-for="Object.Description" class="text-danger"></span>
         </div>
-        <textarea class="form-control" asp-for="Object.Description" 
-               readonly="@Model.ReadOnly" ></textarea>
+        <textarea class="form-control" asp-for="Object.Description"
+                  readonly="@Model.ReadOnly"></textarea>
     </div>
 
     <partial name="_EditorBottomButtons" model="@new EditorBottomButtonsViewModel {

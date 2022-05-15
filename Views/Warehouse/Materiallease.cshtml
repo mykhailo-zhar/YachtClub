@@ -1,86 +1,65 @@
-﻿@model IEnumerable<Materiallease>
+﻿@{
+    var MethodName = typeof(Materiallease).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+}
+@model IEnumerable<Materiallease>
 
-<table class="table table-sm table-striped table-bordered text-white">
+<table class="table table-sm table-striped table-bordered text-white ">
     <thead>
         <tr class="table-dark">
-            <td>
-                ID
-            </td>
-            <td>
-                Материал
-            </td>
-            <td>
-                Продавец
-            </td>
-            <td>
-                Цена за единицу
-            </td>
-            <td>
-                Количество
-            </td>
-            <td>
-                Общая сумма
-            </td>
-            <td>
-                Дата заключения контракта
-            </td>
-            <td>
-                Дата поставки
-            </td>
-            <td colspan="2">
-            </td>
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Поставка материалов
+                </div>
+                <div align="center">
+                    <a asp-action="@Create" class="btn btn-primary w-75">
+                        Создать
+                    </a>
+                </div>
+            </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var sp in Model)
+        @foreach (var obj in Model)
         {
-            <tr class="text-black btn-area-2">
+            <tr class="text-black btn-area-3">
                 <td>
-                    @sp.Id
-                </td>
-                <td>
-                    @sp.MaterialNavigation.Name
-                </td>
-                <td>
-                    @sp.SellerNavigation.Name
-                </td>
-                <td>
-                    @sp.Priceperunit
-                </td>
-                <td>
-                    @($"{sp.Count} {Methods.Message(sp.MaterialNavigation) }")
-                </td>
-                <td>
-                    @sp.Overallprice
-                </td>
-                <td>
-                    @sp.Startdate
-                </td>
-                <td>
-                    @(sp.Deliverydate == null ? "Товар ещё не приехал": $"{sp.Deliverydate}")
-                </td>
+                    <div class="card" style="width: auto;">
+                        <div class="card-body">
+                            <div class="position-absolute" style="right: 0px;">
+                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>
+                            </div>
+                            <h5 class="card-title">
+                                Номер договора: @obj.Id
+                            </h5>
+                            <h6 class="card-subtitle">
+                                @obj.Startdate - @Methods.CoalesceDateTime(obj.Deliverydate)
+                            </h6>
+                            <hr />
+                            <div class="card-text" style="max-width: 75vw">
+                                <p>
+                                    Поставщик материалов: @obj.SellerNavigation.Name
+                                </p>
+                                <p>
+                                    Материал: @obj.MaterialNavigation.Name
+                                </p>
+                                 <p>
+                                    Количество: @obj.Count 
+                                    Цена за единицу: @obj.Priceperunit
+                                </p>
+                                <p>
+                                    Цена поставки: @obj.Overallprice
+                                </p>
 
-
-
-                <td align="center">
-                    <a class="btn btn-info" asp-action="EditMateriallease" asp-route-id="@sp.Id"> Изменить </a>
-                </td>
-                <td align="center">
-                    <a class="btn btn-danger" asp-action="DeleteMateriallease" asp-route-id="@sp.Id"> Удалить </a>
+                            </div>
+                        </div>
+                    </div>
                 </td>
             </tr>
         }
     </tbody>
-    <tfoot>
-        <tr>
-            <td colspan="10" align="center">
-                <a asp-action="CreateMateriallease" class="btn btn-primary">
-                    <div style="width: 50vw;">
-                        Создать
-                    </div>
-                </a>
-            </td>
-        </tr>
-    </tfoot>
 </table>
 

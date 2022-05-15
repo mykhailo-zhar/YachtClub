@@ -1,58 +1,50 @@
-﻿@model IEnumerable<Seller>
+﻿@{
+    var MethodName = typeof(Seller).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+}
+@model IEnumerable<Seller>
 
 <table class="table table-sm table-striped table-bordered text-white ">
     <thead>
         <tr class="table-dark">
-            <td>
-                ID
-            </td>
-            <td>
-                Название
-            </td>
-            <td>
-                Описание
-            </td>
-            <td colspan="3">
-            </td>
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Поставщик материала
+                </div>
+                <div align="center">
+                    <a asp-action="@Create" class="btn btn-primary w-75">
+                        Создать
+                    </a>
+                </div>
+            </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var type in Model)
+        @foreach (var obj in Model)
         {
             <tr class="text-black btn-area-3">
                 <td>
-                    @type.Id
-                </td>
-                <td>
-                    @type.Name
-                </td>
-                <td align="center">
-                    @if (string.IsNullOrWhiteSpace(type.Description) || string.IsNullOrEmpty(type.Description))
-                    {
-                        <a class="btn btn-secondary"> Детали </a>
-                    }
-                    else
-                    {
-                        <a class="btn btn-info" asp-action="DetailsSeller" asp-route-id="@type.Id"> Детали </a>
-                    }
-                </td>
-                <td align="center">
-                    <a class="btn btn-info" asp-action="EditSeller" asp-route-id="@type.Id"> Изменить </a>
-                </td>
-                <td align="center">
-                    <a class="btn btn-danger" asp-action="DeleteSeller" asp-route-id="@type.Id">Удалить</a>
+                    <div class="card" style="width: auto;">
+                        <div class="card-body">
+                            <div class="position-absolute" style="right: 0px;">
+                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                            </div>
+                            <h5 class="card-title">
+                                @obj.Name
+                            </h5>
+                            <span>Описание:</span>
+                            <div class="card-text" style="max-width: 75vw">
+                                <p style="text-indent: 2em; white-space: pre-line;">
+                                    @(obj.Description)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </td>
             </tr>
         }
     </tbody>
-    <tfoot>
-
-    </tfoot>
 </table>
-<div>
-    <a asp-action="CreateSeller" class="btn btn-primary">
-        <div style="width: 50vw;">
-            Создать
-        </div>
-    </a>
-</div>
+
