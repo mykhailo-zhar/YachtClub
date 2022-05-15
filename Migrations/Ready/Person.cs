@@ -37,6 +37,8 @@ namespace Project.Migrations
         [Required]
         [Column("phone", TypeName = "character varying")]
         public string Phone { get; set; }
+        [Column("staffonly")]
+        public bool Staffonly;
         [Column("registrydate")]
         public DateTime Registrydate { get; set; }
 

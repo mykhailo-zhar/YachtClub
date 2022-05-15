@@ -42,28 +42,31 @@ namespace Project.Controllers
                 }
             });
         }
-
-        public IActionResult CreateYachttest()
+        private IActionResult ACreateYachttest(Yachttest Yachttest)
         {
-            var Yachttest = new Yachttest();
-            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repair_Staff").Include(p => p.Staff);
+            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repair_Staff").Include(p => p.Yachttest);
             ViewData["Yacht"] = Context.Yacht.Include(p => p.Type).ToList();
             return View("YachttestEditor", ObjectViewModelFactory<Yachttest>.Create(Yachttest));
         }
+        public IActionResult CreateYachttest()
+        {
+            var Yachttest = new Yachttest { 
+                 Date = DateTime.Now
+            };
+            return ACreateYachttest(Yachttest);
+        }
 
         [HttpPost]
-        public async Task<IActionResult> CreateYachttest([FromForm] ObjectViewModel<Yachttest> staff)
+        public async Task<IActionResult> CreateYachttest([FromForm] ObjectViewModel<Yachttest> Yachttest)
         {
             if (ModelState.IsValid)
             {
-                staff.Object.Date = DateTime.Now;
-                Context.Yachttest.Add(staff.Object);
+                Yachttest.Object.Date = DateTime.Now;
+                Context.Yachttest.Add(Yachttest.Object);
                 await Context.SaveChangesAsync();
                 return RedirectToAction(nameof(Yachttest));
             }
-            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repair_Staff").Include(p => p.Staff);
-            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type).ToList();
-            return View("YachttestEditor", ObjectViewModelFactory<Yachttest>.Create(staff.Object));
+            return ACreateYachttest(Yachttest.Object);
         }
         public IActionResult DeleteYachttest(string id)
         {
@@ -72,10 +75,10 @@ namespace Project.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteYachttest([FromForm] ObjectViewModel<Yachttest> staff)
+        public async Task<IActionResult> DeleteYachttest([FromForm] ObjectViewModel<Yachttest> Yachttest)
         {
 
-            Context.Yachttest.Remove(staff.Object);
+            Context.Yachttest.Remove(Yachttest.Object);
             await Context.SaveChangesAsync();
             return RedirectToAction(nameof(Yachttest));
 
@@ -88,24 +91,24 @@ namespace Project.Controllers
             var Repair = Context.Repair
                 .Include(p => p.Yacht)
                     .ThenInclude(p => p.Type)
-                .OrderBy(p => p.Id);
+                .OrderBy(p => p.Id)
+                .Select(p => new Repair_MenViewModel { 
+                    Repair = p,
+                    RepairMen = Context.RepairMen
+                    .Include(z => z.Staff)
+                        .ThenInclude(z => z.Staff)
+                    .Where(r => r.Repairid == p.Id)
+                    .ToList(),
+                    Extradationrequests = Context.Extradationrequest
+                    .Include(r => r.MaterialNavigation)
+                         .ThenInclude(r => r.Type)
+                    .Where(r => r.Repairid == p.Id)
+                }
+                );
             return View(Repair);
         }
 
-        public IActionResult DetailsRepair(string id)
-        {
-            var Repair = Context.Repair.First(p => p.Id == int.Parse(id));
-            return View("_Details", new DetailsViewModel
-            {
-                Description = Repair.Description,
-                ButtonsViewModel = new EditorBottomButtonsViewModel
-                {
-                    BackAction = typeof(Repair).Name
-                }
-            });
-        }
-
-        private IActionResult LocalEditRepair(string id, Repair Repair = null)
+        private IActionResult AEditRepair(string id, Repair Repair = null)
         {
             Repair = Repair ?? Context.Repair
                .Include(p => p.Yacht)
@@ -115,25 +118,36 @@ namespace Project.Controllers
             var Model = ObjectViewModelFactory<Repair>.Edit(Repair);
             return View("RepairEditor", Model);
         }
-        public IActionResult EditRepair(string id) => LocalEditRepair(id);
+        public IActionResult EditRepair(string id) => AEditRepair(id);
 
         [HttpPost]
         public async Task<IActionResult> EditRepair([FromForm] ObjectViewModel<Repair> Repair)
         {
             if (ModelState.IsValid)
             {
-
-                if (Repair.Option[0]) {
-                    Repair.Object.Enddate = DateTime.Now;
-                    Repair.Object.Status = "Done";
+                try
+                {
+                    if (Repair.Option[0])
+                    {
+                        Repair.Object.Enddate = DateTime.Now;
+                        Repair.Object.Status = "Done";
+                    }
+                    Repair.Object.Description = Methods.CoalesceString(Repair.Object.Description);
+                    Context.Repair.Update(Repair.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Repair));
                 }
-                Repair.Object.Description = Methods.CoalesceString(Repair.Object.Description);
-                Context.Repair.Update(Repair.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Repair));
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Repair));
+                }
+                return AEditRepair($"{Repair.Object.Id}", Repair.Object);
             }
-           
-            return LocalEditRepair($"{Repair.Object.Id}", Repair.Object);
+            return AEditRepair($"{Repair.Object.Id}", Repair.Object);
         }
 
         private IActionResult LocalCreateRepair(Repair Repair = null) {
@@ -151,12 +165,23 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Repair.Object.Startdate = default;
-                Repair.Object.Status = default;
-                Repair.Object.Description = Methods.CoalesceString(Repair.Object.Description);
-                Context.Repair.Add(Repair.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Repair));
+                try
+                {
+                    Repair.Object.Startdate = default;
+                    Repair.Object.Status = default;
+                    Context.Repair.Add(Repair.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Repair));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Repair));
+                }
+                return LocalCreateRepair(Repair.Object);
             }
             return LocalCreateRepair(Repair.Object);
         }
@@ -170,47 +195,58 @@ namespace Project.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteRepair([FromForm] ObjectViewModel<Repair> Repair)
         {
-            Context.Repair.Remove(Repair.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(Repair));
-
+            try
+            {
+                Context.Repair.Remove(Repair.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Repair));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Repair));
+            }
+            return View("RepairEditor", ObjectViewModelFactory<Repair>.Delete(Repair.Object));
         }
         #endregion
 
         #region  RepairMen
-        public IActionResult RepairMen()
+        private IActionResult LocalCreateRepairMen(RepairMen RepairMen = null, int RepairID = 0)
         {
-            var RepairMen = Context.RepairMen
-                .Include(p => p.Staff)
-                     .ThenInclude(p => p.Staff)
-                         .Where(p => Context.RepairStaff.Any(s => s.Id == p.Staffid))
-                .Include(p => p.Repair)
-                .OrderBy(p => p.Id).ToList();
-
-            return View(RepairMen);
-        }
-
-       
-        private IActionResult LocalCreateRepairMen(RepairMen RepairMen = null)
-        {
-            RepairMen = RepairMen ?? new RepairMen();
+            RepairMen = RepairMen ?? new RepairMen { 
+                Repairid = RepairID
+            };
             ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repair_Staff").Include(p => p.Staff).ToList();
             ViewData["Repair"] = Context.Repair.ToList();
             var Model = ObjectViewModelFactory<RepairMen>.Create(RepairMen);
             return View("RepairMenEditor", Model);
         }
 
-        public IActionResult CreateRepairMen() => LocalCreateRepairMen(null);
+        public IActionResult CreateRepairMen(int repairid) => LocalCreateRepairMen(null,repairid);
 
         [HttpPost]
         public async Task<IActionResult> CreateRepairMen([FromForm] ObjectViewModel<RepairMen> RepairMen)
         {
             if (ModelState.IsValid)
             {
-                //RepairMen.Object.Description = Methods.CoalesceString(RepairMen.Object.Description);
-                Context.RepairMen.Add(RepairMen.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(RepairMen));
+                try
+                {
+                    Context.RepairMen.Add(RepairMen.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Repair));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(RepairMen));
+                }
+                return LocalCreateRepairMen(RepairMen.Object);
             }
             return LocalCreateRepairMen(RepairMen.Object);
         }
@@ -225,10 +261,21 @@ namespace Project.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteRepairMen([FromForm] ObjectViewModel<RepairMen> RepairMen)
         {
-            Context.RepairMen.Remove(RepairMen.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(RepairMen));
-
+            try
+            {
+                Context.RepairMen.Remove(RepairMen.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Repair));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(RepairMen));
+            }
+            return View("RepairMenEditor", ObjectViewModelFactory<RepairMen>.Delete(RepairMen.Object));
         }
         #endregion
 
@@ -250,25 +297,13 @@ namespace Project.Controllers
         public IActionResult Extradationrequest()
         {
             var Extradationrequest = Context.Extradationrequest
+                .Include(p => p.Repair)
                 .Include(p => p.Staff)
                     .ThenInclude(p => p.Staff)
                 .Include(p => p.MaterialNavigation)
                     .ThenInclude(p => p.Type)
                 .OrderBy(p => p.Id);
             return View(Extradationrequest);
-        }
-
-        public IActionResult DetailsExtradationrequest(string id)
-        {
-            var Extradationrequest = Context.Extradationrequest.First(p => p.Id == int.Parse(id));
-            return View("_Details", new DetailsViewModel
-            {
-                Description = Extradationrequest.Description,
-                ButtonsViewModel = new EditorBottomButtonsViewModel
-                {
-                    BackAction = typeof(Extradationrequest).Name
-                }
-            });
         }
 
         private IActionResult LocalEditExtradationrequest(string id, Extradationrequest Extradationrequest = null)
@@ -289,22 +324,37 @@ namespace Project.Controllers
         public IActionResult EditExtradationrequest(string id) => LocalEditExtradationrequest(id);
 
         [HttpPost]
-        public async Task<IActionResult> EditExtradationrequest([FromForm] ObjectViewModel<Extradationrequest> Extradationrequest)
+        public  IActionResult EditExtradationrequest([FromForm] ObjectViewModel<Extradationrequest> Extradationrequest)
         {
             if (ModelState.IsValid)
             {
-                Extradationrequest.Object.Description = Methods.CoalesceString(Extradationrequest.Object.Description);
-                Context.Extradationrequest.Update(Extradationrequest.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Extradationrequest));
+                try
+                {
+                    var OBJ = Context.Extradationrequest.First(p => p.Id == Extradationrequest.Object.Id);
+                    OBJ.Duration = Extradationrequest.Object.Duration;
+                    OBJ.Description = Methods.CoalesceString( Extradationrequest.Object.Description );
+                    OBJ.Enddate = Extradationrequest.Object.Enddate;
+                    OBJ.Status = Extradationrequest.Object.Status;
+                    Context.SaveChanges();
+                    return RedirectToAction(nameof(Extradationrequest));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Extradationrequest));
+                }
+                return LocalEditExtradationrequest($"{Extradationrequest.Object.Id}", Extradationrequest.Object);
             }
 
             return LocalEditExtradationrequest($"{Extradationrequest.Object.Id}", Extradationrequest.Object);
         }
 
-        private IActionResult LocalCreateExtradationrequest(Extradationrequest Extradationrequest = null)
+        private IActionResult LocalCreateExtradationrequest(Extradationrequest Extradationrequest = null, int repairid = 0)
         {
-            Extradationrequest = Extradationrequest ?? new Extradationrequest();
+            Extradationrequest = Extradationrequest ?? new Extradationrequest { Repairid = repairid};
             ViewData["StaffPosition"] = Context.RepairStaff.Include(p => p.Staff).ToList();
             ViewData["Repair"] = Context.Repair.ToList();
             ViewData["Material"] = Context.Material.Include(p => p.Type).ToList();
@@ -312,18 +362,30 @@ namespace Project.Controllers
             return View("ExtradationrequestEditor", Model);
         }
 
-        public IActionResult CreateExtradationrequest() => LocalCreateExtradationrequest(null);
+        public IActionResult CreateExtradationrequest(int repairid) => LocalCreateExtradationrequest(null, repairid);
 
         [HttpPost]
         public async Task<IActionResult> CreateExtradationrequest([FromForm] ObjectViewModel<Extradationrequest> Extradationrequest)
         {
             if (ModelState.IsValid)
             {
-                if (Extradationrequest.Option[0]) Extradationrequest.Object.Status = "Done";
-                Extradationrequest.Object.Startdate = DateTime.Now;
-                Context.Extradationrequest.Add(Extradationrequest.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Extradationrequest));
+                try
+                {
+                    if (Extradationrequest.Option[0]) Extradationrequest.Object.Status = "Done";
+                    Extradationrequest.Object.Startdate = DateTime.Now;
+                    Context.Extradationrequest.Add(Extradationrequest.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Extradationrequest));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Extradationrequest));
+                }
+                return LocalCreateExtradationrequest(Extradationrequest.Object);
             }
             return LocalCreateExtradationrequest(Extradationrequest.Object);
         }
@@ -337,10 +399,21 @@ namespace Project.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteExtradationrequest([FromForm] ObjectViewModel<Extradationrequest> Extradationrequest)
         {
-            Context.Extradationrequest.Remove(Extradationrequest.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(Extradationrequest));
-
+            try
+            {
+                Context.Extradationrequest.Remove(Extradationrequest.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Extradationrequest));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Extradationrequest));
+            }
+            return View("ExtradationrequestEditor", ObjectViewModelFactory<Extradationrequest>.Delete(Extradationrequest.Object));
         }
         #endregion
 

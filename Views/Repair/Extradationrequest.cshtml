@@ -1,98 +1,65 @@
-﻿@model IEnumerable<Extradationrequest>
+﻿@{
+    var MethodName = typeof(Extradationrequest).Name;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+}
+@model IEnumerable<Extradationrequest>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
         <tr class="table-dark">
-            <td>
-                ID
-            </td>
-            <td>
-                Количество материала
-            </td>
-            <td>
-                Материал
-            </td>
-             <td>
-                Статус
-            </td>
-            <td>
-                Сотрудник
-            </td>
-            <td>
-                Номер ремонта
-            </td>
-            <td>
-                Дата формирования выдачи
-            </td>
-            <td>
-                Дата фактической выдачи
-            </td>
-            <td>
-                Ориентировочная дата выдачи
-            </td>
-            <td colspan="3"></td>
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Выдача материалов
+                </div>
+            </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var sp in Model)
+        @foreach (var obj in Model)
         {
-            <tr class="text-black btn-area-3">
+            <tr class="text-black">
                 <td>
-                    @sp.Id
-                </td>
-                <td>
-                    @sp.Count @Methods.Metric(sp.MaterialNavigation)
-                </td>
-                <td>
-                    @sp.MaterialNavigation.Name
-                </td>
-                <td>
-                    @sp.Status
-                </td>
-                <td>
-                    @Methods.PersonEmail(sp.Staff.Staff)
-                </td>
-                <td>
-                    @sp.Repairid
-                </td>
-                <td>
-                    @sp.Startdate
-                </td>
-                <td>
-                    @Methods.CoalesceDateTime(sp.Enddate)
-                </td>
-                <td>
-                    @sp.Duration
-                </td>
-                 <td align="center">
-                        @if (!Methods.IsStr(sp.Description))
-                        {
-                            <a class="btn btn-secondary"> Детали </a>
-                        }
-                        else
-                        {
-                            <a class="btn btn-primary" asp-action="DetailsExtradationrequest" asp-route-id="@sp.Id"> Детали </a>
-                        }
-                    </td>
-                    <td align="center">
-                        <a class="btn btn-info" asp-action="EditExtradationrequest" asp-route-id="@sp.Id"> Изменить </a>
-                    </td>
-                    <td align="center">
-                        <a class="btn btn-danger" asp-action="DeleteExtradationrequest" asp-route-id="@sp.Id">Удалить</a>
-                    </td>
-            </tr>
-        }
-    </tbody>
-    <tfoot>
-        <tr>
-             <td colspan="10" align="center">
-                    <a asp-action="CreateExtradationrequest" class="btn btn-primary">
-                        <div style="width: 50vw;">
-                            Создать
+                    <div class="card" style="width: auto;">
+                        <div class="card-body">
+                            <div class="position-absolute" style="right: 0px;">
+                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>
+                            </div>
+                            <h5 class="card-title">
+                                Заявка #@obj.Id
+                            </h5>
+                            <h6 class="card-subtitle">
+                                @obj.Startdate - @obj.Duration (@Methods.CoalesceDateTime(obj.Enddate))
+                            </h6>
+                            <hr />
+                            <div class="card-text" style="max-width: 75vw">
+                                <p>
+                                    <div class="text-center" style="width: 25%; font-size: 2em; border: 1px solid red;">@obj.Status</div>
+                                </p>
+                                <p>
+                                    Ремонт: @obj.Repair.Startdate - @obj.Repair.Duration
+                                </p>
+                                <p>
+                                    Материал: @obj.MaterialNavigation.Name (@obj.MaterialNavigation.Type.Name)
+                                </p>
+                                <p>
+                                    Количество материала: @obj.Count
+                                </p>
+                                <p>
+                                    Сотрудник: @obj.Staff.Staff.Name @obj.Staff.Staff.Surname @obj.Staff.Staff.Email
+                                </p>
+                                <span>Описание</span>
+                                <p style="text-indent: 2em; white-space: pre-line;">
+                                    @(obj.Description)
+                                </p>
+
+                            </div>
                         </div>
-                    </a>
+                    </div>
                 </td>
-        </tr>
-    </tfoot>
+            </tr>
+                    }
+        </tbody>
 </table>
 

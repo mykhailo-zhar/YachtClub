@@ -52,12 +52,12 @@
         </div>
         @if (Model.Object.MaterialNavigation != null)
         {
-            <input class="form-control" asp-for="Object.Count" min="1" value="1"
+            <input class="form-control" asp-for="Object.Count" min="1"
                    readonly="@(Model.ReadOnly)" />
         }
         else
         {
-            <input class="form-control" asp-for="Object.Count" min="1" value="1"
+            <input class="form-control" asp-for="Object.Count" min="1"
                    placeholder="Количество"
                    readonly="@(Model.ReadOnly)" />
         }

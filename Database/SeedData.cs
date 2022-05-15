@@ -141,6 +141,7 @@ CREATE TABLE Person(
 	Sex				Sex			Not Null,	
   	Email      		Mail    	Not Null	unique,
 	Phone			PhoneNumber	Not Null	unique,
+    StaffOnly		Boolean		Not Null	Default false,
 	RegistryDate	timestamp(2)	Not Null	check(BirthDate < RegistryDate)	Default current_timestamp
 );
 				");
@@ -1531,10 +1532,11 @@ begin
 			if(old.status in ('Canceled','Done')) then 
 				raise exception 'Попытка изменения закрытой заявки';			
 			end if;
-			if(new.personnel < old.personnel) then raise exception 'Количество персонала занимающегося ремонтом может только увеличиваться';
-			end if;
 			return new;
         ELSIF (TG_OP = 'INSERT') then
+			if((select r.status from repair r where r.id = new.repairid) in ('Done', 'Canceled')) then
+				raise exception 'Попытка создания заявки на закрытый ремонт';
+			end if;
 			New.startdate = current_timestamp;
 			if( new.duration < current_timestamp or new.duration is null) then new.duration = current_timestamp; end if;
 			New.enddate = null;
@@ -1642,6 +1644,8 @@ begin
 			end if;
 			if(rec <> old) then raise exception 'Изменены запрещенные поля';
 			end if;
+
+			if( new.duration < current_timestamp or new.duration is null) then new.duration = current_timestamp; end if;
 			return new;
         ELSIF (TG_OP = 'INSERT') then
 			if( new.startdate < current_timestamp or new.startdate is null) then new.startdate = current_timestamp; end if;
@@ -1657,7 +1661,10 @@ begin
             RETURN NEW;
 		ELSIF (TG_OP = 'DELETE') THEN
 			if(old.status in ('Done')) then 
-				raise exception 'Попытка удаления закрытой заявки';			
+				raise exception 'Попытка удаления закрытого ремонта';			
+			end if;
+			if(exists (select * from extradationrequest er where er.repairid = old.id and er.Status = 'Done')) then
+				raise exception 'На ремонт были выданы материалы';
 			end if;
 			return old;
         END IF;
@@ -1676,8 +1683,8 @@ create or replace function REP2()
 as $$
 begin 
 	/*Создан -> (ОЖИДАЕТ МАТЕРИАЛОВ ЛИБО ОТМЕНЁН)*/
-	if (old.status = 'Created' and new.Status not in ( 'Waits' , 'Canceled', 'Created') ) then 
-		raise exception 'Переход из статуса создан, может быть только в статус Ожидает или Отменён';
+	if (old.status = 'Created' and new.Status not in ( 'Waits', 'In Progress' , 'Canceled', 'Created') ) then 
+		raise exception 'Переход из статуса создан, может быть только в статус Ожидает, В процессе или Отменён';
 	elsif(old.status = 'Created' and new.Status = 'Waits' and 
 		 not CHECK_ER_FOR_RER(false, new.id) ) then
 		raise exception 'Переход в статус Ожидает невозможен, ведь отсутствуют активные заявки';

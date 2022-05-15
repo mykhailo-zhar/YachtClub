@@ -10,10 +10,10 @@
 
     <script>
         $(document).ready(function () {
-            $('#ContentDiv').height( $(document).innerHeight() - 100);
+            $('#ContentDiv').height($(document).innerHeight() - 100);
         });
         $(document).resize(function () {
-            $('#ContentDiv').height( $(document).innerHeight() - 100);
+            $('#ContentDiv').height($(document).innerHeight() - 100);
         });
     </script>
 </head>
@@ -80,123 +80,126 @@
                                             Запрос на поставку материалов
                                         </a>
                                     </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!--Панель персонала-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="Staff" asp-action="Staff">
-                                    Персонал
-                                </a>
-                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Staff" asp-action="Staff">
-                                            Персонал
-                                        </a>
-                                    </li>
-                                    <li><a class="dropdown-item" asp-controller="Staff" asp-action="Position">Должности</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Staff" asp-action="StaffPosition">Должности персонала</a></li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!--Панель ремонта-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="Repair" asp-action="RepairStaff">
-                                    Ремонтники
-                                </a>
-                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Repair" asp-action="RepairStaff">
-                                            Ремонтники
-                                        </a>
+                                        <a class="dropdown-item" asp-controller="Repair" asp-action="Extradationrequest">Заявка на выдачу</a>
                                     </li>
-                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="Yachttest">Тестовые заплывы</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="Repair">Ремонт</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="RepairMen">Ремонтники на ремонте</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="Extradationrequest">Заявка на выдачу</a></li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!--Контракты-->
-                        <li class="nav-item">
-                            <a class="btn text-white" asp-controller="" asp-action="">
-                                Доступ к контрактам
-                            </a>
-                        </li>
-                        <!--Типы контрактов-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="" asp-action="">
-                                    Типы контрактов:
-                                </a>
-                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="Client" asp-action="Yachtleasetype">Тип контракта на яхты</a></li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Client" asp-action="Contracttype">
-                                            Тип яхт
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!--Яхты-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="Client" asp-action="Yacht">
-                                    Яхты
-                                </a>
-                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="Client" asp-action="Yacht">Яхты</a></li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Client" asp-action="Yachttype">
-                                            Тип яхт
-                                        </a>
-                                    </li>
-                                    <li><a class="dropdown-item" asp-controller="Client" asp-action="Yachtlease">Договор по яхте</a></li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!--Клиенты-->
-                        <li class="nav-item">
-                            <a class="btn text-white" asp-controller="Client" asp-action="Person">
-                                Клиент
-                            </a>
                         </li>
                     </ul>
                 </div>
-            </div>
-        </nav>
-        <div align="center">
-            <div class="initial_div bg-white">
-                <div id="ContentDiv" >
-                    <div>
-                        @RenderBody()
+                </li>
+                <!--Панель персонала-->
+                <li class="nav-item">
+                    <div class="btn-group">
+                        <a class="btn text-white" asp-controller="Staff" asp-action="Staff">
+                            Персонал
+                        </a>
+                        <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" asp-controller="Staff" asp-action="Staff">
+                                    Персонал
+                                </a>
+                            </li>
+                            <li><a class="dropdown-item" asp-controller="Staff" asp-action="Position">Должности</a></li>
+                            <li><a class="dropdown-item" asp-controller="Staff" asp-action="StaffPosition">Должности персонала</a></li>
+                        </ul>
                     </div>
-                   
+                </li>
+                <!--Панель ремонта-->
+                <li class="nav-item">
+                    <div class="btn-group">
+                        <a class="btn text-white" asp-controller="Repair" asp-action="RepairStaff">
+                            Ремонтники
+                        </a>
+                        <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" asp-controller="Repair" asp-action="RepairStaff">
+                                    Ремонтники
+                                </a>
+                            </li>
+                            <li><a class="dropdown-item" asp-controller="Repair" asp-action="Yachttest">Тестовые заплывы</a></li>
+                            <li><a class="dropdown-item" asp-controller="Repair" asp-action="Repair">Ремонт</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <!--Контракты-->
+                <li class="nav-item">
+                    <a class="btn text-white" asp-controller="" asp-action="">
+                        Доступ к контрактам
+                    </a>
+                </li>
+                <!--Типы контрактов-->
+                <li class="nav-item">
+                    <div class="btn-group">
+                        <a class="btn text-white" asp-controller="" asp-action="">
+                            Типы контрактов:
+                        </a>
+                        <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="Client" asp-action="Yachtleasetype">Тип контракта на яхты</a></li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Client" asp-action="Contracttype">
+                                    Тип яхт
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <!--Яхты-->
+                <li class="nav-item">
+                    <div class="btn-group">
+                        <a class="btn text-white" asp-controller="Client" asp-action="Yacht">
+                            Яхты
+                        </a>
+                        <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="Client" asp-action="Yacht">Яхты</a></li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Client" asp-action="Yachttype">
+                                    Тип яхт
+                                </a>
+                            </li>
+                            <li><a class="dropdown-item" asp-controller="Client" asp-action="Yachtlease">Договор по яхте</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <!--Клиенты-->
+                <li class="nav-item">
+                    <a class="btn text-white" asp-controller="Client" asp-action="Person">
+                        Клиент
+                    </a>
+                </li>
+                </ul>
+            </div>
+    </div>
+    </nav>
+    <div align="center">
+        <div class="initial_div bg-white">
+            <div id="ContentDiv">
+                <div>
+                    @RenderBody()
                 </div>
-                <footer class="border-top footer text-muted">
-                    <div class="container">
-                        &copy; 2022 - YachtClub&trade; @* - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>*@
-                    </div>
-                </footer>
+
             </div>
+            <footer class="border-top footer text-muted">
+                <div class="container">
+                    &copy; 2022 - YachtClub&trade; @* - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>*@
+                </div>
+            </footer>
         </div>
+    </div>
 
     </div>
-   
+
 </body>
 </html>

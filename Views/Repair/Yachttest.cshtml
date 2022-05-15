@@ -1,66 +1,62 @@
-﻿@model IEnumerable<Yachttest>
+﻿
+@{
+    var MethodName = typeof(Yachttest).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+}
+@model IEnumerable<Yachttest>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
         <tr class="table-dark">
-            <td>
-                ID
-            </td>
-            <td>
-                Дата проведения осмотра
-            </td>
-            <td>
-                Результаты
-            </td>
-            <td>
-                Яхта
-            </td>
-            <td colspan="2">
-            </td>
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Осмотр яхты
+                </div>
+                <div align="center">
+                    <a asp-action="@Create" class="btn btn-primary w-75">
+                        Создать
+                    </a>
+                </div>
+            </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var sp in Model)
+        @foreach (var obj in Model)
         {
-        <tr class="text-black btn-area-2">
-            <td>
-                @sp.Id
-            </td>
-            <td>
-                @sp.Date
-            </td>
-            <td>
-                @($"{sp.Staff.Staff.Name} {sp.Staff.Staff.Surname} {sp.Staff.Staff.Email}")
-            </td>
-            <td>
-                @($"{sp.Yacht.Name} Типа: {sp.Yacht.Type.Name}")
-            </td>
-            <td align="center">
-                @if (!Methods.IsStr(sp.Results))
-                {
-                    <a class="btn btn-secondary"> Детали </a>
-                }
-                else
-                {
-                    <a class="btn btn-primary" asp-action="DetailsYachttest" asp-route-id="@sp.Id"> Детали </a>
-                }
-            </td>
-            <td align="center">
-                <a class="btn btn-danger" asp-action="DeleteYachttest" asp-route-id="@sp.Id">Удалить</a>
-            </td>
-        </tr>
+            <tr class="text-black">
+                <td>
+                    <div class="card" style="width: auto;">
+                        <div class="card-body">
+                            <div class="position-absolute" style="right: 0px;">
+                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>
+                            </div>
+                            <h5 class="card-title">
+                                <div>
+                                    Имя яхты: @obj.Yacht.Name
+                                </div>
+                                <div>
+                                    Тип яхты: @obj.Yacht.Type.Name
+                                </div>
+                            </h5>
+                            <div class="card-text" style="max-width: 75vw">
+                                <div>
+                                    Дата проведения: @obj.Date
+                                </div>
+                                <div>
+                                    Осмотр проведён: @obj.Staff.Staff.Name @obj.Staff.Staff.Surname (Номер сотрудника: @obj.Staffid)
+                                </div>
+                                <span>Описание:</span>
+                                <p style="text-indent: 2em; white-space: pre-line;">
+                                    @(obj.Results)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
         }
     </tbody>
-    <tfoot>
-        <tr>
-            <td colspan="10" align="center">
-                <a asp-action="CreateYachttest" class="btn btn-primary">
-                    <div style="width: 50vw;">
-                        Создать
-                    </div>
-                </a>
-            </td>
-        </tr>
-    </tfoot>
 </table>
 

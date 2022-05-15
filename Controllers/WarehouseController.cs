@@ -95,18 +95,6 @@ namespace Project.Controllers
             return View(type);
         }
 
-        public IActionResult DetailsSeller(string id)
-        {
-            var Seller = Context.Seller.First(p => p.Id == int.Parse(id));
-            return View("_Details", new DetailsViewModel
-            {
-                Description = Seller.Description,
-                ButtonsViewModel = new EditorBottomButtonsViewModel { 
-                    BackAction = typeof(Seller).Name
-                }
-            }) ;
-        }
-
         public IActionResult EditSeller(string id)
         {
             var Seller = Context.Seller.First(p => p.Id == int.Parse(id));
@@ -118,9 +106,21 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Context.Seller.Update(Seller.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Seller));
+                try
+                {
+                    Context.Seller.Update(Seller.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Seller));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Materialtype));
+                }
+                return View("SellerEditor", ObjectViewModelFactory<Seller>.Edit(Seller.Object));
             }
 
             return View("SellerEditor", ObjectViewModelFactory<Seller>.Edit(Seller.Object));
@@ -137,29 +137,24 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Context.Seller.Add(Seller.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Seller));
+                try
+                {
+                    Context.Seller.Add(Seller.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Seller));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Materialtype));
+                }
+                return View("SellerEditor", ObjectViewModelFactory<Seller>.Create(Seller.Object));
             }
-
             return View("SellerEditor", ObjectViewModelFactory<Seller>.Create(Seller.Object));
         }
-        public IActionResult DeleteSeller(string id)
-        {
-            var Seller = Context.Seller.First(p => p.Id == int.Parse(id));
-            return View("SellerEditor", ObjectViewModelFactory<Seller>.Delete(Seller));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteSeller([FromForm] ObjectViewModel<Seller> Seller)
-        {
-
-            Context.Seller.Remove(Seller.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(Seller));
-
-        }
-
         #endregion
 
         #region Material
@@ -184,9 +179,21 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Context.Material.Update(Material.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Material));
+                try
+                {
+                    Context.Material.Update(Material.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Material));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Materialtype));
+                }
+                return View("MaterialEditor", ObjectViewModelFactory<Material>.Edit(Material.Object));
             }
 
             return View("MaterialEditor", ObjectViewModelFactory<Material>.Edit(Material.Object));
@@ -204,28 +211,24 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Context.Material.Add(Material.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Material));
+                try
+                {
+                    Context.Material.Add(Material.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Material));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Materialtype));
+                }
+                return View("MaterialEditor", ObjectViewModelFactory<Material>.Create(Material.Object));
             }
 
             return View("MaterialEditor", ObjectViewModelFactory<Material>.Create(Material.Object));
-        }
-        public IActionResult DeleteMaterial(string id)
-        {
-            var Material = Context.Material.First(p => p.Id == int.Parse(id));
-            ViewData["Materialtype"] = null;
-            return View("MaterialEditor", ObjectViewModelFactory<Material>.Delete(Material));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteMaterial([FromForm] ObjectViewModel<Material> Material)
-        {
-
-            Context.Material.Remove(Material.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(Material));
-
         }
 
         #endregion
@@ -258,11 +261,24 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (Materiallease.Option[0]) Materiallease.Object.Deliverydate = DateTime.Now;
-                Materiallease.Object.Overallprice = Materiallease.Object.Count * Materiallease.Object.Priceperunit;
-                Context.Materiallease.Update(Materiallease.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Materiallease));
+                try
+                {
+                    if (Materiallease.Option[0]) Materiallease.Object.Deliverydate = DateTime.Now;
+                    Materiallease.Object.Overallprice = 0;
+                    Context.Materiallease.Update(Materiallease.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Materiallease));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Materiallease));
+                }
+
+                return View("MaterialleaseEditor", ObjectViewModelFactory<Materiallease>.Edit(Materiallease.Object));
             }
 
             return View("MaterialleaseEditor", ObjectViewModelFactory<Materiallease>.Edit(Materiallease.Object));
@@ -281,12 +297,24 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Materiallease.Object.Startdate = DateTime.Now;
-                Materiallease.Object.Deliverydate = null;
-                Materiallease.Object.Overallprice = 0;
-                Context.Materiallease.Add(Materiallease.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Materiallease));
+                try
+                {
+                    Materiallease.Object.Startdate = DateTime.Now;
+                    Materiallease.Object.Deliverydate = null;
+                    Materiallease.Object.Overallprice = 0;
+                    Context.Materiallease.Add(Materiallease.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Materiallease));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Materiallease));
+                }
+                return View("MaterialleaseEditor", ObjectViewModelFactory<Materiallease>.Create(Materiallease.Object));
             }
 
             return View("MaterialleaseEditor", ObjectViewModelFactory<Materiallease>.Create(Materiallease.Object));

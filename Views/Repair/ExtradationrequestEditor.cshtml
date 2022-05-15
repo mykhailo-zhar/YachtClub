@@ -3,18 +3,11 @@
 <h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
 <form asp-action="@Model..Action" method="post">
 
+    <div class="form-group @Model.AlwaysHidden">
+        <label asp-for="Object.Id"></label>
+        <input class="form-control" asp-for="Object.Id" readonly />
+    </div>
 
-    @{
-        Model.ReadOnly |= Model.Object.Enddate != null;
-    }
-
-    @if (Model.ShowReadOnlyFields)
-    {
-        <div class="form-group">
-            <label asp-for="Object.Id"></label>
-            <input class="form-control" asp-for="Object.Id" readonly />
-        </div>
-    }
 
     <input hidden readonly asp-for="Object.Startdate" />
 
@@ -28,152 +21,66 @@
     </div>
 
 
-    @switch (Model.Action)
-    {
-        case "Create":
-            {
-                <input hidden readonly asp-for="Object.Status" value="Created" />
-                break;
-            }
-        case "Edit" when !Model.ReadOnly:
-            {
-                <div class="form-group">
-                    <label asp-for="Object.Status"></label>
-                    <div>
-                        <span asp-validation-for="Object.Status" class="text-danger"></span>
-                    </div>
-                    <select class="form-control" asp-for="Object.Status"
-                            asp-items="@(new List<SelectListItem> {
+
+    <div class="form-group @Model.HideOnCreate @Model.HideOnDelete">
+        <label asp-for="Object.Status"></label>
+        <div>
+            <span asp-validation-for="Object.Status" class="text-danger"></span>
+        </div>
+        <select class="form-control" asp-for="Object.Status"
+                asp-items="@(new List<SelectListItem> {
                                             new SelectListItem {Text = "Waits", Selected = true },
                                             new SelectListItem { Text = "Canceled" },
                                             new SelectListItem {Text = "Done" }
-                                })"
-                            disabled="@Model.ReadOnly">
-                    </select>
-                </div>
-                break;
-            }
-    }
-
-
-<div class="form-group">
-    <label asp-for="Object.Count"></label>
-    <div>
-        <span asp-validation-for="Object.Count" class="text-danger"></span>
+                                })">
+        </select>
     </div>
-    @if (Model.Action == "Create")
-    {
+
+    <div class="form-group @Model.HideOnEdit">
+        <label asp-for="Object.Count"></label>
+        <div>
+            <span asp-validation-for="Object.Count" class="text-danger"></span>
+        </div>
+
         <input class="form-control" asp-for="Object.Count" min="1"
                readonly="@Model.ReadOnly" />
-    }
-    else
-    {
-        <input class="form-control" asp-for="Object.Count" min="1"
-               readonly />
-    }
-</div>
+    </div>
 
-
-
-
-    @if (Model.Action == "Edit")
-    {
+    <div class="form-group @Model.HideOnEdit @Model.HideOnDelete">
         <div class="dropdown-divider"></div>
-        <label>@Model.Object.MaterialNavigation.GetType().Name</label>
+        <label>Выбрать материал</label>
+        <select class="form-control" asp-for="Object.Material"
+                asp-items="@(new SelectList(ViewData["Material"] as IEnumerable<Material> ?? Enumerable.Empty<Material>(), "Id", "Name"))"
+                disabled="@Model.ReadOnly">
+            <option value="" disabled selected>Выберите материал</option>
+        </select>
+    </div>
 
-        <div class="form-group">
-            <label asp-for="Object.MaterialNavigation.Name"></label>
-            <input class="form-control" value="@(Model.Object.MaterialNavigation.Name)"
-                   readonly />
-        </div>
-        <label>@Model.Object.MaterialNavigation.Type.GetType().Name</label>
 
-        <div class="form-group">
-            <label asp-for="Object.MaterialNavigation.Type.Name"></label>
-            <input class="form-control" value="@(Model.Object.MaterialNavigation.Type.Name)"
-                   readonly />
-        </div>
-    }
-    @if (Model.Action == "Create")
-    {
-        <div class="form-group">
-            <label>Изменить объект</label>
-            <select class="form-control" asp-for="Object.Material"
-                    asp-items="@(new SelectList(ViewData["Material"] as IEnumerable<Material> ?? Enumerable.Empty<Material>(), "Id", "Name"))"
-                    disabled="@Model.ReadOnly">
-                <option value="" disabled selected>Выберите материал</option>
-            </select>
-        </div>
-    }
-    else
-    {
-        <input hidden readonly asp-for="Object.Material" />
-    }
 
-    @if (Model.Action == "Edit")
-    {
-        <div class="dropdown-divider"></div>
-        <label>@Model.Object.Staff.Staff.GetType().Name</label>
-
-        <div class="form-group">
-            <label>Сотрудник</label>
-            <input class="form-control" value="@Methods.PersonEmail(Model.Object.Staff.Staff)"
-                   readonly />
-        </div>
-
-    }
-
-    @if (Model.Action == "Create")
-    {
-        <div class="form-group">
-            <label>Сотрудник</label>
-            <select class="form-control" asp-for="Object.Staffid" asp-items="@(((ViewData["StaffPosition"] as IEnumerable<RepairStaff>) ?? Enumerable.Empty<RepairStaff>()).Select(p =>
+    <div class="form-group @Model.HideOnDelete @Model.HideOnEdit">
+        <label>Сотрудник</label>
+        <select class="form-control" asp-for="Object.Staffid" asp-items="@(((ViewData["StaffPosition"] as IEnumerable<RepairStaff>) ?? Enumerable.Empty<RepairStaff>()).Select(p =>
                        {
                            var item = new SelectListItem();
                            item.Text = Methods.PersonPhone(p.Staff);
                            item.Value = $"{p.Id}";
                            return item;
                        }))"
-                    disabled="@Model.ReadOnly">
-                <option value="" disabled selected>Выберите сотрудника</option>
-            </select>
-        </div>
-    }
-    else
-    {
-        <input hidden readonly asp-for="Object.Staffid" />
-    }
+                disabled="@Model.ReadOnly">
+            <option value="" disabled selected>Выберите сотрудника</option>
+        </select>
+    </div>
 
-    @if (Model.Action == "Edit")
-    {
-        <div class="dropdown-divider"></div>
+
+    <div class="form-group @Model.AlwaysHidden">
         <label>Ремонт</label>
-
-        <div class="form-group">
-            <label>Ремонт</label>
-            <input class="form-control" value="@Model.Object.Repairid"
-                   readonly />
-        </div>
-
-    }
-    @if (Model.Action == "Create")
-    {
-        <div class="form-group">
-            <label>Ремонт</label>
-            <select class="form-control" asp-for="Object.Repairid"
-                    asp-items="@(new SelectList(ViewData["Repair"] as IEnumerable<Repair> ?? Enumerable.Empty<Repair>(), "Id", "Id"))"
-                    disabled="@Model.ReadOnly">
-                <option value="" disabled selected>Выберите Ремонт</option>
-            </select>
-        </div>
-    }
-    else
-    {
-        <input hidden readonly asp-for="Object.Repairid" />
-    }
-
-
-
+        <select class="form-control" asp-for="Object.Repairid"
+                asp-items="@(new SelectList(ViewData["Repair"] as IEnumerable<Repair> ?? Enumerable.Empty<Repair>(), "Id", "Id"))"
+                disabled="@Model.ReadOnly">
+            <option value="" disabled selected>Выберите Ремонт</option>
+        </select>
+    </div>
 
     <div class="dropdown-divider"></div>
     <div class="form-group">
@@ -186,7 +93,7 @@
     </div>
 
     <partial name="_EditorBottomButtons" model="@(new EditorBottomButtonsViewModel {
-            ShowAction = Model.ShowAction && ( Model.Object.Enddate == null || Model.Action != "Edit"),
+            ShowAction = Model.ShowAction,
             Theme = Model.Theme,
             Action = Model.ActionObjectName,
             BackAction = Model.Object.GetType().Name

@@ -3,39 +3,30 @@
 <h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
 <form asp-action="@Model..Action" method="post">
 
+    <div class="form-group @Model.AlwaysHidden">
+        <label asp-for="Object.Id"></label>
+        <input class="form-control" asp-for="Object.Id" readonly />
+    </div>
 
-    @{
-        Model.ReadOnly |= Model.Object.Enddate != null;
-    }
+
+    <input hidden readonly asp-for="Object.Startdate" />
 
 
-    @if (Model.ShowReadOnlyFields)
-    {
-        <div class="form-group">
-            <label asp-for="Object.Id"></label>
-            <input class="form-control" asp-for="Object.Id" readonly />
-        </div>
-    }
-
-    <input hidden readonly asp-for="Object.Startdate"/>
-
-    @if (Model.Action != "Create")
-    {
-        <div class="form-group">
-            <label>Завершить ремонт?</label>
-            @if (Model.Action == "Edit" && Model.Object.Enddate == null && !Model.ReadOnly)
-            {
-                <select class="form-control" asp-for="Option[0]" asp-items="@(new List<SelectListItem> {
+    <div class="form-group @Model.HideOnCreate">
+        <label>Завершить ремонт?</label>
+        @if (Model.Action == "Edit" && Model.Object.Enddate == null && !Model.ReadOnly)
+        {
+            <select class="form-control" asp-for="Option[0]" asp-items="@(new List<SelectListItem> {
                         new SelectListItem { Selected = true, Text="Да", Value="true" },
                         new SelectListItem { Text="Нет", Value="false" },
                  })"></select>
-            }
-            else
-            {
-                <input class="form-control" readonly value="@(Model.Object.Enddate != null? "Да": "Нет")" />
-            }
-        </div>
-    }
+        }
+        else
+        {
+            <input class="form-control" readonly value="@(Model.Object.Enddate != null? "Да": "Нет")" />
+        }
+    </div>
+
 
     <div class="form-group">
         <label asp-for="Object.Duration"></label>
@@ -55,69 +46,31 @@
                readonly="@Model.ReadOnly" />
     </div>
 
-    @switch (Model.Action)
-    {
-        case "Create":
-            {
-                <input hidden readonly asp-for="Object.Status" value="Create" />
-                break;
-            }
-        case "Edit" when !Model.ReadOnly:
-            {
-                <div class="form-group">
-                    <label asp-for="Object.Status"></label>
-                    <div>
-                        <span asp-validation-for="Object.Status" class="text-danger"></span>
-                    </div>
-                    <select class="form-control" asp-for="Object.Status"
-                            asp-items="@(new List<SelectListItem> { 
-    new SelectListItem {Text = "Ожидание материалов", Value="Waits", Selected = true },
-    new SelectListItem { Text = "В процессе", Value="In Progress" },
-    new SelectListItem { Text = "Отменён", Value="Canceled" },})"
-                            disabled="@Model.ReadOnly">
-                    </select>
-                </div>
-                break;
-            }
-    }
 
+    <div class="form-group @Model.HideOnDelete">
+        <label asp-for="Object.Status"></label>
+        <div>
+            <span asp-validation-for="Object.Status" class="text-danger"></span>
+        </div>
+        <select class="form-control" asp-for="Object.Status"
+                asp-items="@(new List<SelectListItem> {
+                new SelectListItem {Text = "Создан", Value="Created" },
+                new SelectListItem {Text = "Ожидает материалы", Value="Waits" },
+                new SelectListItem { Text = "В процессе", Value="In Progress" },
+                new SelectListItem { Text = "Отменён", Value="Canceled" },})"
+                >
+        </select>
+    </div>
 
-
-    @if (Model.Object.Yacht != null)
-    {
+    <div class="form-group @Model.HideOnDelete @Model.HideOnEdit">
         <div class="dropdown-divider"></div>
-        <label>@Model.Object.Yacht.GetType().Name</label>
-
-        <div class="form-group">
-            <label asp-for="Object.Yacht.Name"></label>
-            <input class="form-control" value="@(Model.Object.Yacht.Name)"
-                   readonly />
-        </div>
-        <label>@Model.Object.Yacht.Type.GetType().Name</label>
-
-        <div class="form-group">
-            <label asp-for="Object.Yacht.Type.Name"></label>
-            <input class="form-control" value="@(Model.Object.Yacht.Type.Name)"
-                   readonly />
-        </div>
-    }
-    @if (Model.Action != "Delete" && Model.Action != "Edit")
-    {
-        <div class="form-group">
-            <label>Изменить объект</label>
-            <select class="form-control" asp-for="Object.Yachtid"
-                    asp-items="@(new SelectList(ViewData["Yacht"] as IEnumerable<Yacht> ?? Enumerable.Empty<Yacht>(), "Id", "Name"))"
-                    disabled="@Model.ReadOnly">
-                <option value="" disabled selected>Выберите яхту</option>
-            </select>
-        </div>
-    }
-    else
-    {
-        <input hidden readonly asp-for="Object.Yachtid" />
-    }
-
-
+        <label>Яхта</label>
+        <select class="form-control" asp-for="Object.Yachtid"
+                asp-items="@(new SelectList(ViewData["Yacht"] as IEnumerable<Yacht> ?? Enumerable.Empty<Yacht>(), "Id", "Name"))"
+                disabled="@Model.ReadOnly">
+            <option value="" disabled selected>Выберите яхту</option>
+        </select>
+    </div>
 
     <div class="dropdown-divider"></div>
     <div class="form-group">
@@ -130,7 +83,7 @@
     </div>
 
     <partial name="_EditorBottomButtons" model="@(new EditorBottomButtonsViewModel {
-        ShowAction = Model.ShowAction && ( Model.Object.Enddate == null || Model.Action != "Edit"),
+        ShowAction = Model.ShowAction,
         Theme = Model.Theme,
         Action = Model.ActionObjectName,
         BackAction = Model.Object.GetType().Name
