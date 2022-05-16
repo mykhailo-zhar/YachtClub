@@ -14,7 +14,7 @@ namespace Project.Migrations
         public string Name { get; set; }
         [Column("surname", TypeName = "character varying")]
         public string Surname { get; set; }
-        [Column("birthdate")]
+        [Column("birthdate", TypeName = "timestamp(2) without time zone")]
         public DateTime? Birthdate { get; set; }
         [Column("sex", TypeName = "character varying")]
         public string Sex { get; set; }
@@ -22,7 +22,9 @@ namespace Project.Migrations
         public string Email { get; set; }
         [Column("phone", TypeName = "character varying")]
         public string Phone { get; set; }
-        [Column("registrydate")]
+        [Column("staffonly")]
+        public bool? Staffonly { get; set; }
+        [Column("registrydate", TypeName = "timestamp(2) without time zone")]
         public DateTime? Registrydate { get; set; }
     }
 }

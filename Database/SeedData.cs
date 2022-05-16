@@ -639,6 +639,7 @@ values
 ('Jim'		, 	'Morzhov'		, 'Male'	, '15-03-2001', '24-04-2019', 'dafasda@gmail.com',		'+380925557666'	),
 ('Lina'		, 	'Krest'			, 'Female'	, '10-01-2002',	'25-04-2019', 'na42221da@gmail.com',	'+380982376896' ),
 ('Denis'	, 	'Smirk'			, 'Male'	, '10-01-2002',	'26-04-2019', 'den123s2@gmail.com',		'+380981343565' );
+update Person set staffonly = true;
 
 insert into Person (name, surname, sex, BirthDate, RegistryDate, email, phone)
 values
@@ -1379,10 +1380,7 @@ where sp.id in (select StaffPositionListByPosition('Repairman'))
             //Персонал
             dbContext.Database.ExecuteSqlRaw(@"
 Create or replace View Staff as (
-		select * from person where id in (
-		select distinct sp.staffid from
-		staff_position as sp
-		)
+		select * from person where staffonly
 );
 
 ");
@@ -1767,9 +1765,6 @@ begin
         ELSIF (TG_OP = 'INSERT') then
 			--Выставление стандартной даты
 			new.startdate = current_timestamp; 
-			--Стандартная запрлата
-			if(new.salary is null) then
-				new.salary = (select p.salary from position p where p.id = new.positionid);
 			end if;
 			--Проверка открытых записей на должность
 			if( (select count(sp.id) from staff_position sp 

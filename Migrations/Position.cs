@@ -20,6 +20,8 @@ namespace Project.Migrations
         [Required]
         [Column("name", TypeName = "character varying")]
         public string Name { get; set; }
+        [Column("crewposition")]
+        public bool Crewposition { get; set; }
         [Column("salary", TypeName = "numeric")]
         public decimal Salary { get; set; }
 

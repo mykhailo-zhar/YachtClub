@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Data.Entity.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Entity.Core.Objects;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Project.Migrations
 {
@@ -19,6 +16,7 @@ namespace Project.Migrations
         }
 
         public virtual DbSet<Availableresources> Availableresources { get; set; }
+        public virtual DbSet<Busyyacht> Busyyacht { get; set; }
         public virtual DbSet<Contract> Contract { get; set; }
         public virtual DbSet<Contracttype> Contracttype { get; set; }
         public virtual DbSet<Event> Event { get; set; }
@@ -30,9 +28,10 @@ namespace Project.Migrations
         public virtual DbSet<Person> Person { get; set; }
         public virtual DbSet<Position> Position { get; set; }
         public virtual DbSet<PositionYachttype> PositionYachttype { get; set; }
+        public virtual DbSet<Readytocontract> Readytocontract { get; set; }
         public virtual DbSet<Repair> Repair { get; set; }
-        public virtual DbSet<RepairStaff> RepairStaff { get; set; }
         public virtual DbSet<RepairMen> RepairMen { get; set; }
+        public virtual DbSet<RepairStaff> RepairStaff { get; set; }
         public virtual DbSet<Review> Review { get; set; }
         public virtual DbSet<ReviewCaptain> ReviewCaptain { get; set; }
         public virtual DbSet<ReviewYacht> ReviewYacht { get; set; }
@@ -42,7 +41,12 @@ namespace Project.Migrations
         public virtual DbSet<Winner> Winner { get; set; }
         public virtual DbSet<Yacht> Yacht { get; set; }
         public virtual DbSet<YachtCrew> YachtCrew { get; set; }
+        public virtual DbSet<YachtCrewPosition> YachtCrewPosition { get; set; }
+        public virtual DbSet<Yachtincontract> Yachtincontract { get; set; }
+        public virtual DbSet<Yachtinevent> Yachtinevent { get; set; }
+        public virtual DbSet<Yachtinrepair> Yachtinrepair { get; set; }
         public virtual DbSet<Yachtlease> Yachtlease { get; set; }
+        public virtual DbSet<Yachtleasestatus> Yachtleasestatus { get; set; }
         public virtual DbSet<Yachtleasetype> Yachtleasetype { get; set; }
         public virtual DbSet<Yachttest> Yachttest { get; set; }
         public virtual DbSet<Yachttype> Yachttype { get; set; }
@@ -55,20 +59,28 @@ namespace Project.Migrations
                 optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=YachtClub;Username=postgres;Password=111");
             }
         }
-
-        public string MaterialMetric(int MaterialID) => throw new NotImplementedException() ;
+         public string MaterialMetric(int MaterialID) => throw new NotImplementedException();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasDbFunction(() => MaterialMetric(default));      
-                
+            modelBuilder.HasDbFunction(() => MaterialMetric(default));
             modelBuilder.Entity<Availableresources>(entity =>
+            {
+                entity.HasNoKey();
+            });
+
+            modelBuilder.Entity<Busyyacht>(entity =>
             {
                 entity.HasNoKey();
             });
 
             modelBuilder.Entity<Contract>(entity =>
             {
+                entity.HasOne(d => d.Captaininyacht)
+                    .WithMany(p => p.Contract)
+                    .HasForeignKey(d => d.Captaininyachtid)
+                    .HasConstraintName("contract_captaininyachtid_fkey");
+
                 entity.HasOne(d => d.Client)
                     .WithMany(p => p.Contract)
                     .HasForeignKey(d => d.Clientid)
@@ -78,11 +90,6 @@ namespace Project.Migrations
                     .WithMany(p => p.Contract)
                     .HasForeignKey(d => d.Contracttypeid)
                     .HasConstraintName("contract_contracttypeid_fkey");
-
-                entity.HasOne(d => d.Yachtwithcrew)
-                    .WithMany(p => p.Contract)
-                    .HasForeignKey(d => d.Yachtwithcrewid)
-                    .HasConstraintName("contract_yachtwithcrewid_fkey");
             });
 
             modelBuilder.Entity<Contracttype>(entity =>
@@ -100,11 +107,17 @@ namespace Project.Migrations
                     .HasName("event_name_startdate_key")
                     .IsUnique();
 
-                entity.Property(e => e.Status).HasDefaultValueSql("'Created'::character varying");
+                entity.Property(e => e.Canhavewinners).HasDefaultValueSql("true");
+
+                entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
+
+                entity.Property(e => e.Userrate).HasDefaultValueSql("0");
             });
 
             modelBuilder.Entity<Extradationrequest>(entity =>
             {
+                entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
+
                 entity.HasOne(d => d.MaterialNavigation)
                     .WithMany(p => p.Extradationrequest)
                     .HasForeignKey(d => d.Material)
@@ -119,13 +132,11 @@ namespace Project.Migrations
                     .WithMany(p => p.Extradationrequest)
                     .HasForeignKey(d => d.Staffid)
                     .HasConstraintName("extradationrequest_staffid_fkey");
-
-                entity.Property(e => e.Description).HasDefaultValueSql("' '::character varying");
             });
 
             modelBuilder.Entity<Hiredstaff>(entity =>
             {
-                entity.HasKey(e => new { e.YachtCrewid, e.Clientid })
+                entity.HasKey(e => new { e.Staffid, e.Clientid })
                     .HasName("hiredstaff_pkey");
 
                 entity.HasOne(d => d.Client)
@@ -133,10 +144,10 @@ namespace Project.Migrations
                     .HasForeignKey(d => d.Clientid)
                     .HasConstraintName("hiredstaff_clientid_fkey");
 
-                entity.HasOne(d => d.YachtCrew)
+                entity.HasOne(d => d.Staff)
                     .WithMany(p => p.Hiredstaff)
-                    .HasForeignKey(d => d.YachtCrewid)
-                    .HasConstraintName("hiredstaff_yacht_crewid_fkey");
+                    .HasForeignKey(d => d.Staffid)
+                    .HasConstraintName("hiredstaff_staffid_fkey");
             });
 
             modelBuilder.Entity<Material>(entity =>
@@ -209,13 +220,24 @@ namespace Project.Migrations
                     .HasConstraintName("position_yachttype_yachttypeid_fkey");
             });
 
+            modelBuilder.Entity<Readytocontract>(entity =>
+            {
+                entity.HasNoKey();
+            });
+
             modelBuilder.Entity<Repair>(entity =>
             {
                 entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
 
+                entity.Property(e => e.Duration).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(e => e.Enddate).HasDefaultValueSql("NULL::timestamp without time zone");
+
                 entity.Property(e => e.Personnel).HasDefaultValueSql("1");
 
-                entity.Property(e => e.Status).HasDefaultValueSql("'New'::character varying");
+                entity.Property(e => e.Startdate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(e => e.Status).HasDefaultValueSql("'Created'::character varying");
 
                 entity.HasOne(d => d.Yacht)
                     .WithMany(p => p.Repair)
@@ -240,17 +262,19 @@ namespace Project.Migrations
                     .HasConstraintName("repair_men_staffid_fkey");
             });
 
+            modelBuilder.Entity<RepairStaff>(entity =>
+            {
+                entity.HasNoKey();
+            });
+
             modelBuilder.Entity<Review>(entity =>
             {
+                entity.Property(e => e.Public).HasDefaultValueSql("true");
+
                 entity.HasOne(d => d.Client)
                     .WithMany(p => p.Review)
                     .HasForeignKey(d => d.Clientid)
                     .HasConstraintName("review_clientid_fkey");
-
-                entity.HasOne(d => d.Contract)
-                    .WithMany(p => p.Review)
-                    .HasForeignKey(d => d.Contractid)
-                    .HasConstraintName("review_contractid_fkey");
             });
 
             modelBuilder.Entity<ReviewCaptain>(entity =>
@@ -299,18 +323,11 @@ namespace Project.Migrations
                 entity.HasNoKey();
             });
 
-            modelBuilder.Entity<RepairStaff>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.HasOne(p => p.Position);
-                entity.HasOne(p => p.Staff);
-            });
-
-
             modelBuilder.Entity<StaffPosition>(entity =>
             {
                 entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
+
+                entity.Property(e => e.Salary).HasDefaultValueSql("0");
 
                 entity.HasOne(d => d.Position)
                     .WithMany(p => p.StaffPosition)
@@ -345,6 +362,8 @@ namespace Project.Migrations
                     .HasName("yacht_name_typeid_key")
                     .IsUnique();
 
+                entity.Property(e => e.Description).HasDefaultValueSql("' '::text");
+
                 entity.Property(e => e.Registrydate).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.Rentable).HasDefaultValueSql("true");
@@ -375,6 +394,26 @@ namespace Project.Migrations
                     .HasConstraintName("yacht_crew_yachtid_fkey");
             });
 
+            modelBuilder.Entity<YachtCrewPosition>(entity =>
+            {
+                entity.HasNoKey();
+            });
+
+            modelBuilder.Entity<Yachtincontract>(entity =>
+            {
+                entity.HasNoKey();
+            });
+
+            modelBuilder.Entity<Yachtinevent>(entity =>
+            {
+                entity.HasNoKey();
+            });
+
+            modelBuilder.Entity<Yachtinrepair>(entity =>
+            {
+                entity.HasNoKey();
+            });
+
             modelBuilder.Entity<Yachtlease>(entity =>
             {
                 entity.Property(e => e.Specials).HasDefaultValueSql("' '::text");
@@ -388,6 +427,11 @@ namespace Project.Migrations
                     .WithMany(p => p.Yachtlease)
                     .HasForeignKey(d => d.Yachtleasetypeid)
                     .HasConstraintName("yachtlease_yachtleasetypeid_fkey");
+            });
+
+            modelBuilder.Entity<Yachtleasestatus>(entity =>
+            {
+                entity.HasNoKey();
             });
 
             modelBuilder.Entity<Yachtleasetype>(entity =>

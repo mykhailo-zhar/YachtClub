@@ -21,9 +21,9 @@ namespace Project.Migrations
         public int Count { get; set; }
         [Column("overallprice", TypeName = "numeric")]
         public decimal Overallprice { get; set; }
-        [Column("startdate")]
+        [Column("startdate", TypeName = "timestamp(2) without time zone")]
         public DateTime Startdate { get; set; }
-        [Column("deliverydate")]
+        [Column("deliverydate", TypeName = "timestamp(2) without time zone")]
         public DateTime? Deliverydate { get; set; }
 
         [ForeignKey(nameof(Material))]

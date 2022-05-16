@@ -11,7 +11,7 @@ namespace Project.Migrations
         [Key]
         [Column("id")]
         public int Id { get; set; }
-        [Column("date")]
+        [Column("date", TypeName = "timestamp(2) without time zone")]
         public DateTime Date { get; set; }
         [Required]
         [Column("results")]

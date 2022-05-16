@@ -17,17 +17,18 @@ namespace Project.Migrations
         [Key]
         [Column("id")]
         public int Id { get; set; }
-        [Column("startdate")]
+        [Column("startdate", TypeName = "timestamp(2) without time zone")]
         public DateTime Startdate { get; set; }
-        [Column("enddate")]
+        [Column("enddate", TypeName = "timestamp(2) without time zone")]
         public DateTime? Enddate { get; set; }
-        [Column("duration")]
-        public DateTime Duration { get; set; } = DateTime.Now;
+        [Column("duration", TypeName = "timestamp(2) without time zone")]
+        public DateTime Duration { get; set; }
         [Required]
         [Column("status", TypeName = "character varying")]
         public string Status { get; set; }
         [Column("personnel")]
         public int Personnel { get; set; }
+        [Required]
         [Column("description")]
         public string Description { get; set; }
         [Column("yachtid")]

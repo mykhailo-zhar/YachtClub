@@ -12,7 +12,7 @@ namespace Project.Migrations
         public int? Material { get; set; }
         [Column("count")]
         public long? Count { get; set; }
-        [Column("format")]
-        public string? Format { get; set; }
+        [Column("format", TypeName = "character varying")]
+        public string Format { get; set; }
     }
 }

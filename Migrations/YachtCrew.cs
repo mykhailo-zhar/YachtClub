@@ -11,7 +11,6 @@ namespace Project.Migrations
         public YachtCrew()
         {
             Contract = new HashSet<Contract>();
-            Hiredstaff = new HashSet<Hiredstaff>();
         }
 
         [Key]
@@ -21,9 +20,9 @@ namespace Project.Migrations
         public int Yachtid { get; set; }
         [Column("crewid")]
         public int Crewid { get; set; }
-        [Column("startdate")]
+        [Column("startdate", TypeName = "timestamp(2) without time zone")]
         public DateTime Startdate { get; set; }
-        [Column("enddate")]
+        [Column("enddate", TypeName = "timestamp(2) without time zone")]
         public DateTime? Enddate { get; set; }
         [Column("description")]
         public string Description { get; set; }
@@ -34,9 +33,7 @@ namespace Project.Migrations
         [ForeignKey(nameof(Yachtid))]
         [InverseProperty("YachtCrew")]
         public virtual Yacht Yacht { get; set; }
-        [InverseProperty("Yachtwithcrew")]
+        [InverseProperty("Captaininyacht")]
         public virtual ICollection<Contract> Contract { get; set; }
-        [InverseProperty("YachtCrew")]
-        public virtual ICollection<Hiredstaff> Hiredstaff { get; set; }
     }
 }

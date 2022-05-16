@@ -15,6 +15,7 @@ namespace Project.Migrations
             Review = new HashSet<Review>();
             StaffPosition = new HashSet<StaffPosition>();
             Yacht = new HashSet<Yacht>();
+            ReviewCaptain = new HashSet<ReviewCaptain>();
         }
 
         [Key]
@@ -42,6 +43,8 @@ namespace Project.Migrations
         [Column("registrydate")]
         public DateTime Registrydate { get; set; }
 
+        [InverseProperty("Captain")]
+        public virtual ICollection<ReviewCaptain> ReviewCaptain { get; set; }
         [InverseProperty("Client")]
         public virtual ICollection<Contract> Contract { get; set; }
         [InverseProperty("Client")]

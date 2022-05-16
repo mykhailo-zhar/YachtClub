@@ -27,8 +27,11 @@ namespace Project.Migrations
         [Required]
         [Column("rentable")]
         public bool? Rentable { get; set; }
-        [Column("registrydate")]
+        [Column("registrydate", TypeName = "timestamp(2) without time zone")]
         public DateTime Registrydate { get; set; }
+        [Required]
+        [Column("description")]
+        public string Description { get; set; }
         [Column("typeid")]
         public int Typeid { get; set; }
         [Column("yachtownerid")]

@@ -11,17 +11,19 @@ namespace Project.Migrations
         [Key]
         [Column("id")]
         public int Id { get; set; }
-        [Column("startdate")]
+        [Column("startdate", TypeName = "timestamp(2) without time zone")]
         public DateTime Startdate { get; set; }
-        [Column("enddate")]
+        [Column("enddate", TypeName = "timestamp(2) without time zone")]
         public DateTime? Enddate { get; set; }
-        [Column("duration")]
+        [Column("duration", TypeName = "timestamp(2) without time zone")]
         public DateTime Duration { get; set; }
         [Column("overallprice", TypeName = "numeric")]
         public decimal Overallprice { get; set; }
         [Required]
         [Column("specials")]
         public string Specials { get; set; }
+        [Column("paid")]
+        public bool Paid { get; set; }
         [Column("yachtid")]
         public int Yachtid { get; set; }
         [Column("yachtleasetypeid")]

@@ -9,8 +9,8 @@ namespace Project.Migrations
     public partial class Hiredstaff
     {
         [Key]
-        [Column("yacht_crewid")]
-        public int YachtCrewid { get; set; }
+        [Column("staffid")]
+        public int Staffid { get; set; }
         [Key]
         [Column("clientid")]
         public int Clientid { get; set; }
@@ -18,8 +18,7 @@ namespace Project.Migrations
         [ForeignKey(nameof(Clientid))]
         [InverseProperty(nameof(Person.Hiredstaff))]
         public virtual Person Client { get; set; }
-        [ForeignKey(nameof(YachtCrewid))]
-        [InverseProperty("Hiredstaff")]
-        public virtual YachtCrew YachtCrew { get; set; }
+        [ForeignKey(nameof(Staffid))]
+        public virtual StaffPosition Staff { get; set; }
     }
 }

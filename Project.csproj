@@ -46,6 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Migrations\Ready\" />
     <Folder Include="wwwRoot\lib\twitter-bootstrap\" />
   </ItemGroup>
 

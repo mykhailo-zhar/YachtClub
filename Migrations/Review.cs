@@ -19,22 +19,22 @@ namespace Project.Migrations
         public int Id { get; set; }
         [Column("clientid")]
         public int Clientid { get; set; }
-        [Column("contractid")]
-        public int Contractid { get; set; }
-        [Column("date")]
+        [Column("date", TypeName = "timestamp(2) without time zone")]
         public DateTime Date { get; set; }
         [Required]
         [Column("text")]
         public string Text { get; set; }
+        [Required]
+        [Column("public")]
+        public bool? Public { get; set; }
+        [Column("userrate")]
+        public int Userrate { get; set; }
         [Column("rate")]
         public int Rate { get; set; }
 
         [ForeignKey(nameof(Clientid))]
         [InverseProperty(nameof(Person.Review))]
         public virtual Person Client { get; set; }
-        [ForeignKey(nameof(Contractid))]
-        [InverseProperty("Review")]
-        public virtual Contract Contract { get; set; }
         [InverseProperty("Review")]
         public virtual ICollection<ReviewCaptain> ReviewCaptain { get; set; }
         [InverseProperty("Review")]

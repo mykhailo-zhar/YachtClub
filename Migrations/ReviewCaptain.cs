@@ -16,8 +16,8 @@ namespace Project.Migrations
         public int Captainid { get; set; }
 
         [ForeignKey(nameof(Captainid))]
-        [InverseProperty(nameof(StaffPosition.ReviewCaptain))]
-        public virtual StaffPosition Captain { get; set; }
+        [InverseProperty(nameof(Person.ReviewCaptain))]
+        public virtual Person Captain { get; set; }
         [ForeignKey(nameof(Reviewid))]
         [InverseProperty("ReviewCaptain")]
         public virtual Review Review { get; set; }
