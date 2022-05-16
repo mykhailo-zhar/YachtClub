@@ -183,7 +183,7 @@ Create TABLE Staff_Position(
 	On Delete Cascade,
 	StartDate		timestamp(2)		Not Null,
 	EndDate			timestamp(2)		check(StartDate <= EndDate),
-	Salary        	My_Money,
+	Salary        	My_Money			Default 0,
 	Description		Text		Default ' '
 );
 				");
@@ -1370,7 +1370,7 @@ select distinct m.id material, coalesce(ar.count, 0) count, materialmetric(m.id,
             //Товарищи ремонтники
             dbContext.Database.ExecuteSqlRaw(@"
 Create or replace view Repair_Staff as (
-select sp.id, sp.staffid, sp.positionid, sp.startdate, sp.enddate, sp.description from
+select sp.id, sp.staffid, sp.positionid, sp.startdate, sp.enddate,sp.salary, sp.description from
 staff_position as sp join position as p on sp.positionid = p.id 
 where sp.id in (select StaffPositionListByPosition('Repairman'))
 	);

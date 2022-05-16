@@ -21,7 +21,16 @@ namespace Project.Controllers
         #region Person
         public IActionResult Staff()
         {
-            var Person = Context.Person.FromSqlRaw(@"select * from Staff").OrderBy(p => p.Id);
+            var Person = Context.Person.FromSqlRaw(@"select * from Staff")
+                .Select(p => new PortfolioViewModel
+                {
+                    Person = p,
+                    Portfolio = Context.StaffPosition
+                    .Where(z => z.Staffid == p.Id)
+                    .Include(l => l.Position)
+                    .ToList()
+                })
+                .OrderBy(p => p.Person.Id);
             return View(Person);
         }
 
@@ -45,9 +54,21 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Context.Position.Add(Position.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Position));
+                try
+                {
+                    Context.Position.Add(Position.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Position));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Position));
+                }
+                return View("PositionEditor", ObjectViewModelFactory<Position>.Create(Position.Object));
             }
 
             return View("PositionEditor", ObjectViewModelFactory<Position>.Create(Position.Object));
@@ -64,9 +85,21 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                Context.Position.Update(Position.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Position));
+                try
+                {
+                    Context.Position.Update(Position.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Position));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Position));
+                }
+                return View("PositionEditor", ObjectViewModelFactory<Position>.Edit(Position.Object));
             }
 
             return View("PositionEditor", ObjectViewModelFactory<Position>.Edit(Position.Object));
@@ -83,41 +116,30 @@ namespace Project.Controllers
         public async Task<IActionResult> DeletePosition([FromForm] ObjectViewModel<Position> Position)
         {
 
-            Context.Position.Remove(Position.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(Position));
+           
+            try
+            {
+                Context.Position.Remove(Position.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Position));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Position));
+            }
+            return View("PositionEditor", ObjectViewModelFactory<Position>.Delete(Position.Object));
 
         }
         #endregion
 
         #region StaffPosition
-        public IActionResult StaffPosition()
+        public IActionResult CreateStaffPosition(int sid)
         {
-            var StaffPosition = Context.StaffPosition
-                .Include(p => p.Position)
-                .Include(p => p.Staff)
-                .OrderBy(p => p.Id)
-                ;
-            return View(StaffPosition);
-        }
-
-        public IActionResult DetailsStaffPosition(string id)
-        {
-            var StaffPosition = Context.StaffPosition.First(p => p.Id == int.Parse(id));
-            return View("_Details", new DetailsViewModel
-            {
-                Description = StaffPosition.Description,
-                ButtonsViewModel = new EditorBottomButtonsViewModel
-                {
-                    BackAction = typeof(StaffPosition).Name
-                }
-            });
-        }
-
-
-        public IActionResult CreateStaffPosition()
-        {
-            var StaffPosition = new StaffPosition();
+            var StaffPosition = new StaffPosition { Staffid = sid};
             ViewData["Staff"] = Context.Person.ToList();
             ViewData["Position"] = Context.Position.ToList();
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Create(StaffPosition));
@@ -128,10 +150,22 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                StaffPosition.Object.Startdate = DateTime.Now;
-                Context.StaffPosition.Add(StaffPosition.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(StaffPosition));
+                try
+                {
+                    StaffPosition.Object.Startdate = DateTime.Now;
+                    Context.StaffPosition.Add(StaffPosition.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Staff));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Staff));
+                }
+                return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Create(StaffPosition.Object));
             }
 
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Create(StaffPosition.Object));
@@ -140,7 +174,6 @@ namespace Project.Controllers
         public IActionResult EditStaffPosition(string id)
         {
             var StaffPosition = Context.StaffPosition.First(p => p.Id == int.Parse(id));
-            ViewData["Staff"] = Context.Person.ToList();
             ViewData["Position"] = Context.Position.ToList();
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Edit(StaffPosition));
         }
@@ -150,10 +183,23 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (StaffPosition.Option[0]) StaffPosition.Object.Enddate = DateTime.Now;
-                Context.StaffPosition.Update(StaffPosition.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(StaffPosition));
+                
+                try
+                {
+                    if (StaffPosition.Option[0]) StaffPosition.Object.Enddate = DateTime.Now;
+                    Context.StaffPosition.Update(StaffPosition.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Staff));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                if (ModelState.IsValid)
+                {
+                    return RedirectToAction(nameof(Staff));
+                }
+                return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Edit(StaffPosition.Object));
             }
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Edit(StaffPosition.Object));
         }
@@ -162,18 +208,28 @@ namespace Project.Controllers
         public IActionResult DeleteStaffPosition(string id)
         {
             var StaffPosition = Context.StaffPosition.First(p => p.Id == int.Parse(id));
-            ViewData["Staff"] = null;
-            ViewData["Position"] = null;
+            ViewData["Position"] = Context.Position.ToList();
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Delete(StaffPosition));
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteStaffPosition([FromForm] ObjectViewModel<StaffPosition> StaffPosition)
         {
-
-            Context.StaffPosition.Remove(StaffPosition.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof(StaffPosition));
+            try
+            {
+                Context.StaffPosition.Remove(StaffPosition.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Staff));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Staff));
+            }
+            return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Delete(StaffPosition.Object));
 
         }
         #endregion

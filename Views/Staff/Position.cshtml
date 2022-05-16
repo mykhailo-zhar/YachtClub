@@ -1,52 +1,47 @@
-﻿@model IEnumerable<Position>
+﻿@{     
+    var MethodName = typeof(Position).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+}
+@model IEnumerable<Position>
 
 <table class="table table-sm table-striped table-bordered text-white ">
     <thead>
         <tr class="table-dark">
-            <td>
-                ID
-            </td>
-            <td>
-                Название
-            </td>
-            <td>
-                Зарплата
-            </td>
-            <td colspan="2" >
-            </td>
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Должность
+                </div>
+                <div align="center">
+                    <a asp-action="@Create" class="btn btn-primary w-75">
+                        Создать
+                    </a>
+                </div>
+            </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var position in Model)
+        @foreach (var obj in Model)
         {
-            <tr class="text-black btn-area-2">
-                <td>
-                    @position.Id
-                </td>
-                <td>
-                    @position.Name
-                </td>
-                <td>
-                    @position.Salary
-                </td>
-                <td align="center">
-                    <a class="btn btn-info"  asp-action="EditPosition" asp-route-id="@position.Id"> Изменить </a>
-                </td>
-                <td align="center">
-                    <a class="btn btn-danger"  asp-action="DeletePosition" asp-route-id="@position.Id">Удалить</a>
-                </td>
-            </tr>
+        <tr class="text-black btn-area-3">
+            <td>
+                <div class="card" style="width: auto;">
+                    <div class="card-body">
+                        <div class="position-absolute" style="right:20px;">
+                            <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                        </div>
+                        <h5 class="card-title">
+                            @obj.Name
+                        </h5>
+                        <h6 class="card-subtitle">
+                            @obj.Salary
+                        </h6>
+                    </div>
+                </div>
+            </td>
+        </tr>
         }
     </tbody>
-    <tfoot>
-
-    </tfoot>
 </table>
-<div>
-    <a asp-action="CreatePosition" class="btn btn-primary">
-        <div style="width: 50vw;">
-            Создать
-        </div>
-    </a>
-</div>
 

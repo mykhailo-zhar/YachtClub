@@ -22,7 +22,6 @@ namespace Project.Models
                             controller.ModelState.AddModelError("UniqueViolation",
                                 "Запись с похожими полями уже существует. Нарушение уникальности!");
                             break;
-                        // TODO: Сделать словарь с ошибками, которые бы выдавали пользовательские сообщения при разных ошибках.
                         case PostgresErrorCodes.CheckViolation:
                             controller.ModelState.AddModelError("CheckViolation",
                                 $"<{pgEx.ConstraintName}> - нарушение!");

@@ -1,61 +1,98 @@
-﻿@model IEnumerable<Person>
+﻿@{
+    var MethodName = typeof(Person).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+
+    var MethodName2 = typeof(StaffPosition).Name;
+    string DeleteSP = CRUD.Delete + MethodName2;
+    string EditSP = CRUD.Edit + MethodName2;
+    string CreateSP = CRUD.Create + MethodName2;
+}
+@model IEnumerable<PortfolioViewModel>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
         <tr class="table-dark">
-            <td>
-                ID
-            </td>
-            <td>
-                Имя
-            </td>
-            <td>
-                Фамилия
-            </td>
-            <td>
-                Дата рождения
-            </td>
-            <td>
-                Пол
-            </td>
-            <td>
-                Email
-            </td>
-            <td>
-                Телефон
-            </td>
-            <td>
-                Время регистрации
-            </td>
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Персонал
+                </div>
+                <div align="center">
+                    <a asp-action="@Create" class="btn btn-primary w-75">
+                        Зарегистрировать
+                    </a>
+                </div>
+            </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var Person in Model)
+        @foreach (var obj in Model)
         {
             <tr class="text-black">
                 <td>
-                    @Person.Id
-                </td>
-                <td>
-                    @Person.Name
-                </td>
-                <td>
-                    @Person.Surname
-                </td>
-                <td>
-                    @Person.Birthdate.ToShortDateString()
-                </td>
-                <td>
-                    @Person.Sex
-                </td>
-                <td>
-                    @Person.Email
-                </td>
-                <td>
-                    @Person.Phone
-                </td>
-                <td>
-                    @Person.Registrydate
+                    <div class="card m-2" style="width: auto;">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                @obj.Person.Name   @obj.Person.Surname
+                            </h5>
+                            <style>
+                                h6 > * {margin: 10px;}
+                            </style>
+                            <h6 class="card-subtitle">
+                                <div>
+                                    Email: @obj.Person.Email
+                                </div>
+                                <div>
+                                    Телефон: @obj.Person.Phone
+                                </div>
+                                <div>
+                                    Дата регистрации: @obj.Person.Registrydate
+                                </div>
+                                <div>
+                                    Дата рождения: @obj.Person.Birthdate
+                                </div>
+                                <p>
+                                    @obj.Person.Sex
+                                </p>
+                            </h6>
+                            <hr />
+                            <div class="card-text" style="max-width: 75vw">
+                                <div>
+                                    <div class="fs-3">Портфолио:</div>
+                                    @foreach (var item in obj.Portfolio)
+                                    {
+                                        <div class="border border-info rounded-2 m-2">
+                                            <div class="m-3">
+                                                <div class="fw-bold">
+                                                    Должность: @item.Position.Name
+                                                </div>
+                                                <div>
+                                                    С @item.Startdate по @Methods.CoalesceDateTime(item.Enddate)
+                                                </div>
+                                                <div class="fst-italic">
+                                                    Зарплата: @item.Salary (@item.Position.Salary)
+                                                </div>
+                                                <div>Описание:</div>
+                                                <div class="card-text" style="max-width: 75vw">
+                                                    <div class="m-2 fw-light" style=" white-space: pre-line;"> @(item.Description)</div>
+                                                </div>
+                                                <span>
+                                                    <a class="btn btn-danger" asp-action="@DeleteSP"
+                                                       asp-route-id="@item.Id">-</a>
+                                                    <a class="btn btn-danger" asp-action="@EditSP"
+                                                       asp-route-id="@item.Id">Edit</a>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <a class="btn btn-primary" asp-action="@CreateSP" asp-route-sid="@obj.Person.Id">+</a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
                 </td>
             </tr>
         }

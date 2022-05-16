@@ -18,6 +18,8 @@ namespace Project.Migrations
         public DateTime? Startdate { get; set; }
         [Column("enddate", TypeName = "date")]
         public DateTime? Enddate { get; set; }
+        [Column("salary", TypeName = "numeric")]
+        public decimal Salary { get; set; }
         [Column("description")]
         public string? Description { get; set; }
 

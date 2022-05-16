@@ -18,22 +18,25 @@
         <input class="form-control" asp-for="Object.Startdate"
                readonly="@Model.ReadOnly" />
     </div>
+    <hr />
     <div class="form-group @Model.HideOnCreate">
-        <label>Поставлено</label>
-        @if (Model.Action == "Edit" && Model.Object.Deliverydate == null && !Model.ReadOnly)
-        {
-            <select class="form-control" asp-for="Option[0]" asp-items="@(new List<SelectListItem> {
-                        new SelectListItem { Selected = true, Text="Да", Value="true" },
-                        new SelectListItem { Text="Нет", Value="false" },
-                 })"></select>
-        }
-        else
-        {
-            <input class="form-control" readonly value="@(Model.Object.Deliverydate != null? "Да": "Нет")" />
-        }
+        <div class="form-check form-switch position-relative d-flex" style="left: 20px">
+            <div>
+                @if (Model.Object.Deliverydate == null)
+                {
+                    <input asp-for="Option[0]" class="form-check-input" type="checkbox">
+                }
+                else
+                {
+                    <input asp-for="Option[0]" class="form-check-input" type="checkbox" checked disabled>
+                }
+            </div>
+            <div>
+                <label>Поставлено?</label>
+            </div>
+
+        </div>
     </div>
-
-
 
     <div class="form-group">
         <label asp-for="Object.Priceperunit"></label>
