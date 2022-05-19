@@ -1,0 +1,38 @@
+﻿@model ObjectViewModel<PositionYachttype>
+<partial name="_Validation" />
+<h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
+<form asp-action="@Model.Action" method="post">
+
+    <input asp-for="Object.Yachttypeid" hidden />
+    @if (Model.Action == CRUD.Delete)
+    {
+        <input asp-for="Object.Positionid" hidden />
+    }
+    else
+    {
+        <div class="form-group @Model.HideOnDelete @Model.HideOnEdit">
+            <label>Выбрать должность</label>
+            <select class="form-control" asp-for="Object.Positionid" asp-items="@(new SelectList(ViewData["Type"] as IEnumerable<Position> ?? Enumerable.Empty<Position>(), "Id", "Name"))"
+                    disabled="@Model.ReadOnly">
+                <option value="" disabled selected>Выберите должность</option>
+            </select>
+        </div>
+    }
+
+
+    <div class="form-group @Model.HideOnDelete">
+        <label asp-for="Object.Count"></label>
+        <div>
+            <span asp-validation-for="Object.Count" class="text-danger"></span>
+        </div>
+        <input class="form-control" asp-for="Object.Count" min="1"
+               readonly="@Model.ReadOnly" />
+    </div>
+
+    <partial name="_EditorBottomButtons" model="@new EditorBottomButtonsViewModel {
+        ShowAction = Model.ShowAction,
+        Theme = Model.Theme,
+        Action = Model.ActionObjectName,
+        BackAction = nameof(Yachttype)
+    }" />
+</form>

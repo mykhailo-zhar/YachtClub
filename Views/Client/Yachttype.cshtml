@@ -1,87 +1,98 @@
-﻿@model IEnumerable<Yachttype>
-
+﻿@model IEnumerable<MinCrewViewModel>
+@{
+    var MethodName = typeof(Yachttype).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+    
+    var MethodName1 = typeof(PositionYachttype).Name;
+    string CreatePY = CRUD.Create + MethodName1;
+    string EditPY = CRUD.Edit + MethodName1;
+    string DeletePY = CRUD.Delete + MethodName1;
+}
 <table class="table table-sm table-striped table-bordered text-white ">
     <thead>
         <tr class="table-dark">
-            <td>
-                ID
-            </td>
-            <td>
-                Название
-            </td>
-            <td>
-                Рама
-            </td>
-            <td>
-                Цель
-            </td>
-            <td>
-                Класс
-            </td>
-            <td>
-                Паруса
-            </td>
-            <td>
-                Количество персонала
-            </td>
-            <td>
-                Количество пассажиров
-            </td>
-
-            <td colspan="3" align="center" >
-                <div>
-                    <a asp-action="CreateYachttype" class="btn btn-primary">
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Тип яхты
+                </div>
+                <div align="center">
+                    <a asp-action="@Create" class="btn btn-primary w-75">
                         Создать
                     </a>
                 </div>
-            </td>
+            </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var type in Model)
+        @foreach (var obj in Model)
         {
-        <tr class="text-black btn-area-3">
-            <td>
-                @type.Id
-            </td>
-            <td>
-                @type.Name
-            </td>
-            <td>
-                 @type.Frame
-            </td>
-            <td>
-                @type.Goal
-            </td>
-            <td>
-                @type.Class
-            </td>
-            <td>
-                @type.Sails
-            </td>
-            <td>
-                @type.Crewcapacity
-            </td>
-            <td>
-                  @type.Capacity
-            </td>
-            <td align="center">
-                @if (string.IsNullOrWhiteSpace(type.Description) || string.IsNullOrEmpty(type.Description))
-                {
-                    <a class="btn btn-secondary"> Детали </a>
-                }
-                else
-                {
-                    <a class="btn btn-info" asp-action="DetailsYachttype" asp-route-id="@type.Id"> Детали </a>
-                }
-            </td>
-            <td align="center">
-                <a class="btn btn-info" asp-action="EditYachttype" asp-route-id="@type.Id"> Изменить </a>
-            </td>
-            <td align="center">
-                <a class="btn btn-danger" asp-action="DeleteYachttype" asp-route-id="@type.Id">Удалить</a>
-            </td>
-        </tr>
+            <tr class="text-black">
+                <td>
+                    <div class="card m-2" style="width: auto;">
+                        <div class="card-body">
+                            <div class="position-absolute" style="right:20px;">
+                                <a class="btn btn-info" asp-action="@Edit" asp-controller="Client" asp-route-id="@obj.Yachttype.Id"> Изменить </a>
+                            </div>
+                            <h5 class="card-title">
+                                @obj.Yachttype.Name
+                            </h5>
+                            <h6 class="card-subtitle">
+                                <div>
+                                    Рама: @obj.Yachttype.Frame
+                                </div>
+                                <div>
+                                    Целевая часть: @obj.Yachttype.Goal
+                                </div>
+                                <div>
+                                    Класс: @obj.Yachttype.Class
+                                </div>
+                                <div>
+                                    Количество парусов: @obj.Yachttype.Sails
+                                </div>
+                                <div>
+                                    Количество персонала яхты: @obj.Yachttype.Crewcapacity
+                                </div>
+                                <div>
+                                    Количество пассажиров: @obj.Yachttype.Crewcapacity
+                                </div>
+                            </h6>
+                            <div class="m-2">
+                                <div class="fs-4">Минимальное количество персонала:</div>
+                                @foreach (var item in obj.MinCrew)
+                                {
+                                    <div class="border border-info rounded-2 m-2">
+                                        <div class="m-3">
+                                            <div class="fw-bold">
+                                                Должность: @item.Position.Name
+                                            </div>
+                                            <div class="fst-italic">
+                                                Количество: @item.Count
+                                            </div>
+                                            <div>Описание:</div>
+                                            <span>
+                                                <a class="btn btn-danger" asp-action="@DeletePY"
+                                                   asp-route-ytid="@obj.Yachttype.Id" asp-route-pid="@item.Positionid">-</a>
+                                                <a class="btn btn-danger" asp-action="@EditPY"
+                                                   asp-route-ytid="@obj.Yachttype.Id" asp-route-pid="@item.Positionid">Edit</a>
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                                <a class="btn btn-primary" asp-action="@CreatePY"
+                                   asp-route-ytid="@obj.Yachttype.Id">+</a>
+                            </div>
+                            <div class="m-2">
+                                <div>Описание:</div>
+                                <div class="card-text" style="max-width: 75vw">
+                                    <div class="m-2 fw-light" style=" white-space: pre-line;"> @(obj.Yachttype.Description)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
         }
     </tbody>
     <tfoot>

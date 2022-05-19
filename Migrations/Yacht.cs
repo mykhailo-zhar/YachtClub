@@ -26,10 +26,9 @@ namespace Project.Migrations
         public string Name { get; set; }
         [Required]
         [Column("rentable")]
-        public bool? Rentable { get; set; }
+        public bool Rentable { get; set; }
         [Column("registrydate", TypeName = "timestamp(2) without time zone")]
         public DateTime Registrydate { get; set; }
-        [Required]
         [Column("description")]
         public string Description { get; set; }
         [Column("typeid")]

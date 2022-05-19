@@ -19,7 +19,7 @@
                     Персонал
                 </div>
                 <div align="center">
-                    <a asp-action="@Create" class="btn btn-primary w-75">
+                    <a asp-controller="Client" asp-action="@Create" asp-route-staffonly="true" class="btn btn-primary w-75">
                         Зарегистрировать
                     </a>
                 </div>
@@ -37,7 +37,9 @@
                                 @obj.Person.Name   @obj.Person.Surname
                             </h5>
                             <style>
-                                h6 > * {margin: 10px;}
+                                h6 > * {
+                                    margin: 10px;
+                                }
                             </style>
                             <h6 class="card-subtitle">
                                 <div>

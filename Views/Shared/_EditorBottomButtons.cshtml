@@ -5,5 +5,14 @@
     {
         <button class="btn btn-@Model.Theme" type="submit" asp-action="@Model.Action">@Model.ActionName</button>
     }
-    <a class="btn btn-secondary" asp-action="@Model.BackAction">@Model.BackName</a>
+
+    @if (string.IsNullOrEmpty(Model.BackController))
+    {
+
+        <a class="btn btn-secondary" asp-action="@Model.BackAction">@Model.BackName</a>
+    }
+    else
+    {
+        <a class="btn btn-secondary" asp-controller="@Model.BackController" asp-action="@Model.BackAction">@Model.BackName</a>
+    }
 </div>

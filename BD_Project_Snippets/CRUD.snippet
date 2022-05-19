@@ -12,35 +12,35 @@
         <Import>
           <Namespace> Microsoft.AspNetCore.Mvc </Namespace>
         </Import>
-        
+
         <Import>
           <Namespace> Project.Database </Namespace>
         </Import>
-         
+
         <Import>
           <Namespace>  Project.Models </Namespace>
         </Import>
-         
+
         <Import>
           <Namespace>  Project.Migrations </Namespace>
         </Import>
-         
+
         <Import>
           <Namespace> System.Linq </Namespace>
         </Import>
-          
+
         <Import>
           <Namespace>  System </Namespace>
         </Import>
-          
+
         <Import>
           <Namespace> Microsoft.EntityFrameworkCore </Namespace>
         </Import>
-          
+
         <Import>
           <Namespace> System.Threading.Tasks </Namespace>
         </Import>
-         
+
         <Import>
           <Namespace> Microsoft.AspNetCore.Mvc.Rendering </Namespace>
         </Import>
@@ -54,13 +54,15 @@
       </Declarations>
       <Code Language="csharp">
         <![CDATA[
+          $CName$
+        
           #region $CName$
         public IActionResult $CName$()
         {
-            var $CName$ = Context.$CName$
+            var Object = Context.$CName$
                 /*Включение навигационных свойств*/
                 .OrderBy(p => p.Id);
-            return View($CName$);
+            return View(Object);
         }
 
         public IActionResult Details$CName$(string id)
@@ -93,21 +95,28 @@
         {
             if (ModelState.IsValid)
             {
-
-                if ($CName$.Option[0]) {
-                   /*Опции*/
+                try
+                {
+                   if ($CName$.Option[0]) {
+                     /*Опции*/
+                   }
+                   //$CName$.Object.Description = Methods.CoalesceString($CName$.Object.Description);
+                   Context.$CName$.Update($CName$.Object);
+                   await Context.SaveChangesAsync();
+                   return RedirectToAction(nameof($CName$));
                 }
-                //$CName$.Object.Description = Methods.CoalesceString($CName$.Object.Description);
-                Context.$CName$.Update($CName$.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof($CName$));
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                return LocalEdit$CName$($$"{$CName$.Object.Id}", $CName$.Object);
             }
            
             return LocalEdit$CName$($$"{$CName$.Object.Id}", $CName$.Object);
         }
 
         private IActionResult LocalCreate$CName$($CName$ $CName$ = null) {
-            $CName$ = $CName$ ?? new $CName$();
+           $CName$ = $CName$ ?? new $CName$();
            /*Включение навигационных свойств*/
             var Model = ObjectViewModelFactory<$CName$>.Create($CName$);
             return View("$CName$Editor", Model);
@@ -120,10 +129,18 @@
         {
             if (ModelState.IsValid)
             {
-                //$CName$.Object.Description = Methods.CoalesceString($CName$.Object.Description);
-                Context.$CName$.Add($CName$.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof($CName$));
+                try
+                {
+                    //$CName$.Object.Description = Methods.CoalesceString($CName$.Object.Description);
+                    Context.$CName$.Add($CName$.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof($CName$));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                return LocalCreate$CName$($CName$.Object);
             }
             return LocalCreate$CName$($CName$.Object);
         }
@@ -138,9 +155,17 @@
         [HttpPost]
         public async Task<IActionResult> Delete$CName$([FromForm] ObjectViewModel<$CName$> $CName$)
         {
-            Context.$CName$.Remove($CName$.Object);
-            await Context.SaveChangesAsync();
-            return RedirectToAction(nameof($CName$));
+                try
+                {
+                    Context.$CName$.Remove($CName$.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof($CName$));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                return View("$CName$Editor", ObjectViewModelFactory <$CName$>.Delete($CName$.Object));
 
         }
         #endregion

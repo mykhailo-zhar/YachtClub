@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Project.Controllers
 {
+    //TODO: Организовать доступ к персоналу клиентов
+    //TODO: Описание A) Обезопасить от NULL в базе / здесь на сервере
     public class StaffController : Controller
     {
         public DataContext Context;

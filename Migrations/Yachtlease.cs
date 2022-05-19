@@ -19,7 +19,6 @@ namespace Project.Migrations
         public DateTime Duration { get; set; }
         [Column("overallprice", TypeName = "numeric")]
         public decimal Overallprice { get; set; }
-        [Required]
         [Column("specials")]
         public string Specials { get; set; }
         [Column("paid")]

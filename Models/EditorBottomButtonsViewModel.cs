@@ -12,6 +12,7 @@ namespace Project.Models
         public string ActionName { get; set; } = "Подтвердить";
         public string Action { get; set; }
         public string BackAction { get; set; }
+        public string BackController { get; set; }
         public string BackName { get; set; } = "Назад";
 
     }

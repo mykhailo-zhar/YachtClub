@@ -60,10 +60,13 @@ namespace Project.Migrations
             }
         }
          public string MaterialMetric(int MaterialID) => throw new NotImplementedException();
-
+         [DbFunction("yachtsstatus", "public")]
+         public string YachtsStatus(int Yachtid) => throw new NotImplementedException();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDbFunction(() => MaterialMetric(default));
+            modelBuilder.HasDbFunction(() => YachtsStatus(default));
+
             modelBuilder.Entity<Availableresources>(entity =>
             {
                 entity.HasNoKey();

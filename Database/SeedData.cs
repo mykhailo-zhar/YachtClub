@@ -137,7 +137,7 @@ CREATE TABLE Person(
   	ID    			serial    	Not Null	Primary Key,
   	Name      		varchar    	Not Null,
   	Surname      	varchar    	Not Null,
-  	BirthDate    	timestamp(2)   Not Null,
+  	BirthDate    	timestamp(2)   Not Null		check(extract(year from age(BirthDate)) >= 18),
 	Sex				Sex			Not Null,	
   	Email      		Mail    	Not Null	unique,
 	Phone			PhoneNumber	Not Null	unique,
@@ -639,11 +639,11 @@ values
 ('Jim'		, 	'Morzhov'		, 'Male'	, '15-03-2001', '24-04-2019', 'dafasda@gmail.com',		'+380925557666'	),
 ('Lina'		, 	'Krest'			, 'Female'	, '10-01-2002',	'25-04-2019', 'na42221da@gmail.com',	'+380982376896' ),
 ('Denis'	, 	'Smirk'			, 'Male'	, '10-01-2002',	'26-04-2019', 'den123s2@gmail.com',		'+380981343565' );
-update Person set staffonly = true;
+update Person set staffonly = true where not id in (1);
 
 insert into Person (name, surname, sex, BirthDate, RegistryDate, email, phone)
 values
-('Yachtclub', 	'',				'Other', 	'07-01-2019',	'08-01-2019',	'yacht_club@gmail.com',  '+380983334590'	),
+('Yachtclub', 	'',				'Other', 	'07-01-2000',	'08-01-2019',	'yacht_club@gmail.com',  '+380983334590'	),
 ('Alexei', 		'Britov', 		'Male', 	'02-03-1947', 	'08-01-2019',	'a_brit@gmail.com',		 '+380986769990'	),
 ('Melnik', 		'Baranov', 		'Male', 	'05-04-1967', 	'08-01-2019',	'mebar@mail.ru',		 '+380986888990'	),
 ('Dmitriy', 	'Bideshev', 	'Male', 	'15-01-1989', 	'08-01-2019',	'biDeshev777@gmail.com', '+380986868990'	),
@@ -1304,6 +1304,48 @@ begin
 		   ;
 end; 
 $$ language plpgsql;
+				");  
+			//Статус яхты
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace FUNCTION YachtsStatus(
+Yachtid int ) 
+RETURNS varchar
+as $$
+declare
+rec RECORD;
+begin
+	select * into rec from busyyacht where Yachtid = id;
+	if(rec.val) then 
+		if(rec.r) then 
+			return 'В ремонте';
+		elsif(rec.e) then
+			return 'Учавствует в событии';
+		elsif(rec.c) then
+			return 'Учавствует в событии';
+		elseif(rec.filled) then
+			return 'Готова принимать контракты';
+		else
+			return 'Свободна';
+		end if;
+	else 
+		return 'Недействительна';
+	end if;
+end;
+$$ language plpgsql;
+
+				");	
+			//Входит ли в таблицу персонала данная персона
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace FUNCTION IsStaff(
+PersonID int ) 
+RETURNS bool
+as $$
+declare
+rec RECORD;
+begin
+	return exists (select * from staff where id = PersonId);
+end;
+$$ language plpgsql;
 				");
             //Current_Timestamp::timestamp
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1380,7 +1422,8 @@ where sp.id in (select StaffPositionListByPosition('Repairman'))
             //Персонал
             dbContext.Database.ExecuteSqlRaw(@"
 Create or replace View Staff as (
-		select * from person where staffonly
+		select * from person p where p.staffonly or exists (select * from staff_position sp where sp.staffid = p.id)
+			
 );
 
 ");
@@ -1765,7 +1808,6 @@ begin
         ELSIF (TG_OP = 'INSERT') then
 			--Выставление стандартной даты
 			new.startdate = current_timestamp; 
-			end if;
 			--Проверка открытых записей на должность
 			if( (select count(sp.id) from staff_position sp 
 				 where sp.staffid = new.staffid and sp.positionid = new.positionid and sp.enddate is null) >= 1) then
@@ -2115,7 +2157,6 @@ for each row execute function W1 ();
 	
 					 ELSIF (TG_OP = 'INSERT') then
 						 new.registrydate = current_timestamp;
-					 ELSIF
 					 ELSIF (TG_OP = 'DELETE') then
 							if( exists (select * from yachtlease where yachtid = old.id) ) then 
 								raise exception 'Невозможно удалить яхту, если на неё были созданы договоры на аренду места';
@@ -2237,10 +2278,11 @@ begin
 			raise exception 'Попытка добавить не морскую должность';
 		end if;
 	
-		select yt.crewcapacity cap into rec from yachttype yt where yt.id = new.yachttypeid;	
+		select yt.crewcapacity cap into rec from yachttype yt where yt.id = new.yachttypeid;		
 		if( rec.cap - (
 			select coalesce(sum(pyt.count),0) from position_yachttype pyt where pyt.yachttypeid = new.yachttypeid
-		) - new.count < 0 ) then 
+		) - ( select coalesce( abs( new.count - sum(pyt.count)), new.count ) from position_yachttype pyt
+			 where pyt.yachttypeid = new.yachttypeid and pyt.positionid = new.positionid)  < 0 ) then 
 			 raise exception 'Данная тип яхты не поддерживает более % членов экипажа', rec.cap;
 		end if;
 		RETURN new;

@@ -1,98 +1,67 @@
 ﻿@model IEnumerable<Yachtlease>
+@{
+    var MethodName = typeof(Yachtlease).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+}
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Договор на яхту
+                </div>
+                <div align="center">
+                    <a asp-action="@Create" class="btn btn-primary w-75">
+                        Создать
+                    </a>
+                </div>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
 
-    <table class="table table-sm table-striped table-bordered text-white">
-        <thead>
-            <tr class="table-dark">
+        @foreach (var obj in Model)
+        {
+            <tr class="text-black">
                 <td>
-                    ID
-                </td>
-                <td>
-                    Дата заключения договора
-                </td>
-                <td>
-                    Дата фактического окончания договора
-                </td>
-                <td>
-                    Дата окончания договора
-                </td>
-                <td>
-                    Цена договора
-                </td>
-                <td>
-                    Именование яхты
-                </td> 
-                <td>
-                    Тип яхты
-                </td>
-                <td>
-                    Именования типа контракта
-                </td>
-                <td colspan="3">
+                    <div class="card m-2" style="width: auto;">
+                        <div class="card-body">
+                            <div class="position-absolute" style="right:20px;">
+                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id"> Удалить </a>
+                            </div>
+                            <h3 class="card-title">
+                                Номер контракта: @obj.Id
+                            </h3>
+                            <h4 class="card-subtitle m-2">
+                                Тип: @obj.Yachtleasetype.Name
+                            </h4>
+                            <h4 class="card-subtitle m-2 ">
+                                Срок: @obj.Startdate - @obj.Duration (@Methods.CoalesceDateTime(obj.Enddate))
+                            </h4>
+                            <h5 class="card-subtitle fst-italic m-2">
+                                Заключено по: @obj.Yacht.Name (@obj.Yacht.Type.Name)
+                            </h5>
+                            <div class="card-subtitle m-3 text-danger fs-4">
+                                Оплачено: @Methods.YesNo(obj.Paid)
+                            </div>
+                            <div class="m-2">
+                                <div>
+                                    Стоимость контракта: @obj.Overallprice
+                                </div>
+                                <div>Описание:</div>
+                                <div class="card-text" style="max-width: 75vw">
+                                    <div class="m-2 fw-light" style=" white-space: pre-line;"> @(obj.Specials)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </td>
             </tr>
-        </thead>
-        <tbody>
-            
-        @foreach (var sp in Model)
-        {
-        <tr class="text-black btn-area-3"> 
-            <td>
-            @sp.Id
-        </td>
-            <td>
-            @sp.Startdate
-        </td>
-        <td>
-            @Methods.CoalesceDateTime(sp.Enddate)
-        </td>
-        <td>
-            @sp.Duration
-        </td>
-        <td>
-            @sp.Overallprice
-        </td>
-            <td>
-            @sp.Yacht.Name
-        </td>
-        <td>
-            @sp.Yacht.Type.Name
-        </td>
-        <td>
-           @sp.Yachtleasetype.Name
-        </td>
-
-            <td align="center">
-            @if (!Methods.IsStr(sp.Specials))
-            {
-                <a class="btn btn-secondary"> Детали </a>
-            }
-            else
-            {
-                <a class="btn btn-primary" asp-action="DetailsYachtlease" asp-route-id="@sp.Id"> Детали </a>
-            }
-        </td>
-
-
-            <td align="center">
-            <a class="btn btn-info" asp-action="EditYachtlease" asp-route-id="@sp.Id"> Изменить </a>
-        </td>
-        <td align="center">
-            <a class="btn btn-danger" asp-action="DeleteYachtlease" asp-route-id="@sp.Id"> Удалить </a>
-        </td>
-             </tr>
         }
 
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="10" align="center">
-                    <a asp-action="CreateYachtlease" class="btn btn-primary">
-                        <div style="width: 50vw;">
-                            Создать
-                        </div>
-                    </a>
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+    </tbody>
+</table>
 
