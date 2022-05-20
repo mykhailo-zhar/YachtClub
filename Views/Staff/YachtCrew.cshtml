@@ -1,0 +1,62 @@
+﻿@{
+    var MethodName = typeof(YachtCrew).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+}
+@model IEnumerable<YachtCrew>
+
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Экипаж яхт
+                </div>
+                <div align="center">
+                    <a  asp-action="@Create" class="btn btn-primary w-75">
+                        Зарегистрировать
+                    </a>
+                </div>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model)
+        {
+            <tr class="text-black">
+                <td>
+                    <div class="card m-2" style="width: auto;">
+                        <div class="position-absolute" style="right:20px;">
+                            <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id"> Удалить </a>
+                            <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                @obj.Crew.Staff.Name   @obj.Crew.Staff.Surname
+                            </h5>
+                            <h6 class="card-subtitle">
+                                <div>
+                                    Должность экипажа: @obj.Crew.Position.Name
+                                </div>
+                                <div>
+                                    Яхта: @obj.Yacht.Name (@obj.Yacht.Type.Name)
+                                </div>
+                                <div>
+                                    @obj.Startdate - @Methods.CoalesceDateTime(obj.Enddate)
+                                </div>
+                            </h6>
+                            <hr />
+                            <div class="card-text" style="max-width: 75vw">
+                                <span>Описание</span>
+                                <p style="text-indent: 2em; white-space: pre-line;">
+                                    @(obj.Description)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

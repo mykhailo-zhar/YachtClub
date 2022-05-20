@@ -29,7 +29,7 @@ namespace Project.Migrations
         public string Description { get; set; }
         [Column("userrate")]
         public int? Userrate { get; set; }
-        [Required]
+
         [Column("canhavewinners")]
         public bool? Canhavewinners { get; set; }
 

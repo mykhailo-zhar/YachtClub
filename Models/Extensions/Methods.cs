@@ -8,8 +8,16 @@ using Project.Migrations;
 
 namespace Project.Models
 {
+    public class MethodCRUD {
+    public string ClassName { get; set; }
+        public string Create => CRUD.Create + ClassName;
+        public string Edit => CRUD.Edit + ClassName;
+        public string Delete => CRUD.Delete + ClassName;
+    }
+
     public class Methods
     {
+        public static bool IsDev { get; set; } = true;
         public static bool IsStr(string str) =>
                !(string.IsNullOrEmpty(str) || string.IsNullOrWhiteSpace(str));
 
@@ -31,6 +39,7 @@ namespace Project.Models
 
         public static string PersonEmail(Person person) => $"{person.Name} {person.Surname} {person.Email}";
         public static string PersonPhone(Person person) => $"{person.Name} {person.Surname} {person.Phone}";
+        public static string PersonNameSurname(Person person) => $"{person.Name} {person.Surname}";
 
         public static string YesNo(bool Bool) => Bool ? "Да" : "Нет";
 

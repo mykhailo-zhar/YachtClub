@@ -138,6 +138,10 @@ namespace Project.Controllers
         }
         #endregion
 
+        //TODO: Staff_Position: Организовать персонал с клиентом
+        ///TODO: Hired_Staff: Триггер на 1 к 1 ИЛИ Организовать связь 1 к 0, второе предпочтительней. 
+        ///Или всё таки допустить, что у одного сотрудника(члена-экипажа) может быть много клиентов, но это не так.
+
         #region StaffPosition
         public IActionResult CreateStaffPosition(int sid)
         {
@@ -235,5 +239,136 @@ namespace Project.Controllers
 
         }
         #endregion
+
+        //TODO: Капитаны: Запихнуть в портфолио персонала...
+        //TODO: Капитаны: Триггер на существование контракта...
+        #region YachtCrew
+        public IActionResult YachtCrew()
+        {
+            var Object = Context.YachtCrew
+                .Include(p => p.Yacht)
+                    .ThenInclude(p => p.Type)
+                .Include(p => p.Crew)
+                    .ThenInclude(p => p.Position)
+                .Include(p => p.Crew)
+                    .ThenInclude(p => p.Staff)
+                   
+                /*Включение навигационных свойств*/
+                .OrderBy(p => p.Yachtid).ThenBy(p => p.Startdate).ThenBy(p => p.Crew.Positionid);
+            return View(Object);
+        }
+
+        private void YachtCrewConfigureViewBag()
+        {
+            ViewBag.Crew = Context.StaffPosition
+                .Include(p => p.Position)
+                .Include(p => p.Staff)
+                .Where(p => p.Position.Crewposition)
+                .Where(p => p.Enddate == null)
+                .Where(p => !Context.YachtCrew
+                              .Where(y => y.Enddate == null)
+                              .Any(o => o.Crewid == p.Id))
+                ;
+            ViewBag.Yacht = Context.Yacht
+                .Include(p => p.Type)
+                .Where(p => Context.Busyyacht.Any(b => b.Id == p.Id && b.Val.Value))
+                .Where(p => p.Type.Crewcapacity - Context.YachtCrew.Where(c => c.Enddate == null && c.Yachtid == p.Id).Count() > 0)
+                ;
+        }
+
+        private IActionResult LocalEditYachtCrew(string id, YachtCrew YachtCrew = null)
+        {
+            YachtCrew = YachtCrew ?? Context.YachtCrew
+               /*Включение навигационных свойств*/
+               .First(p => p.Id == int.Parse(id));
+            /*Включение навигационных свойств*/
+            var Model = ObjectViewModelFactory<YachtCrew>.Edit(YachtCrew);
+            YachtCrewConfigureViewBag();
+            return View("YachtCrewEditor", Model);
+        }
+
+        public IActionResult EditYachtCrew(string id) => LocalEditYachtCrew(id);
+
+        [HttpPost]
+        public async Task<IActionResult> EditYachtCrew([FromForm] ObjectViewModel<YachtCrew> YachtCrew)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    if (YachtCrew.Option[0])
+                    {
+                        YachtCrew.Object.Enddate = DateTime.Now;
+                    }
+                    YachtCrew.Object.Description = Methods.CoalesceString(YachtCrew.Object.Description);
+                    Context.YachtCrew.Update(YachtCrew.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(YachtCrew));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+            }
+
+            return LocalEditYachtCrew($"{YachtCrew.Object.Id}", YachtCrew.Object);
+        }
+
+        private IActionResult LocalCreateYachtCrew(YachtCrew YachtCrew = null)
+        {
+            YachtCrew = YachtCrew ?? new YachtCrew();
+            /*Включение навигационных свойств*/
+            var Model = ObjectViewModelFactory<YachtCrew>.Create(YachtCrew);
+            YachtCrewConfigureViewBag();
+            return View("YachtCrewEditor", Model);
+        }
+
+        public IActionResult CreateYachtCrew() => LocalCreateYachtCrew(null);
+
+        [HttpPost]
+        public async Task<IActionResult> CreateYachtCrew([FromForm] ObjectViewModel<YachtCrew> YachtCrew)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    YachtCrew.Object.Description = Methods.CoalesceString(YachtCrew.Object.Description);
+                    Context.YachtCrew.Add(YachtCrew.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(YachtCrew));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+            }
+            return LocalCreateYachtCrew(YachtCrew.Object);
+        }
+        public IActionResult DeleteYachtCrew(string id)
+        {
+            var YachtCrew = Context.YachtCrew
+                /*Включение навигационных свойств*/
+                .First(p => p.Id == int.Parse(id));
+            return View("YachtCrewEditor", ObjectViewModelFactory<YachtCrew>.Delete(YachtCrew));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteYachtCrew([FromForm] ObjectViewModel<YachtCrew> YachtCrew)
+        {
+            try
+            {
+                Context.YachtCrew.Remove(YachtCrew.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(YachtCrew));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            return View("YachtCrewEditor", ObjectViewModelFactory<YachtCrew>.Delete(YachtCrew.Object));
+
+        }
+        #endregion
+
     }
 }

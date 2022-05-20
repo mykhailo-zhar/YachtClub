@@ -20,5 +20,7 @@ namespace Project.Migrations
         public bool? Val { get; set; }
         [Column("filled")]
         public bool? Filled { get; set; }
+
+        public virtual Yacht Yacht { get; set; }
     }
 }

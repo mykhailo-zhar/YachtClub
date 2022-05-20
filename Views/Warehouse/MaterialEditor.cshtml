@@ -4,7 +4,7 @@
 <form asp-action="@Model..Action" method="post">
 
 
-    <div class="form-group @Model.AlwaysHidden">
+    <div class="form-group" hidden>
         <label asp-for="Object.Id"></label>
         <input class="form-control" asp-for="Object.Id" readonly />
     </div>

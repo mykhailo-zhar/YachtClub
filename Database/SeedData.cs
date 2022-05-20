@@ -1555,14 +1555,26 @@ create or replace view yacht_crew_position as (
 			);
 ");
 
-            #endregion
+			#endregion
 
-            #region Triggers
+			#region Rules
 
-            #region ExtradationRequest
+			//Стандартная дата
+			dbContext.Database.ExecuteSqlRaw(@"
+	/*create or replace rule StandartDate as
+	on insert to review
+	where new.date is null
+	do instead insert into review(clientid, date, text, public, rate) 
+	values (new.clientid, current_timestamp, new.text, new.public new.rate);*/
+");
+			#endregion
 
-            //Триггер проверки завершённых заявок
-            dbContext.Database.ExecuteSqlRaw(@"
+			#region Triggers
+
+			#region ExtradationRequest
+
+			//Триггер проверки завершённых заявок
+			dbContext.Database.ExecuteSqlRaw(@"
 create or replace function ER1()
 	returns trigger
 as $$
@@ -2056,7 +2068,7 @@ begin
 			if( not exists ( select * from event e where e.id = old.eventid and e.enddate is null) )then 
 				raise exception 'Попытка изменения закрытого события';			
 			end if;
-			if( not (select canhavewinners from winner) ) then 
+			if( not (select canhavewinners from event e where e.id = new.eventid ) ) then 
 				new.place := null;
 			end if;
 		ELSIF (TG_OP = 'INSERT') then
@@ -2071,6 +2083,11 @@ begin
 					raise exception 'Яхта недействительна и не может учавствовать в мероприятии';
 				elsif( rec.r or rec.c) then
 				  	raise exception 'Попытка участия в событии при ремонте/контракте';
+				end if;
+
+				if(not exists(select * from yacht_crew yc join yacht_crew_position yp using(id) 
+							  where positionname = 'Captain' and enddate is null and yc.yachtid = new.yachtid ) ) then
+				    raise exception 'На яхте в текущий момент отсутствует действующий капитан';
 				end if;
 				
 		ELSIF (TG_OP = 'DELETE') then 
@@ -2175,7 +2192,7 @@ for each row execute function W1 ();
 
             #region Contract
             dbContext.Database.ExecuteSqlRaw(@"
-            create or replace function C1()
+			create or replace function C1()
              returns trigger
             as $$
             declare
@@ -2183,13 +2200,13 @@ for each row execute function W1 ();
             begin
 
                  IF(TG_OP = 'UPDATE') THEN
-	
 						if(old.enddate is not null) then 
 							raise exception 'Попытка изменения закрытого контракта';
 						end if;
 						rec := old;
 						if(old.paid) then
 								rec.startdate = new.startdate;
+								rec.averallprice = new.averallprice;
 								rec.paid = new.paid;
 						end if;
 
@@ -2205,12 +2222,12 @@ for each row execute function W1 ();
 						end if;
 						new.enddate = null;
                  ELSIF(TG_OP = 'DELETE') then
-                     if (old.enddate is not null) then
+                     if (old.enddate is not null and old.paid) then
                           raise exception 'Попытка удаления закрытого контракта';
 					 end if;
 					 return old;
            		 END IF;
-				 IF(new.paid) then
+				 IF( not old.paid and new.paid) then
 					    if( (select b.c from busyyacht b join yacht_crew yc on yc.yachtid = b.id 
 							where yc.id = new.captaininyachtid
 							) ) then
@@ -2253,7 +2270,7 @@ for each row execute function W1 ();
 						end if;
 						if(new.averallprice is null ) then 
 							new.averallprice = (select ct.price from contracttype ct where ct.id = new.contracttypeid) * 
-							 abs( extract(day from new.startdate - new.duration ) );
+							 abs( extract(day from new.startdate - new.duration ) + 1 );
 						end if;
             RETURN new;
             end;

@@ -39,22 +39,6 @@
                 <td>
                     @sp.Startdate
                 </td>
-               @* <td align="center">
-                    @if (!Methods.IsStr(sp.Description))
-                    {
-                        <a class="btn btn-secondary"> Детали </a>
-                    }
-                    else
-                    {
-                        <a class="btn btn-primary" asp-action="DetailsStaffPosition" asp-route-id="@sp.Id"> Детали </a>
-                    }
-                </td>
-                <td align="center">
-                    <a class="btn btn-info" asp-action="EditStaffPosition" asp-route-id="@sp.Id"> Изменить </a>
-                </td>
-                <td align="center">
-                    <a class="btn btn-danger" asp-action="DeleteStaffPosition" asp-route-id="@sp.Id">Удалить</a>
-                </td>*@
             </tr>
             }
         </tbody>

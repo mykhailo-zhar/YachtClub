@@ -1,0 +1,100 @@
+﻿@{
+    var m1 = new MethodCRUD
+    {
+        ClassName = nameof(Review)
+    };
+    
+    var m2 = new MethodCRUD
+    {
+        ClassName = nameof(ReviewYacht)
+    };
+    
+    var m3 = new MethodCRUD
+    {
+        ClassName = nameof(ReviewCaptain)
+    };
+}
+@model IEnumerable<ReviewViewModel>
+
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Отзывы
+                </div>
+                <div align="center">
+                    <a asp-action="@m1.Create" class="btn btn-primary w-75">
+                        Создать
+                    </a>
+                </div>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model)
+        {
+            <tr class="text-black">
+                <td>
+                    <div class="card m-2" style="width: auto;">
+                        <div class="card-body">
+                            <div class="position-absolute p-2" style="right:20px;">
+                                <a class="btn btn-info" asp-action="@m1.Edit" asp-route-id="@obj.Review.Id"> Изменить </a>
+                                <a class="btn btn-danger" asp-action="@m1.Delete" asp-route-id="@obj.Review.Id">Удалить</a>
+                            </div>
+                            <div style="background-color: silver" class="w-100 p-4">
+                                <h5 class="card-title">
+                                    @Methods.PersonNameSurname(obj.Review.Client)
+                                </h5>
+                                <h6 class="card-subtitle">
+                                    @obj.Review.Date
+                                </h6>
+                            </div>
+                            <hr />
+                            <div class="card-text fs-4" style="max-width: 75vw">
+                                <div>
+                                    Оценено в @obj.Review.Rate
+                                </div>
+                                <div>Текст:</div>
+                                <div class="card-text" style="max-width: 75vw">
+                                    <div class="m-2 fw-light" style=" white-space: pre-line;"> @(obj.Review.Text)</div>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="card-text fs-4" style="max-width: 75vw">
+                                <div>
+                                    Связано с:
+                                </div>
+                                <div class="fs-5 m-2">
+                                    <div>
+                                        Яхтами:
+                                        @foreach (var item in obj.Yachts)
+                                        {
+                                            <span class="m-1">
+                                                @item.Yacht.Name (@item.Yacht.Type.Name)<a class="btn btn-danger m-2" asp-action="@m2.Delete" asp-route-rid="@obj.Review.Id" asp-route-cid="@item.Yachtid">-</a>@if (obj.Yachts.Last() != item)
+                                                {<span class="m-2">, </span>}
+                                            </span>
+                                        }
+                                        <a class="btn btn-primary" asp-action="@m2.Create" asp-route-rid="@obj.Review.Id" >+</a>
+                                    </div>
+                                    <div>
+                                        Капитанами:
+                                        @foreach (var item in obj.Captains)
+                                        {
+                                            <span class="m-1">
+                                                @Methods.PersonNameSurname(item.Captain)<a class="btn btn-danger m-2" asp-action="@m3.Delete" asp-route-rid="@obj.Review.Id" asp-route-cid="@item.Captainid">-</a>@if (obj.Captains.Last() != item)
+                                            {<span class="m-2">, </span>}
+                                            </span>
+                                        }
+                                        <a class="btn btn-primary" asp-action="@m3.Create" asp-route-rid="@obj.Review.Id">+</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

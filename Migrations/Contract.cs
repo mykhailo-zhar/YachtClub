@@ -23,13 +23,12 @@ namespace Project.Migrations
         public DateTime? Enddate { get; set; }
         [Column("duration", TypeName = "timestamp(2) without time zone")]
         public DateTime Duration { get; set; }
-        [Required]
         [Column("specials")]
         public string Specials { get; set; }
         [Column("paid")]
         public bool Paid { get; set; }
         [Column("averallprice", TypeName = "numeric")]
-        public decimal Averallprice { get; set; }
+        public decimal? Averallprice { get; set; }
 
         [ForeignKey(nameof(Captaininyachtid))]
         [InverseProperty(nameof(YachtCrew.Contract))]

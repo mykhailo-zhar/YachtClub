@@ -20,13 +20,12 @@ namespace Project.Migrations
         [Column("clientid")]
         public int Clientid { get; set; }
         [Column("date", TypeName = "timestamp(2) without time zone")]
-        public DateTime Date { get; set; }
-        [Required]
+        public DateTime? Date { get; set; }
         [Column("text")]
         public string Text { get; set; }
         [Required]
         [Column("public")]
-        public bool? Public { get; set; }
+        public bool Public { get; set; }
         [Column("userrate")]
         public int Userrate { get; set; }
         [Column("rate")]

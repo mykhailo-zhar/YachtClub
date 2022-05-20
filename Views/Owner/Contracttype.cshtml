@@ -1,6 +1,6 @@
-﻿@model IEnumerable<Yachtleasetype>
+﻿@model IEnumerable<Contracttype>
 @{
-    var MethodName = typeof(Yachtleasetype).Name;
+    var MethodName = typeof(Contracttype).Name;
     string Create = CRUD.Create + MethodName;
     string Edit = CRUD.Edit + MethodName;
     string Delete = CRUD.Delete + MethodName;
@@ -40,9 +40,6 @@
                             </h6>
                             <hr />
                             <div class="card-text" style="max-width: 75vw">
-                                <div>
-                                    Для служебного пользования: @Methods.YesNo(obj.Staffonly)
-                                </div>
                                 <div class="card-text" style="max-width: 75vw">
                                     <span>Описание</span>
                                     <p style="text-indent: 2em; white-space: pre-line;">

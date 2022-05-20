@@ -18,9 +18,8 @@ namespace Project.Models
         public bool ReadOnly { get; set; } = false;
         public bool ShowAction { get; set; } = true;
         public bool ShowReadOnlyFields { get; set; } = true;
-
         public string Action { get; set; } = CRUD.Create;
-        
+        public string ReturnUrl { get; set; } = "";
         public string Theme { get; set; } = "primary";
 
         public string ActionObjectName => Action + Object.GetType().Name;
@@ -31,30 +30,32 @@ namespace Project.Models
         public string HideOnDelete => DisplayNone(actions: CRUD.Delete);
         public string HideOnEdit => DisplayNone(actions: CRUD.Edit);
         public string AlwaysHidden => DisplayNone(Condition: true);
+        
     }
 
     public class ObjectViewModelFactory<T>
     {
-        public static ObjectViewModel<T> Edit(T obj)
+        public static ObjectViewModel<T> Edit(T obj, string Returnurl = "")
         {
             return new ObjectViewModel<T>
             {
                 Object = obj,
-                Action = CRUD.Edit
+                Action = CRUD.Edit,
+                ReturnUrl = Returnurl
             };
 
         }
-        public static ObjectViewModel<T> Create(T obj)
+        public static ObjectViewModel<T> Create(T obj, string Returnurl = "")
         {
             return new ObjectViewModel<T>
             {
                 Object = obj,
                 ShowReadOnlyFields = false,
-                
+                ReturnUrl = Returnurl
             };
 
         }
-        public static ObjectViewModel<T> Delete(T obj)
+        public static ObjectViewModel<T> Delete(T obj, string Returnurl = "")
         {
             return new ObjectViewModel<T>
             {
@@ -62,11 +63,12 @@ namespace Project.Models
                 Action = CRUD.Delete,
                 Theme = "danger",
                 ShowReadOnlyFields = true,
-                ReadOnly = true
+                ReadOnly = true,
+                ReturnUrl = Returnurl
             };
 
         }
-        public static ObjectViewModel<T> Details(T obj)
+        public static ObjectViewModel<T> Details(T obj, string Returnurl = "")
         {
             return new ObjectViewModel<T>
             {
@@ -75,6 +77,7 @@ namespace Project.Models
                 ReadOnly = true,
                 Theme = "info",
                 ShowAction = false,
+                ReturnUrl = Returnurl
             };
         }
 

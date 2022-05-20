@@ -1,0 +1,29 @@
+﻿@model ObjectViewModel<ReviewYacht>
+<partial name="_Validation" />
+<h5 class="bg-@Model.Theme text-white text-center p-2 ">@Model.Action</h5>
+<form asp-action="@Model.Action" method="post">
+    <div class="@Model.HideOnDelete">
+        
+        <input hidden asp-for="Object.Reviewid" />
+
+        <div class="form-group  @Model.HideOnEdit">
+            <label>Выбрать человека</label>
+            <select class="form-control" asp-for="Object.Yachtid"
+                    asp-items="@((ViewBag.Other as IEnumerable<Yacht> ?? Enumerable.Empty<Yacht>())
+                            .Select(p => new SelectListItem {
+                                Text = $"{p.Name} ({p.Type.Name})",
+                                Value = p.Id.ToString()
+                            }))">
+                <option value="" disabled selected>Выберите яхту</option>
+            </select>
+            <input hidden asp-for="Object.Yachtid" />
+        </div>
+
+    </div>
+    <partial name="_EditorBottomButtons" model="@new EditorBottomButtonsViewModel {
+            ShowAction = Model.ShowAction,
+            Theme = Model.Theme,
+            Action = Model.ActionObjectName,
+            BackAction = nameof(Review)
+        }" />
+</form>

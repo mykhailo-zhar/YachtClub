@@ -98,6 +98,7 @@
                                 </a>
                             </li>
                             <li><a class="dropdown-item" asp-controller="Staff" asp-action="Position">Должности</a></li>
+                            <li><a class="dropdown-item" asp-controller="Staff" asp-action="YachtCrew">Экипаж яхт</a></li>
                         </ul>
                     </div>
                 </li>
@@ -121,28 +122,42 @@
                         </ul>
                     </div>
                 </li>
-                <!--Контракты-->
-                <li class="nav-item">
-                    <a class="btn text-white" asp-controller="" asp-action="">
-                        Доступ к контрактам
-                    </a>
-                </li>
                 <!--Типы контрактов-->
                 <li class="nav-item">
                     <div class="btn-group">
                         <a class="btn text-white" asp-controller="" asp-action="">
-                            Типы контрактов:
+                            Панель управления
                         </a>
                         <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="visually-hidden">Toggle Dropdown</span>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" asp-controller="Client" asp-action="Yachtleasetype">Тип контракта на яхты</a></li>
                             <li>
-                                <a class="dropdown-item" asp-controller="Client" asp-action="Contracttype">
-                                    Тип яхт
+                                <a class="dropdown-item" asp-controller="Client" asp-action="Yachtleasetype">
+                                    Тип контракта на яхты
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Client" asp-action="Review">
+                                    Отзывы
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Owner" asp-action="Contracttype">
+                                    Тип контрактов для клиентов
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Owner" asp-action="Contract">
+                                    Контракт
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Owner" asp-action="Event">
+                                    События
+                                </a>
+                            </li>
+
                         </ul>
                     </div>
                 </li>
