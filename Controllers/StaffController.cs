@@ -30,6 +30,17 @@ namespace Project.Controllers
                     Portfolio = Context.StaffPosition
                     .Where(z => z.Staffid == p.Id)
                     .Include(l => l.Position)
+                    .ToList(),
+                    YachtPortfolio = Context.YachtCrew
+                    .Include(p => p.Yacht)
+                        .ThenInclude(p => p.Type)
+                    .Include(p => p.Crew)
+                        .ThenInclude(p => p.Staff)
+                    .Include(p => p.Crew)
+                        .ThenInclude(p => p.Position)
+                    .Where(l => l.Crew.Staffid == p.Id)
+                    .Where(p => p.Crew.Position.Crewposition)
+                    .OrderByDescending(p => p.Enddate ?? DateTime.Now)
                     .ToList()
                 })
                 .OrderBy(p => p.Person.Id);
@@ -240,8 +251,6 @@ namespace Project.Controllers
         }
         #endregion
 
-        //TODO: Капитаны: Запихнуть в портфолио персонала...
-        //TODO: Капитаны: Триггер на существование контракта...
         #region YachtCrew
         public IActionResult YachtCrew()
         {
@@ -252,9 +261,10 @@ namespace Project.Controllers
                     .ThenInclude(p => p.Position)
                 .Include(p => p.Crew)
                     .ThenInclude(p => p.Staff)
-                   
-                /*Включение навигационных свойств*/
-                .OrderBy(p => p.Yachtid).ThenBy(p => p.Startdate).ThenBy(p => p.Crew.Positionid);
+                .OrderByDescending(p => p.Enddate ?? DateTime.Now)
+                .ThenBy(p => p.Crew.Positionid)
+                .ToList()
+                .GroupBy(p => p.Yacht);
             return View(Object);
         }
 

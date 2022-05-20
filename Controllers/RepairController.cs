@@ -104,7 +104,10 @@ namespace Project.Controllers
                          .ThenInclude(r => r.Type)
                     .Where(r => r.Repairid == p.Id)
                 }
-                );
+                )
+                .ToList()
+                .OrderByDescending(p => Methods.RepairStatusPrio(p.Repair.Status))
+                ;
             return View(Repair);
         }
 
@@ -302,7 +305,20 @@ namespace Project.Controllers
                     .ThenInclude(p => p.Staff)
                 .Include(p => p.MaterialNavigation)
                     .ThenInclude(p => p.Type)
-                .OrderBy(p => p.Id);
+                .Join(
+                    Context.Availableresources,
+                    e => e.Material,
+                    a => a.Material,
+                    (e,a) => new ExtradationRequestAvalilable
+                    {
+                        Extradationrequest = e,
+                        Count = a.Count,
+                        Format = a.Format
+                    }
+                   )
+                .ToList()
+                .OrderByDescending(p => Methods.ExtradationStatusPrio(p.Extradationrequest.Status))
+                .ThenByDescending(p => p.Extradationrequest.Startdate);
             return View(Extradationrequest);
         }
 

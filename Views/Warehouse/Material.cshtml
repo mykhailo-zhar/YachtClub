@@ -4,7 +4,7 @@
     string Edit = CRUD.Edit + MethodName;
     string Delete = CRUD.Delete + MethodName;
 }
-@model MaterialViewModel
+@model IEnumerable<MaterialViewModel>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
@@ -22,21 +22,22 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var obj in Model.Materials)
+        @foreach (var obj in Model)
         {
             <tr class="text-black">
                 <td>
                     <div class="card" style="width: auto;">
                         <div class="card-body">
                             <div class="position-absolute" style="right:20px;">
-                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Material.Id"> Изменить </a>
+                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Material.Id">Удалить</a>
                             </div>
                             <h5 class="card-title">
-                                @obj.Name
+                                @obj.Material.Name
                             </h5>
-                            <h6 class="card-subtitle"> @obj.Type.Name</h6>
+                            <h6 class="card-subtitle"> @obj.Material.Name</h6>
                             <div class="card-text">
-                                Доступно материалов:  @Model.Availableresources.First(p => p.Material == obj.Id).Format
+                                Доступно материалов:  @obj.Count @obj.Format
                             </div>
                         </div>
                     </div>

@@ -3,7 +3,7 @@
     string Edit = CRUD.Edit + MethodName;
     string Delete = CRUD.Delete + MethodName;
 }
-@model IEnumerable<Extradationrequest>
+@model IEnumerable<ExtradationRequestAvalilable>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
@@ -23,43 +23,63 @@
                     <div class="card" style="width: auto;">
                         <div class="card-body">
                             <div class="position-absolute" style="right:20px;">
-                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
-                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>
+                                @if (obj.Extradationrequest.Enddate == null)
+                                {
+                                    <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Extradationrequest.Id"> Изменить </a>
+                                    <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Extradationrequest.Id">Удалить</a>
+                                }
                             </div>
                             <h5 class="card-title">
-                                Заявка #@obj.Id
+                                Заявка #@obj.Extradationrequest.Id
                             </h5>
                             <h6 class="card-subtitle">
-                                @obj.Startdate - @obj.Duration (@Methods.CoalesceDateTime(obj.Enddate))
+                                @obj.Extradationrequest.Startdate - @obj.Extradationrequest.Duration (@Methods.CoalesceDateTime(obj.Extradationrequest.Enddate))
                             </h6>
-                            <hr />
-                            <div class="card-text" style="max-width: 75vw">
-                                <p>
-                                    <div class="text-center" style="width: 25%; font-size: 2em; border: 1px solid red;">@obj.Status</div>
-                                </p>
-                                <p>
-                                    Ремонт: @obj.Repair.Startdate - @obj.Repair.Duration
-                                </p>
-                                <p>
-                                    Материал: @obj.MaterialNavigation.Name (@obj.MaterialNavigation.Type.Name)
-                                </p>
-                                <p>
-                                    Количество материала: @obj.Count
-                                </p>
-                                <p>
-                                    Сотрудник: @obj.Staff.Staff.Name @obj.Staff.Staff.Surname @obj.Staff.Staff.Email
-                                </p>
-                                <span>Описание</span>
-                                <p style="text-indent: 2em; white-space: pre-line;">
-                                    @(obj.Description)
-                                </p>
 
-                            </div>
+                            <div class="text-center m-2" style="width: 25%; font-size: 2em; border: 1px solid red;">@obj.Extradationrequest.Status</div>
+
+                            <hr />
+                            <expander class="w-100 " button-class="fw-bold fs-4" message="Подробнее: ">
+                                <div class="card-text m-2" style="max-width: 75vw">
+                                    <div class="fs-4 m-2">
+                                        <div>
+                                            Номер ремонта: @obj.Extradationrequest.Repairid
+                                        </div>
+                                        <div>
+                                            Даты проведения ремонта: @obj.Extradationrequest.Repair.Startdate - @obj.Extradationrequest.Repair.Duration
+                                        </div>
+                                        <div>
+                                            Материал: @obj.Extradationrequest.MaterialNavigation.Name (@obj.Extradationrequest.MaterialNavigation.Type.Name)
+                                        </div>
+                                        @if (obj.Extradationrequest.Enddate == null)
+                                        {
+                                            <div>
+                                                Количество материала(@obj.Format): @obj.Extradationrequest.Count из @obj.Count доступных
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div>
+                                                Количество запрашиваемого материала(@obj.Format): @obj.Extradationrequest.Count
+                                            </div>
+                                        }
+                                    </div>
+                                    <div>
+                                        Сотрудник: @obj.Extradationrequest.Staff.Staff.Name @obj.Extradationrequest.Staff.Staff.Surname @obj.Extradationrequest.Staff.Staff.Email
+                                    </div>
+                                    <span>Описание</span>
+                                    <div style="text-indent: 2em; white-space: pre-line;">
+                                        @(obj.Extradationrequest.Description)
+                                    </div>
+
+                                </div>
+                            </expander>
+
                         </div>
                     </div>
                 </td>
             </tr>
-                    }
-        </tbody>
+        }
+    </tbody>
 </table>
 

@@ -10,8 +10,6 @@ using Project.Database;
 
 namespace WebApp
 {
-    //TODO: Организовать ПРАВИЛЬНУЮ сортировку
-
     public class Startup
     {
         public Startup(IConfiguration config)

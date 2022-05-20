@@ -4,7 +4,7 @@
     string Edit = CRUD.Edit + MethodName;
     string Delete = CRUD.Delete + MethodName;
 }
-@model IEnumerable<Materiallease>
+@model IEnumerable<MaterialLeaseWithMetricsViewModel>
 
 <table class="table table-sm table-striped table-bordered text-white ">
     <thead>
@@ -29,30 +29,38 @@
                     <div class="card" style="width: auto;">
                         <div class="card-body">
                             <div class="position-absolute" style="right:20px;">
-                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
-                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>
+                                @if (obj.Materiallease.Deliverydate == null)
+                                {
+                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Materiallease.Id"> Изменить </a>
+                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Materiallease.Id">Удалить</a>
+                                }
                             </div>
                             <h5 class="card-title">
-                                Номер договора: @obj.Id
+                                Номер договора: @obj.Materiallease.Id
                             </h5>
                             <h6 class="card-subtitle">
-                                @obj.Startdate - @Methods.CoalesceDateTime(obj.Deliverydate)
+                                @obj.Materiallease.Startdate - @Methods.CoalesceDateTime(obj.Materiallease.Deliverydate)
                             </h6>
                             <hr />
                             <div class="card-text" style="max-width: 75vw">
-                                <p>
-                                    Поставщик материалов: @obj.SellerNavigation.Name
-                                </p>
-                                <p>
-                                    Материал: @obj.MaterialNavigation.Name
-                                </p>
-                                 <p>
-                                    Количество: @obj.Count 
-                                    Цена за единицу: @obj.Priceperunit
-                                </p>
-                                <p>
-                                    Цена поставки: @obj.Overallprice
-                                </p>
+                                <div class="fs-5 m-2">
+                                    <div>
+                                        Поставщик материалов: @obj.Materiallease.SellerNavigation.Name
+                                    </div>
+                                    <div>
+                                        Материал: @obj.Materiallease.MaterialNavigation.Name (@obj.Materiallease.MaterialNavigation.Type.Name)
+                                        <div style="color: red;"> @if (obj.Materiallease.Deliverydate != null) { <span>Стало</span>} else { <span>Сейчас</span> } доступно: @obj.Count @obj.Format </div>
+                                    </div>
+                                </div>
+                                 <div>
+                                    Количество: @obj.Materiallease.Count 
+                                </div>
+                                 <div>
+                                     Цена за единицу: @obj.Materiallease.Priceperunit
+                                 </div>
+                                <div>
+                                    Цена поставки: @obj.Materiallease.Overallprice
+                                </div>
 
                             </div>
                         </div>

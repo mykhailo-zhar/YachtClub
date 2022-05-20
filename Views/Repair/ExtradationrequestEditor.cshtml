@@ -54,6 +54,7 @@
                 disabled="@Model.ReadOnly">
             <option value="" disabled selected>Выберите материал</option>
         </select>
+        <input hidden asp-for="Object.Material" />
     </div>
 
 
@@ -70,17 +71,13 @@
                 disabled="@Model.ReadOnly">
             <option value="" disabled selected>Выберите сотрудника</option>
         </select>
+        <input hidden asp-for="Object.Staffid" />
     </div>
 
 
-    <div class="form-group @Model.AlwaysHidden">
-        <label>Ремонт</label>
-        <select class="form-control" asp-for="Object.Repairid"
-                asp-items="@(new SelectList(ViewData["Repair"] as IEnumerable<Repair> ?? Enumerable.Empty<Repair>(), "Id", "Id"))"
-                disabled="@Model.ReadOnly">
-            <option value="" disabled selected>Выберите Ремонт</option>
-        </select>
-    </div>
+
+    <input hidden asp-for="Object.Repairid" />
+
 
     <div class="dropdown-divider"></div>
     <div class="form-group">

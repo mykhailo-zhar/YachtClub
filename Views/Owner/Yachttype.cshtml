@@ -33,7 +33,8 @@
                     <div class="card m-2" style="width: auto;">
                         <div class="card-body">
                             <div class="position-absolute" style="right:20px;">
-                                <a class="btn btn-info" asp-action="@Edit" asp-controller="Client" asp-route-id="@obj.Yachttype.Id"> Изменить </a>
+                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Yachttype.Id"> Изменить </a>
+                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Yachttype.Id">Удалить</a>
                             </div>
                             <h5 class="card-title">
                                 @obj.Yachttype.Name

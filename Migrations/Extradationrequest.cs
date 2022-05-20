@@ -24,8 +24,8 @@ namespace Project.Migrations
         [Column("enddate", TypeName = "timestamp(2) without time zone")]
         public DateTime? Enddate { get; set; }
         [Column("duration", TypeName = "timestamp(2) without time zone")]
-        public DateTime Duration { get; set; }
         [Required]
+        public DateTime Duration { get; set; }
         [Column("description")]
         public string Description { get; set; }
         [Required]

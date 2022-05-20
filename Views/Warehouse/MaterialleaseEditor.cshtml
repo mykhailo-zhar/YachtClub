@@ -1,8 +1,17 @@
 ﻿@model ObjectViewModel<Materiallease>
 <partial name="_Validation" />
 <h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
+<script>
+    function calcval() {
+        $(show_price).empty(); $(show_price).append(($(PPU).val() * $(Count).val()).toFixed(2))
+    }
+    
+</script>
 <form asp-action="@Model.Action" method="post">
 
+    @{
+        Model.Option[0] = Model.Option[0] || Model.Object.Deliverydate != null;
+    }
 
     <div class="form-group @Model.HideOnCreate">
         <label asp-for="Object.Id"></label>
@@ -19,7 +28,7 @@
                readonly="@Model.ReadOnly" />
     </div>
     <hr />
-    <div class="form-group @Model.HideOnCreate">
+    <div class="form-group @Model.HideOnCreate @Model.HideOnDelete">
         <div class="form-check form-switch position-relative d-flex" style="left: 20px">
             <div>
                 @if (Model.Object.Deliverydate == null)
@@ -38,12 +47,16 @@
         </div>
     </div>
 
+    <input hidden asp-for="Object.Deliverydate" />
+
     <div class="form-group">
         <label asp-for="Object.Priceperunit"></label>
         <div>
             <span asp-validation-for="Object.Priceperunit" class="text-danger"></span>
         </div>
         <input class="form-control" asp-for="Object.Priceperunit"
+               id="PPU" oninput="calcval()"
+               placeholder="Цена за единицу"
                readonly="@(Model.ReadOnly)" />
     </div>
 
@@ -53,28 +66,24 @@
         <div>
             <span asp-validation-for="Object.Count" class="text-danger"></span>
         </div>
-        @if (Model.Object.MaterialNavigation != null)
-        {
-            <input class="form-control" asp-for="Object.Count" min="1"
-                   readonly="@(Model.ReadOnly)" />
-        }
-        else
-        {
-            <input class="form-control" asp-for="Object.Count" min="1"
-                   placeholder="Количество"
-                   readonly="@(Model.ReadOnly)" />
-        }
+
+        <input class="form-control" asp-for="Object.Count" min="1" 
+               placeholder="Количество"
+               readonly="@(Model.ReadOnly)"
+               id="Count"
+               oninput="calcval()"
+               />
 
     </div>
 
-    <div class="form-group @Model.AlwaysHidden">
-        <label asp-for="Object.Overallprice"></label>
-        <div>
-            <span asp-validation-for="Object.Overallprice" class="text-danger"></span>
-        </div>
-        <input class="form-control" asp-for="Object.Overallprice"
-               readonly />
+    <div class="form-group @Model.HideOnDelete">
+        <label>Предварительная цена</label>
+        <div class="form-control" style="background-color: #dddddd" ><span id="show_price">@(Model.Object.Count * @Model.Object.Priceperunit)</span> @(ViewBag.Metric ?? "")<span></span></div>
+
     </div>
+
+    <input class="form-control" asp-for="Object.Overallprice" hidden
+           readonly />
 
     <div class="@Model.DisplayNone(false, CRUD.Delete, CRUD.Edit)">
 

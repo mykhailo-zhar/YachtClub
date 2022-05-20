@@ -4,7 +4,8 @@ namespace Project.Models
 {
     public class MaterialViewModel
     {
-        public IEnumerable<Material> Materials {get; set;}
-        public IEnumerable<Availableresources> Availableresources { get; set; }
+        public Material Material {get; set;}
+        public long Count { get; set; }
+        public string Format { get; set; }
     }
 }

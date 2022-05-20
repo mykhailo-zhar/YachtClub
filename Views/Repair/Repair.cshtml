@@ -6,8 +6,8 @@
     string Delete = CRUD.Delete + MethodName;
 
     string DeleteRM = CRUD.Delete + typeof(RepairMen).Name;
-    string CreateRM = CRUD.Create + typeof(RepairMen).Name; 
-    
+    string CreateRM = CRUD.Create + typeof(RepairMen).Name;
+
     string DeleteER = CRUD.Delete + typeof(Extradationrequest).Name;
     string EditER = CRUD.Edit + typeof(Extradationrequest).Name;
     string CreateER = CRUD.Create + typeof(Extradationrequest).Name;
@@ -38,8 +38,11 @@
                     <div class="card" style="width: auto;">
                         <div class="card-body">
                             <div class="position-absolute" style="right:20px;">
-                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Repair.Id"> Изменить </a>
-                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Repair.Id">Удалить</a>
+                                @if (obj.Repair.Enddate == null)
+                                {
+                                    <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Repair.Id"> Изменить </a>
+                                    <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Repair.Id">Удалить</a>
+                                }
                             </div>
                             <h5 class="card-title">
                                 Номер ремонта: @obj.Repair.Id
@@ -49,67 +52,93 @@
                             </h6>
                             <hr />
                             <div class="card-text" style="max-width: 75vw">
-                                <p>
+                                <div>
                                     <div class="text-center" style="width: 25%; font-size: 2em; border: 1px solid red;">@obj.Repair.Status</div>
-                                </p>
-                                <p>
-                                    Яхта: @obj.Repair.Yacht.Name Тип: @obj.Repair.Yacht.Type.Name
-                                </p>
-                                <p>
-                                    Требуемое количество персонала: @obj.Repair.Personnel
-                                </p>
-                                <p>
-                                    Персонал:
-                                    <ul>
-                                        @foreach (var item in obj.RepairMen)
-                                        {
-                                            <li>
-                                                <div>@item.Staff.Staff.Name @item.Staff.Staff.Surname @item.Staff.Staff.Email <span><a class="btn btn-danger" asp-action="@DeleteRM" 
-                                                                                                                    asp-route-id="@item.Id">-</a></span> </div>
-                                            </li>
-                                        }
-                                    </ul>
-                                    @if (obj.RepairMen.Count() < obj.Repair.Personnel)
-                                    {
-                                        <a class="btn btn-primary" asp-action="@CreateRM"  asp-route-repairid="@obj.Repair.Id">+</a>
-                                    }
-                                </p>
-                                <hr />
-                                <p>
-                                    Текущие заявки:
-                                    <ul>
-                                        @foreach (var item in obj.Extradationrequests)
-                                        {
-                                            <li>
-                                                <div>
-                                                    <div>
-                                                        Материал: @item.MaterialNavigation.Name (@item.MaterialNavigation.Type.Name)
-                                                    </div>
-                                                    <div>
-                                                        Количество: @item.Count
-                                                    </div>
-                                                    <div>
-                                                        Статус: @item.Status
-                                                    </div>
-                                                     <span>
-                                                        <a class="btn btn-danger" asp-action="@DeleteER"
-                                                           asp-route-id="@item.Id">-</a>
-                                                        <a class="btn btn-danger" asp-action="@EditER"
-                                                           asp-route-id="@item.Id">Edit</a>
-                                                    </span>
-                                                </div>
-                                            </li>
-                                        }
-                                    </ul>
-                                    
-                                    <a class="btn btn-primary" asp-action="@CreateER" asp-route-repairid="@obj.Repair.Id">+</a>
-                                    
-                                </p>
-                                <span>Описание</span>
-                                <p style="text-indent: 2em; white-space: pre-line;">
-                                    @(obj.Repair.Description)
-                                </p>
+                                </div>
+                                <div class="fs-4 border border-danger rounded-3 m-4">
+                                    <div class="m-2">
+                                        <div>
+                                            Яхта: @obj.Repair.Yacht.Name Тип: @obj.Repair.Yacht.Type.Name
+                                        </div>
+                                        <div>
+                                            Требуемое количество персонала: @obj.Repair.Personnel
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="m-2">
+                                    <expander class="w-100 " button-class="fw-bold fs-3" message="Персонал(@obj.RepairMen.Count()):">
+                                        <div class="w-50">
+                                            @foreach (var item in obj.RepairMen)
+                                            {
+                                                <div class="border border-info rounded-2 m-3 d-flex justify-content-center">
+                                                    <div class="m-3 position-relative" style="left:10px;">
+                                                        <div>
+                                                            @item.Staff.Staff.Name @item.Staff.Staff.Surname @item.Staff.Staff.Email
 
+                                                            @if (obj.Repair.Enddate == null)
+                                                            {
+                                                                <span>
+                                                                    <a class="btn btn-danger m-2" asp-action="@DeleteRM"
+                                                                       asp-route-id="@item.Id">-</a>
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        @if (obj.RepairMen.Count() < obj.Repair.Personnel && obj.Repair.Enddate == null)
+                                        {
+                                            <a class="btn btn-primary m-4" asp-action="@CreateRM" asp-route-repairid="@obj.Repair.Id">+</a>
+                                        }
+                                    </expander>
+                                </div>
+                                <hr />
+                                <div class="m-2">
+
+                                    <expander class="w-100 " button-class="fw-bold fs-3" message="Заявки(@obj.Extradationrequests.Count()):">
+                                        <div class="w-50">
+                                            @foreach (var item in obj.Extradationrequests)
+                                            {
+
+                                                <div class="border border-info rounded-2 m-2">
+                                                    <div class="m-3 position-relative" style="left:10px;">
+                                                        <div>
+                                                            Материал: @item.MaterialNavigation.Name (@item.MaterialNavigation.Type.Name)
+                                                        </div>
+                                                        <div>
+                                                            Количество: @item.Count
+                                                        </div>
+                                                        <div>
+                                                            Статус: @item.Status
+                                                        </div>
+                                                        @if (obj.Repair.Enddate == null)
+                                                        {
+                                                            <span>
+                                                                <a class="btn btn-danger" asp-action="@DeleteER"
+                                                                   asp-route-id="@item.Id">-</a>
+                                                                <a class="btn btn-danger" asp-action="@EditER"
+                                                                   asp-route-id="@item.Id">Edit</a>
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                            @if (obj.Repair.Enddate == null)
+                                            {
+                                                <a class="btn btn-primary m-4" asp-action="@CreateER" asp-route-repairid="@obj.Repair.Id">+</a>
+                                            }
+                                        </div>
+                                    </expander>
+                                </div>
+                                <hr />
+                                <div class="fs-3">
+                                    <span>Описание</span>
+                                    <div style="text-indent: 2em; white-space: pre-line;">
+                                        @(obj.Repair.Description)
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

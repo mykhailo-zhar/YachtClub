@@ -58,7 +58,8 @@ namespace Project.Migrations
                 optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=YachtClub;Username=postgres;Password=111");
             }
         }
-         public string MaterialMetric(int MaterialID) => throw new NotImplementedException();
+        [DbFunction("materialmetric", "public")]
+        public string MaterialMetric(int MaterialID) => throw new NotImplementedException();
          [DbFunction("yachtsstatus", "public")]
          public string YachtsStatus(int Yachtid) => throw new NotImplementedException();
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -9,9 +9,9 @@ namespace Project.Migrations
     public partial class Availableresources
     {
         [Column("material")]
-        public int? Material { get; set; }
+        public int Material { get; set; }
         [Column("count")]
-        public long? Count { get; set; }
+        public long Count { get; set; }
         [Column("format", TypeName = "character varying")]
         public string Format { get; set; }
     }

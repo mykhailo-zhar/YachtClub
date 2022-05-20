@@ -8,12 +8,15 @@ using Project.Migrations;
 
 namespace Project.Models
 {
-    public class MethodCRUD {
-    public string ClassName { get; set; }
+    public class MethodCRUD
+    {
+        public string ClassName { get; set; }
         public string Create => CRUD.Create + ClassName;
         public string Edit => CRUD.Edit + ClassName;
         public string Delete => CRUD.Delete + ClassName;
     }
+
+
 
     public class Methods
     {
@@ -29,7 +32,7 @@ namespace Project.Models
             return IsStr(metric) ? $"в {metric}" : "";
         }
 
-        public static string Metric (Material material)
+        public static string Metric(Material material)
         {
             string MaterialMetric = material.Metric;
             string MaterialTypeMetric = material.Type.Metric;
@@ -46,16 +49,31 @@ namespace Project.Models
         public static string CoalesceString(string str) => IsStr(str) ? str : string.Empty;
         public static string CoalesceDateTime(DateTime? dateTime) => dateTime == null ? "[Дата окончания отсутствует]" : dateTime.Value.ToString();
 
-        public static Exception ErrorCatcher(Action Vulnarable)
+        public static int ExtradationStatusPrio(string status)
         {
-            try
+            switch (status)
             {
-                Vulnarable.Invoke();
-                return null;
-            }
-            catch(Exception exc){
-                return exc;
+                case "Created": return 100;
+                case "Waits": return 50;
+                case "Done": return 5;
+                case "Canceled": return 0;
+                default:
+                    return -1;
             }
         }
+         public static int RepairStatusPrio(string status)
+        {
+            switch (status)
+            {
+                case "Created": return 100;
+                case "Waits": return 50;
+                case "InProgress": return 25;
+                case "Done": return 5;
+                case "Canceled": return 0;
+                default:
+                    return -1;
+            }
+        }
+
     }
 }

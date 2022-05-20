@@ -60,38 +60,70 @@
                             </h6>
                             <hr />
                             <div class="card-text" style="max-width: 75vw">
-                                <div>
-                                    <div class="fs-3">Портфолио:</div>
-                                    @foreach (var item in obj.Portfolio)
-                                    {
-                                        <div class="border border-info rounded-2 m-2">
-                                            <div class="m-3">
-                                                <div class="fw-bold">
-                                                    Должность: @item.Position.Name
+                                <expander class="w-100 " button-class="fw-bold fs-3" message="Портфолио(@obj.Portfolio.Count()):">
+                                    <div>
+                                        @foreach (var item in obj.Portfolio)
+                                        {
+                                            <div class="border border-info rounded-2 m-2">
+                                                <div class="m-3">
+                                                    <div class="fw-bold">
+                                                        Должность: @item.Position.Name
+                                                    </div>
+                                                    <div>
+                                                        С @item.Startdate по @Methods.CoalesceDateTime(item.Enddate)
+                                                    </div>
+                                                    <div class="fst-italic">
+                                                        Зарплата: @item.Position.Salary (Премия: @item.Salary)
+                                                    </div>
+                                                    <div>Описание:</div>
+                                                    <div class="card-text" style="max-width: 75vw">
+                                                        <div class="m-2 fw-light" style=" white-space: pre-line;"> @(item.Description)</div>
+                                                    </div>
+                                                    <span>
+                                                        @if (item.Enddate == null)
+                                                        {
+                                                            <a class="btn btn-danger" asp-action="@DeleteSP"
+                                                               asp-route-id="@item.Id">-</a>
+                                                            <a class="btn btn-danger" asp-action="@EditSP"
+                                                               asp-route-id="@item.Id">Edit</a>
+                                                        }
+                                                    </span>
                                                 </div>
-                                                <div>
-                                                    С @item.Startdate по @Methods.CoalesceDateTime(item.Enddate)
-                                                </div>
-                                                <div class="fst-italic">
-                                                    Зарплата: @item.Position.Salary (Премия: @item.Salary)
-                                                </div>
-                                                <div>Описание:</div>
-                                                <div class="card-text" style="max-width: 75vw">
-                                                    <div class="m-2 fw-light" style=" white-space: pre-line;"> @(item.Description)</div>
-                                                </div>
-                                                <span>
-                                                    <a class="btn btn-danger" asp-action="@DeleteSP"
-                                                       asp-route-id="@item.Id">-</a>
-                                                    <a class="btn btn-danger" asp-action="@EditSP"
-                                                       asp-route-id="@item.Id">Edit</a>
-                                                </span>
                                             </div>
+                                        }
+
+                                        <a class="btn btn-primary m-4" asp-action="@CreateSP" asp-route-sid="@obj.Person.Id">+</a>
+                                    </div>
+
+                                </expander>
+                                @if (obj.YachtPortfolio.Any())
+                                {
+                                    <expander class="w-100 " button-class="fw-bold fs-3" message="Служба на яхтах(@obj.YachtPortfolio.Count()):">
+                                        <div>
+                                            @foreach (var item in obj.YachtPortfolio)
+                                            {
+                                                <div class="border border-info rounded-2 m-2">
+                                                    <div class="m-3">
+                                                        <div class="fw-bold">
+                                                            Должность: @item.Crew.Position.Name
+                                                        </div>
+                                                        <div>
+                                                            Яхта: @item.Yacht.Name - @item.Yacht.Type.Name
+                                                        </div>
+                                                        <div>
+                                                            С @item.Startdate по @Methods.CoalesceDateTime(item.Enddate)
+                                                        </div>
+                                                        <div>Описание:</div>
+                                                        <div class="card-text" style="max-width: 75vw">
+                                                            <div class="m-2 fw-light" style=" white-space: pre-line;"> @(item.Description)</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
                                         </div>
-                                    }
 
-                                    <a class="btn btn-primary" asp-action="@CreateSP" asp-route-sid="@obj.Person.Id">+</a>
-                                </div>
-
+                                    </expander>
+                                }
                             </div>
                         </div>
                     </div>

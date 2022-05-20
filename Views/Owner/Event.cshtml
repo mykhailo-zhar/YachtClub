@@ -8,8 +8,6 @@
     string DeleteSP = CRUD.Delete + MethodName2;
     string EditSP = CRUD.Edit + MethodName2;
     string CreateSP = CRUD.Create + MethodName2;
-
-    int index = 1;
 }
 @model IEnumerable<EventViewModel>
 
@@ -53,53 +51,37 @@
                                 </div>
                             </h6>
 
-                            <div class="card-text" style="max-width: 75vw">
-                                <hr />
-                                <button class="btn w-100" type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="@("#collapseExample" + (index))"
-                                        aria-expanded="false"
-                                        aria-controls="@("collapseExample" + (index))"
-                                        onclick="if (!$(this).hasClass('collapsed')) { $(@("expimg_"+index)).hide(); $(@("dexpimg_"+index)).show(); } else { $(@("expimg_"+index)).show(); $(@("dexpimg_"+index)).hide();}">
-                                    <div>
-                                        <div class="position-relative fw-bold fs-4 float-start">Всего участников(@obj.Winners.Count()):</div>
-                                        <div class="position-relative float-end" style="height: 16px; width:1 16px;">
-                                            <img src="/image/expander.png" id="@("expimg_"+index)" />
-                                            <img src="/image/dexpander.png" id="@("dexpimg_"+index)" style="display: none;" />
-                                        </div>
-                                    </div>
-                                </button>
-                                <div class="collapse" id="@("collapseExample" + (index++))">
+                            <hr />
+                            <expander class="w-100 " button-class="fw-bold fs-4" message="Всего участников(@obj.Winners.Count()):">
 
-                                    @foreach (var item in obj.Winners)
-                                    {
-                                        <div class="border border-info rounded-2 m-2">
-                                            <div class="m-3">
-                                                <div class="fw-bold">
-                                                    Яхта: @item.Yacht.Name (@item.Yacht.Type.Name)
-                                                </div>
-
-                                                @if (obj.Event.Canhavewinners.Value)
-                                                {<div>Место: @item.Place</div>}
-                                                <span>
-                                                    <a class="btn btn-danger" asp-action="@DeleteSP"
-                                                       asp-route-eid="@item.Eventid" asp-route-yid="@item.Yachtid">-</a>
-                                                    <a class="btn btn-danger" asp-action="@EditSP"
-                                                       asp-route-eid="@item.Eventid" asp-route-yid="@item.Yachtid">Edit</a>
-                                                </span>
-
+                                @foreach (var item in obj.Winners)
+                                {
+                                    <div class="border border-info rounded-2 m-2">
+                                        <div class="m-3">
+                                            <div class="fw-bold">
+                                                Яхта: @item.Yacht.Name (@item.Yacht.Type.Name)
                                             </div>
-                                        </div>
-                                    }
 
-                                    <a class="btn btn-primary m-4" asp-action="@CreateSP" asp-route-eid="@obj.Event.Id">+</a>
-                                </div>
-                                <hr />
-                                <div class="m-2 fs-3">
-                                    Описание:
-                                    <div class="card-text" style="max-width: 75vw">
-                                        <div class="m-2 fw-light fs-4" style=" white-space: pre-line;"> @(obj.Event.Description)</div>
+                                            @if (obj.Event.Canhavewinners.Value)
+                                            {<div>Место: @item.Place</div>}
+                                            <span>
+                                                <a class="btn btn-danger" asp-action="@DeleteSP"
+                                                   asp-route-eid="@item.Eventid" asp-route-yid="@item.Yachtid">-</a>
+                                                <a class="btn btn-danger" asp-action="@EditSP"
+                                                   asp-route-eid="@item.Eventid" asp-route-yid="@item.Yachtid">Edit</a>
+                                            </span>
+
+                                        </div>
                                     </div>
+                                }
+
+                                <a class="btn btn-primary m-4" asp-action="@CreateSP" asp-route-eid="@obj.Event.Id">+</a>
+                            </expander>
+                            <hr />
+                            <div class="m-2 fs-3">
+                                Описание:
+                                <div class="card-text" style="max-width: 75vw">
+                                    <div class="m-2 fw-light fs-4" style=" white-space: pre-line;"> @(obj.Event.Description)</div>
                                 </div>
                             </div>
                         </div>

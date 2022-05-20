@@ -250,8 +250,6 @@ namespace Project.Controllers
         }
         #endregion
 
-        //TODO: Contracttype: запретить удалять тип, если на него создан хотя бы один контракт
-
         #region Contracttype
         public IActionResult Contracttype()
         {
@@ -360,7 +358,7 @@ namespace Project.Controllers
         }
         #endregion
 
-        //TODO: Везде проставить текстовые еденицы
+        //NOTE: Везде проставить текстовые еденицы. Спросить
 
         #region Contract
         public IActionResult Contract()
@@ -409,7 +407,6 @@ namespace Project.Controllers
         }
 
         public IActionResult EditContract(string id) => LocalEditContract(id);
-        //TODO: Везде понатыкать hidden, где есть checkbox кастомный чекбокс, чтобы Model Binding работал как должно
         [HttpPost]
         public async Task<IActionResult> EditContract([FromForm] ObjectViewModel<Contract> Contract)
         {
@@ -501,5 +498,386 @@ namespace Project.Controllers
         }
         #endregion
 
+
+        #region Yachtleasetype
+        public IActionResult Yachtleasetype()
+        {
+            var Yachtleasetype = Context.Yachtleasetype
+                .OrderBy(p => p.Id);
+            return View(Yachtleasetype);
+        }
+        public IActionResult EditYachtleasetype(string id)
+        {
+            var Yachtleasetype = Context.Yachtleasetype
+                .First(p => p.Id == int.Parse(id));
+            var Model = ObjectViewModelFactory<Yachtleasetype>.Edit(Yachtleasetype);
+            return View("YachtleasetypeEditor", Model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditYachtleasetype([FromForm] ObjectViewModel<Yachtleasetype> Yachtleasetype)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    Context.Yachtleasetype.Update(Yachtleasetype.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Yachtleasetype));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+            }
+            var Model = ObjectViewModelFactory<Yachtleasetype>.Edit(Yachtleasetype.Object);
+            return View("YachtleasetypeEditor", Model);
+        }
+
+        public IActionResult CreateYachtleasetype()
+        {
+            var Yachtleasetype = new Yachtleasetype();
+            var Model = ObjectViewModelFactory<Yachtleasetype>.Create(Yachtleasetype);
+            return View("YachtleasetypeEditor", Model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateYachtleasetype([FromForm] ObjectViewModel<Yachtleasetype> Yachtleasetype)
+        {
+            if (ModelState.IsValid)
+            {
+
+                try
+                {
+                    Context.Yachtleasetype.Add(Yachtleasetype.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Yachtleasetype));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+            }
+            var Model = ObjectViewModelFactory<Yachtleasetype>.Create(Yachtleasetype.Object);
+            return View("YachtleasetypeEditor", Model);
+        }
+        public IActionResult DeleteYachtleasetype(string id)
+        {
+            var Yachtleasetype = Context.Yachtleasetype
+                .First(p => p.Id == int.Parse(id));
+            return View("YachtleasetypeEditor", ObjectViewModelFactory<Yachtleasetype>.Delete(Yachtleasetype));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteYachtleasetype([FromForm] ObjectViewModel<Yachtleasetype> Yachtleasetype)
+        { 
+            try
+            {
+                Context.Yachtleasetype.Remove(Yachtleasetype.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Yachtleasetype));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            return View("YachtleasetypeEditor", ObjectViewModelFactory<Yachtleasetype>.Delete(Yachtleasetype.Object));
+        }
+        #endregion
+
+        //TODO: Исправить ошибки в договоре на яхты и пофиксить интерфейс
+        #region Yachtlease
+        public IActionResult Yachtlease()
+        {
+            var Yachtlease = Context.Yachtlease
+                .Include(p => p.Yacht)
+                    .ThenInclude(p => p.Type)
+                .Include(p => p.Yachtleasetype)
+                .OrderByDescending(p => p.Enddate ?? DateTime.Now);
+            return View(Yachtlease);
+        }
+        public IActionResult EditYachtlease(string id)
+        {
+            var Yachtlease = Context.Yachtlease
+                .Include(p => p.Yacht)
+                    .ThenInclude(p => p.Type)
+                .Include(p => p.Yachtleasetype)
+                .First(p => p.Id == int.Parse(id));
+            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type);
+            ViewData["Yachtleasetype"] = Context.Yachtleasetype;
+            var Model = ObjectViewModelFactory<Yachtlease>.Edit(Yachtlease);
+            return View("YachtleaseEditor", Model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditYachtlease([FromForm] ObjectViewModel<Yachtlease> Yachtlease)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    if (Yachtlease.Option[0]) Yachtlease.Object.Enddate = DateTime.Now;
+                    if (Yachtlease.Option[1]) Yachtlease.Object.Overallprice = Context.Yachtleasetype.First(p => p.Id == Yachtlease.Object.Yachtleasetypeid).Price *
+                        (Yachtlease.Object.Duration - Yachtlease.Object.Startdate).Days;
+                    Yachtlease.Object.Specials = Methods.IsStr(Yachtlease.Object.Specials) ? Yachtlease.Object.Specials : string.Empty;
+                    Context.Yachtlease.Update(Yachtlease.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Yachtlease));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+            }
+            var Model = ObjectViewModelFactory<Yachtlease>.Edit(Yachtlease.Object);
+            return View("YachtleaseEditor", Model);
+        }
+
+        public IActionResult CreateYachtlease()
+        {
+            var Yachtlease = new Yachtlease();
+            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type);
+            ViewData["Yachtleasetype"] = Context.Yachtleasetype;
+            var Model = ObjectViewModelFactory<Yachtlease>.Create(Yachtlease);
+            return View("YachtleaseEditor", Model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateYachtlease([FromForm] ObjectViewModel<Yachtlease> Yachtlease)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    Yachtlease.Object.Specials = Methods.IsStr(Yachtlease.Object.Specials) ? Yachtlease.Object.Specials : string.Empty;
+                    Yachtlease.Object.Startdate = DateTime.Now;
+                    Yachtlease.Object.Overallprice =
+                        Context.Yachtleasetype.First(p => p.Id == Yachtlease.Object.Yachtleasetypeid).Price *
+                        (Yachtlease.Object.Duration - Yachtlease.Object.Startdate).Days;
+                    Context.Yachtlease.Add(Yachtlease.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Yachtlease));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+            }
+            var Model = ObjectViewModelFactory<Yachtlease>.Create(Yachtlease.Object);
+            return View("YachtleaseEditor", Model);
+        }
+        public IActionResult DeleteYachtlease(string id)
+        {
+            var Yachtlease = Context.Yachtlease
+                .First(p => p.Id == int.Parse(id));
+            return View("YachtleaseEditor", ObjectViewModelFactory<Yachtlease>.Delete(Yachtlease));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteYachtlease([FromForm] ObjectViewModel<Yachtlease> Yachtlease)
+        {
+            try
+            {
+                Context.Yachtlease.Remove(Yachtlease.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Yachtlease));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            return View("YachtleaseEditor", ObjectViewModelFactory<Yachtlease>.Delete(Yachtlease.Object));
+        }
+        #endregion
+
+        #region Yachttype
+        public IActionResult Yachttype()
+        {
+            var Yachttype = Context.Yachttype.Select(p => new MinCrewViewModel
+            {
+                Yachttype = p,
+                MinCrew = Context.PositionYachttype
+                    .Where(z => z.Yachttypeid == p.Id)
+                    .Include(l => l.Position)
+                    .ToList()
+            });
+            return View(Yachttype);
+        }
+        public IActionResult EditYachttype(string id)
+        {
+            var Yachttype = Context.Yachttype.First(p => p.Id == int.Parse(id));
+            return View("YachttypeEditor", ObjectViewModelFactory<Yachttype>.Edit(Yachttype));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditYachttype([FromForm] ObjectViewModel<Yachttype> staff)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    Context.Yachttype.Update(staff.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Yachttype));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+
+
+            }
+
+            return View("YachttypeEditor", ObjectViewModelFactory<Yachttype>.Edit(staff.Object));
+        }
+
+        public IActionResult CreateYachttype()
+        {
+            var Yachttype = new Yachttype
+            {
+                Description = ""
+            };
+            return View("YachttypeEditor", ObjectViewModelFactory<Yachttype>.Create(Yachttype));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateYachttype([FromForm] ObjectViewModel<Yachttype> staff)
+        {
+            if (ModelState.IsValid)
+            {
+              
+                try
+                {
+                    Context.Yachttype.Add(staff.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Yachttype));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+            }
+
+            return View("YachttypeEditor", ObjectViewModelFactory<Yachttype>.Create(staff.Object));
+        }
+        public IActionResult DeleteYachttype(string id)
+        {
+            var Yachttype = Context.Yachttype.First(p => p.Id == int.Parse(id));
+            return View("YachttypeEditor", ObjectViewModelFactory<Yachttype>.Delete(Yachttype));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteYachttype([FromForm] ObjectViewModel<Yachttype> Yachttype)
+        {
+            try
+            {
+                Context.Yachttype.Remove(Yachttype.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Yachttype));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+
+            return View("YachttypeEditor", ObjectViewModelFactory<Yachttype>.Delete(Yachttype.Object));
+        }
+        #endregion
+
+        #region PositionYachttype
+        private IActionResult LocalEditPositionYachttype(string ytid, string pid, PositionYachttype Object = null)
+        {
+            Object = Object ?? Context.PositionYachttype
+
+               .First(p => p.Yachttypeid == int.Parse(ytid) && p.Positionid == int.Parse(pid));
+            ViewData["Type"] = Context.Position.Where(p => p.Crewposition).ToList();
+            var Model = ObjectViewModelFactory<PositionYachttype>.Edit(Object);
+            return View("PositionYachttypeEditor", Model);
+        }
+
+        public IActionResult EditPositionYachttype(string ytid, string pid) => LocalEditPositionYachttype(ytid, pid);
+
+        [HttpPost]
+        public async Task<IActionResult> EditPositionYachttype([FromForm] ObjectViewModel<PositionYachttype> PositionYachttype)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    //PositionYachttype.Object.Description = Methods.CoalesceString(PositionYachttype.Object.Description);
+                    Context.PositionYachttype.Update(PositionYachttype.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Yachttype));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                return LocalEditPositionYachttype($"{PositionYachttype.Object.Yachttypeid}", $"{PositionYachttype.Object.Positionid}", PositionYachttype.Object);
+            }
+
+            return LocalEditPositionYachttype($"{PositionYachttype.Object.Yachttypeid}", $"{PositionYachttype.Object.Positionid}", PositionYachttype.Object);
+        }
+
+        private IActionResult LocalCreatePositionYachttype(PositionYachttype PositionYachttype = null, int id = 0)
+        {
+            PositionYachttype = PositionYachttype ?? new PositionYachttype
+            {
+                Yachttypeid = id,
+                Count = 1
+            };
+            ViewData["Type"] = Context.Position.Where(p => p.Crewposition && !Context.PositionYachttype.Where(z => z.Yachttypeid == PositionYachttype.Yachttypeid).Select(z => z.Positionid).Contains(p.Id)).ToList();
+            var Model = ObjectViewModelFactory<PositionYachttype>.Create(PositionYachttype);
+            return View("PositionYachttypeEditor", Model);
+        }
+
+        public IActionResult CreatePositionYachttype(int ytid) => LocalCreatePositionYachttype(null, ytid);
+
+        [HttpPost]
+        public async Task<IActionResult> CreatePositionYachttype([FromForm] ObjectViewModel<PositionYachttype> PositionYachttype)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    //PositionYachttype.Object.Description = Methods.CoalesceString(PositionYachttype.Object.Description);
+                    Context.PositionYachttype.Add(PositionYachttype.Object);
+                    await Context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Yachttype));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+                return LocalCreatePositionYachttype(PositionYachttype.Object);
+            }
+            return LocalCreatePositionYachttype(PositionYachttype.Object);
+        }
+
+
+        public IActionResult DeletePositionYachttype(string ytid, string pid)
+        {
+            var PositionYachttype = Context.PositionYachttype
+                 .First(p => p.Yachttypeid == int.Parse(ytid) && p.Positionid == int.Parse(pid));
+            return View("PositionYachttypeEditor", ObjectViewModelFactory<PositionYachttype>.Delete(PositionYachttype));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeletePositionYachttype([FromForm] ObjectViewModel<PositionYachttype> PositionYachttype)
+        {
+            try
+            {
+                Context.PositionYachttype.Remove(PositionYachttype.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Yachttype));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            return View("PositionYachttypeEditor", ObjectViewModelFactory<PositionYachttype>.Delete(PositionYachttype.Object));
+
+        }
+        #endregion
     }
 }

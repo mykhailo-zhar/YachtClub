@@ -3,8 +3,9 @@
     string Create = CRUD.Create + MethodName;
     string Edit = CRUD.Edit + MethodName;
     string Delete = CRUD.Delete + MethodName;
+    string card = "";
 }
-@model IEnumerable<YachtCrew>
+@model IEnumerable<IGrouping<Yacht, YachtCrew>>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
@@ -14,7 +15,7 @@
                     Экипаж яхт
                 </div>
                 <div align="center">
-                    <a  asp-action="@Create" class="btn btn-primary w-75">
+                    <a asp-action="@Create" class="btn btn-primary w-75">
                         Зарегистрировать
                     </a>
                 </div>
@@ -22,41 +23,55 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var obj in Model)
+        @foreach (var col in Model)
         {
             <tr class="text-black">
                 <td>
-                    <div class="card m-2" style="width: auto;">
-                        <div class="position-absolute" style="right:20px;">
-                            <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id"> Удалить </a>
-                            <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                @obj.Crew.Staff.Name   @obj.Crew.Staff.Surname
-                            </h5>
-                            <h6 class="card-subtitle">
-                                <div>
-                                    Должность экипажа: @obj.Crew.Position.Name
+                    <div class="">
+                        <expander class="w-100 " button-class="fw-bold fs-4" message="Экипаж яхты @col.Key.Name - @col.Key.Type.Name (@col.Count()):">
+                            @foreach (var obj in col)
+                            {
+                                {
+                                    card = obj.Enddate == null ? "" : "lightcoral";
+                                }
+                                <div class="card m-2" style="width: auto; background-color: @card;">
+                                    <div class="position-absolute" style="right:20px;">
+                                        @if (obj.Enddate == null) { 
+                                        <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id"> Удалить </a>
+                                        <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                                        }
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            @obj.Crew.Staff.Name   @obj.Crew.Staff.Surname
+                                        </h5>
+                                        <h6 class="card-subtitle">
+                                            <div>
+                                                Должность экипажа: @obj.Crew.Position.Name
+                                            </div>
+                                            <div>
+                                                Яхта: @obj.Yacht.Name (@obj.Yacht.Type.Name)
+                                            </div>
+                                            <div>
+                                                @obj.Startdate - @Methods.CoalesceDateTime(obj.Enddate)
+                                            </div>
+                                        </h6>
+                                        <hr />
+                                        <div class="card-text" style="max-width: 75vw">
+                                            <span>Описание</span>
+                                            <p style="text-indent: 2em; white-space: pre-line;">
+                                                @(obj.Description)
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    Яхта: @obj.Yacht.Name (@obj.Yacht.Type.Name)
-                                </div>
-                                <div>
-                                    @obj.Startdate - @Methods.CoalesceDateTime(obj.Enddate)
-                                </div>
-                            </h6>
-                            <hr />
-                            <div class="card-text" style="max-width: 75vw">
-                                <span>Описание</span>
-                                <p style="text-indent: 2em; white-space: pre-line;">
-                                    @(obj.Description)
-                                </p>
-                            </div>
-                        </div>
+
+                            }
+                        </expander>
                     </div>
                 </td>
             </tr>
+
         }
     </tbody>
 </table>

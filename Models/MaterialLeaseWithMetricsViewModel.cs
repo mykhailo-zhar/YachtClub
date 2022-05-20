@@ -3,9 +3,10 @@ using System.Collections.Generic;
 
 namespace Project.Models
 {
-    public class MaterialLeaseWithMetrics
+    public class MaterialLeaseWithMetricsViewModel
     {
         public Materiallease Materiallease { get; set; }
-        public string Metrics { get; set; }
+        public long Count { get; set; }
+        public string Format { get; set; }
     }
 }

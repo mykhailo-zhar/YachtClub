@@ -1008,7 +1008,7 @@ values
 ('19-01-2019', '25-04-2019', '25-02-2019',	'Canceled', 15, 3, 4, 2),
 ('19-01-2019', '25-04-2019', '25-02-2019',	'Canceled', 1, 8, 4, 2),
 ('19-01-2019', '25-04-2019', '25-02-2019',	'Canceled', 1, 6, 4, 2),
-('01-07-2019', '20-07-2019', '02-07-2019',  'Waits', 2, 3, 16, 3),
+('01-07-2019', '20-07-2019', '02-07-2019',  'Canceled', 2, 3, 16, 3),
 ('24-06-2019', '10-07-2019', '24-07-2019',  'Done', 10, 4, 4, 4),
 ('12-10-2021',		   null, '12-12-2021',  'Waits', 1, 10, 16, 5)
 ;
@@ -1192,35 +1192,36 @@ values
             }
         }
 
-        public static void SeedWithProcedure(DataContext dbContext)
+		public static void SeedWithProcedure(DataContext dbContext)
         {
             #region Функции и процедурки
+			//Функции
+
             //Доступные материалы
             dbContext.Database.ExecuteSqlRaw(@"
 create or replace function MaterialMetric(
-	material_id bigint,
-	count decimal
+	material_id bigint
 )
 	returns varchar
 as $$
 declare 
 	rec RECORD;
 begin 
-	select count, m.metric m1, t.metric m2 into rec
+	select m.metric m1, t.metric m2 into rec
 	from material as m join materialtype as t on m.typeid = t.id
 	where m.id = material_id and m.id = material_id;
 	
 	if(rec.m1 ~ '^[\t\n\r\f\v]*$' or rec.m1 is null) then
 		if(rec.m2 ~ '^[\t\n\r\f\v]*$' or rec.m2 is null) then
-			return rec.count || '';
+			return '';
 		else
-			return rec.count || ' ' || rec.m2;
+			return rec.m2;
 		end if;
 	else
-		return rec.count || ' ' || rec.m1;
+		return  rec.m1;
 	end if;
 end;
-$$ language plpgsql;	
+$$ language plpgsql;		
 				");
             //Проверка статусов заявок ремонта
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1379,6 +1380,8 @@ end;
 $$ language plpgsql;
 				");
 
+			//Процедуры
+
 
             #endregion
 
@@ -1404,7 +1407,7 @@ select m.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcoun
 union
 select e.material, coalesce(m.count, 0) - coalesce(e.count, 0) count from mlcount as m right join ercount as e on m.material = e.material
 )
-select distinct m.id material, coalesce(ar.count, 0) count, materialmetric(m.id, coalesce(ar.count, 0)) format  from 
+select distinct m.id material, coalesce(ar.count, 0) count, materialmetric(m.id) format  from 
 	material as m left join counter as ar on m.id = ar.material
 	order by m.id
 );
@@ -1618,8 +1621,8 @@ begin
 	if (new.Status = 'Created' ) then 
 		new.Status = 'Waits';
 	end if;
-	if (not exists (select * from repair_men rm where new.Staffid = rm.staffid and rm.repairid = new.repairid) ) then
-		raise exception 'От имени данного сотрудника нельзя добавить или изменить заявку';
+	if (not exists (select * from repair_men rm where new.Staffid = rm.staffid and rm.repairid = new.repairid) and TG_OP = 'INSERT') then
+		raise exception 'Данный ремонтник не может оставить заявку на материалы';
 	end if;
 
 	if(new.status in ('Canceled','Done') and new.enddate is null) then
@@ -2311,14 +2314,75 @@ Before insert or update on position_yachttype
 for each row execute function PYT1 ();
 
 				");
-			#endregion
+            #endregion
 
-			#endregion
+            #endregion
 
-			#region BaseRoles
+            #region SameTriggers
+			void ParentRemoval(string Parent, string Child, string Property)
+            {
+				dbContext.Database.ExecuteSqlRaw($@"
+		create or replace function {Parent}_{Child}()
+			returns trigger
+		as $$
+		begin 	
+				if(
+					exists (select * from {Child} t0 join {Parent} t1 on t0.{Property} = t1.id where t1.id = old.id)
+				) then
+					raise exception 'Данный тип используется, поэтому удалить его нельзя';
+				end if;
+				return old;
+		end;
+		$$ language plpgsql;
 
-			#region Repair_Men
-			dbContext.Database.ExecuteSqlRaw(@"
+		create trigger ParentRemover
+		Before delete on {Parent}
+		for each row execute function {Parent}_{Child}();
+				");
+			}
+
+			ParentRemoval(
+				nameof(Contracttype),
+				nameof(Contract),
+				nameof(Contract.Contracttypeid)
+				);
+			ParentRemoval(
+				nameof(Yachtleasetype),
+				nameof(Yachtlease),
+				nameof(Yachtlease.Yachtleasetypeid)
+				);
+			ParentRemoval(
+				nameof(Yachttype),
+				nameof(Yacht),
+				nameof(Yacht.Typeid)
+				);
+			ParentRemoval(
+				nameof(Position),
+				"StaffPosition",
+				nameof(StaffPosition.Positionid)
+				);
+			ParentRemoval(
+				nameof(Material),
+				nameof(Materiallease),
+				nameof(Materiallease.Material)
+				);
+			ParentRemoval(
+				nameof(Seller),
+				nameof(Materiallease),
+				nameof(Materiallease.Seller)
+				);
+			ParentRemoval(
+				nameof(Materialtype),
+				nameof(Material),
+				nameof(Material.Typeid)
+				);
+
+            #endregion
+
+            #region BaseRoles
+
+            #region Repair_Men
+            dbContext.Database.ExecuteSqlRaw(@"
 				REVOKE UPDATE ON REPAIR_MEN FROM PUBLIC
 			");
 			#endregion

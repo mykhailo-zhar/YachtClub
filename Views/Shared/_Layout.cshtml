@@ -7,15 +7,6 @@
 
     <script src="/scripts/jquery/jquery.min.js"></script>
     <script src="/lib/twitter-bootstrap/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        $(document).ready(function () {
-            $('#ContentDiv').height($(document).innerHeight() - 100);
-        });
-        $(document).resize(function () {
-            $('#ContentDiv').height($(document).innerHeight() - 100);
-        });
-    </script>
 </head>
 <body class="layout_image">
     <div class="m-2">
@@ -133,13 +124,8 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" asp-controller="Client" asp-action="Yachtleasetype">
+                                <a class="dropdown-item" asp-controller="Owner" asp-action="Yachtleasetype">
                                     Тип контракта на яхты
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" asp-controller="Client" asp-action="Review">
-                                    Отзывы
                                 </a>
                             </li>
                             <li>
@@ -148,13 +134,30 @@
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" asp-controller="Owner" asp-action="Yachttype">
+                                    Тип яхт
+                                </a>
+                            </li>
+                            <li><hr /></li>
+                            <li>
                                 <a class="dropdown-item" asp-controller="Owner" asp-action="Contract">
                                     Контракт
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" asp-controller="Owner" asp-action="Yachtlease">
+                                    Договор по яхте
+                                </a>
+                            </li>
+                            <li><hr /></li>
+                            <li>
                                 <a class="dropdown-item" asp-controller="Owner" asp-action="Event">
                                     События
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Client" asp-action="Review">
+                                    Отзывы
                                 </a>
                             </li>
 
@@ -171,13 +174,11 @@
                             <span class="visually-hidden">Toggle Dropdown</span>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" asp-controller="Client" asp-action="Yacht">Яхты</a></li>
                             <li>
-                                <a class="dropdown-item" asp-controller="Client" asp-action="Yachttype">
-                                    Тип яхт
+                                <a class="dropdown-item" asp-controller="Client" asp-action="Yacht">
+                                    Яхты
                                 </a>
                             </li>
-                            <li><a class="dropdown-item" asp-controller="Client" asp-action="Yachtlease">Договор по яхте</a></li>
                         </ul>
                     </div>
                 </li>
@@ -193,7 +194,7 @@
     </nav>
     <div align="center">
         <div class="initial_div bg-white">
-            <div id="ContentDiv">
+            <div id="ContentDiv" style="min-height: calc(100vw - 1px);">
                 <div>
                     @RenderBody()
                 </div>
