@@ -28,7 +28,7 @@ drop table if exists
 	Material, Yacht,
 	MaterialLease, YachtTest, Repair, ExtradationRequest, YachtLease,
 	Contract, Review,
-	Winner, Staff_Position, Yacht_Crew, Repair_Men, Review_Contract, Review_Yacht, Review_Captain, Position_YachtType, Position_Equivalent, HiredStaff
+	Winner, Staff_Position, Yacht_Crew, Repair_Men, Review_Contract, Review_Yacht, Review_Captain, Position_YachtType, Position_Equivalent, Account
 Cascade;
 
 				");
@@ -43,9 +43,6 @@ drop domain if exists Sex, My_Money, Mail, Phonenumber
                 #region Создание доменов
                 //Создание доменов
                 dbContext.Database.ExecuteSqlRaw(@"
-CREATE Domain SEX as varchar
-CHECK (Value in ('Male','Female','Other'));
-
 CREATE Domain My_Money as decimal
 CHECK (Value >= 0.0);
 
@@ -140,7 +137,7 @@ CREATE TABLE Person(
   	Name      		varchar    	Not Null,
   	Surname      	varchar    	Not Null,
   	BirthDate    	timestamp(2)   Not Null		check(extract(year from age(BirthDate)) >= 18),
-	Sex				Sex			Not Null,	
+	Sex				varchar		Not Null,	
   	Email      		Mail    	Not Null	unique,
 	Phone			PhoneNumber	Not Null	unique,
     StaffOnly		Boolean		Not Null	Default false,
@@ -505,10 +502,23 @@ CREATE TABLE Position_YachtType(
 );
 				");
 
-                #endregion
+				//Account
+				dbContext.Database.ExecuteSqlRaw(@"
+CREATE TABLE Account(
+	ID				serial		Not Null	Primary Key,
+	Login			text		Not Null	Unique,
+	Password		varchar		Not Null,
+	Role			varchar,
+	UserID			int			Not Null
+	References 	Person(ID)	
+	On Update Cascade	
+	On Delete Cascade
+);
+				");
+				#endregion
 
-                #endregion
-            }
+				#endregion
+			}
 
             #endregion
         }
@@ -1798,7 +1808,6 @@ create or replace function P1()
 as $$
 begin 	
 		IF (TG_OP = 'UPDATE') THEN 
-
 			return new;
         ELSIF (TG_OP = 'INSERT') then
 			new.registrydate = current_timestamp;
@@ -2345,6 +2354,35 @@ create trigger InsertCaptain
 After insert on Yachttype
 for each row execute function YT2 ();
 
+				");
+			#endregion
+
+			#region Position
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function POS1 ()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+begin 	
+		execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = ''my_' || lower(regexp_replace (old.name, ' ', '_')) || ''';' into rec;
+		IF(TG_OP = 'INSERT' or TG_OP = 'UPDATE') then 
+			if(rec.count = 0 ) then
+			  execute 'CREATE ROLE MY_'||regexp_replace (old.name, ' ', '_')||' WITH LOGIN PASSWORD ''hu8jmn3'';';
+			end if;
+		end if;
+		IF(TG_OP = 'UPDATE') then
+			if(old.name <> new.name) then 
+				execute 'ALTER ROLE MY_'||regexp_replace (old.name, ' ', '_')||' RENAME TO MY_'|| regexp_replace (old.name, ' ', '_')||';';	
+			end if;
+		end if;
+		return new;
+end;
+$$ language plpgsql;		
+
+create trigger InsertCaptain
+After insert or update on Position
+for each row execute function POS1 ();
 				");
 			#endregion
 

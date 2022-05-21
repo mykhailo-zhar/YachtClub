@@ -20,6 +20,7 @@ namespace Project.Models
 
     public class Methods
     {
+        public static readonly string Limitier= "%%&-//";
         public static bool IsDev { get; set; } = true;
         public static bool IsStr(string str) =>
                !(string.IsNullOrEmpty(str) || string.IsNullOrWhiteSpace(str));

@@ -1,0 +1,57 @@
+﻿@model ObjectViewModel<Account>
+    <div class="w-50 border border-1 border-primary rounded-1 m-2">
+        <div class="m-3">
+            <partial name="_Validation" />
+            <h5 class="bg-primary text-white text-center p-2">Войти</h5>
+            <form asp-action="@Model.Action" method="post">
+
+
+                <div class="form-group">
+                    <label asp-for="Object.Login"></label>
+                    <div>
+                        <span asp-validation-for="Object.Login" class="text-danger"></span>
+                    </div>
+                    <input class="form-control" asp-for="Object.Login" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Object.Password"></label>
+                    <div>
+                        <span asp-validation-for="Object.Password" class="text-danger"></span>
+                    </div>
+                    <input class="form-control" asp-for="Object.Password" />
+                </div>
+
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input  m-2" type="radio" asp-for="Object.AsWho" value="Client" checked /> Войти как клиент <br />
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input  m-2" type="radio" asp-for="Object.AsWho" value="Staff" />
+                        <label class="form-check-label d-flex flex-column">
+                            <select class="form-control" asp-for="Object.Position"
+                                    asp-items="@((ViewBag.Positions as IEnumerable<string> ?? Enumerable.Empty<string>()).Select(p =>
+                        new SelectListItem
+                        {
+                            Text = p,
+                            Value = p
+                        }
+                    ))">
+                                <option value="" disabled selected>Войти как сотрудник</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <a asp-action="Registry">Нет аккаунта?</a>
+
+                <partial name="_EditorBottomButtons" model="@(new EditorBottomButtonsViewModel {
+        ShowAction = Model.ShowAction,
+        Theme = Model.Theme,
+        Action = Model.Action,
+        BackController="Home",
+        BackAction="Index"
+    })" />
+            </form>
+        </div>
+    </div>

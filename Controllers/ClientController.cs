@@ -7,9 +7,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Project.Controllers
 {
+    [Authorize]
     public class ClientController : Controller
     {
         public DataContext Context;

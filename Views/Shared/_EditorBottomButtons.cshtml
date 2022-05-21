@@ -3,16 +3,16 @@
 <div style="margin:10px">
     @if (Model.ShowAction)
     {
-        <button class="btn btn-@Model.Theme" type="submit" asp-action="@Model.Action">@Model.ActionName</button>
+        <button class="btn btn-@Model.Theme" id="submit_button" type="submit" asp-action="@Model.Action">@Model.ActionName</button>
     }
 
     @if (string.IsNullOrEmpty(Model.BackController))
     {
 
-        <a class="btn btn-secondary" asp-action="@Model.BackAction">@Model.BackName</a>
+        <a class="btn btn-secondary" id="cancel_button" asp-action="@Model.BackAction">@Model.BackName</a>
     }
     else
     {
-        <a class="btn btn-secondary" asp-controller="@Model.BackController" asp-action="@Model.BackAction">@Model.BackName</a>
+        <a class="btn btn-secondary" id="cancel_button" asp-controller="@Model.BackController" asp-action="@Model.BackAction">@Model.BackName</a>
     }
 </div>

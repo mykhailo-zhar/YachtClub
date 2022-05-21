@@ -47,6 +47,7 @@
 
   <ItemGroup>
     <Folder Include="Migrations\Ready\" />
+    <Folder Include="Migrations\ScaffModels\" />
     <Folder Include="wwwRoot\lib\twitter-bootstrap\" />
   </ItemGroup>
 

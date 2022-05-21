@@ -36,6 +36,12 @@ namespace Project.Models
                             break;
                     }
                 }
+                
+            }
+            else
+            {
+                controller.ModelState.AddModelError("Other",
+                           $"{exception.Message}");
             }
         }
     }

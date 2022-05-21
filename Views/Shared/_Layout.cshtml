@@ -8,6 +8,11 @@
     <script src="/scripts/jquery/jquery.min.js"></script>
     <script src="/lib/twitter-bootstrap/js/bootstrap.bundle.min.js"></script>
 </head>
+@{
+    var cur_controller = ViewContext.RouteData.Values["controller"].ToString();
+    var userName = User.Identity.Name;
+    var userRole = User.FindFirst("RoleName")?.Value;
+}
 <body class="layout_image">
     <div class="m-2">
         <nav class="navbar navbar-expand-lg navbar-light bg-primary bg-opacity-75 text-opacity-100">
@@ -191,21 +196,23 @@
                         </li>
                     </ul>
                 </div>
-                <div class="navbar-brand collapse navbar-collapse p-1 d-flex flex-row-reverse text-white" style="max-width: 30%;">
-                    <div class="btn text-white btn-outline-info fs-5">
-                        <div hidden>
-                            Выйти
-                        </div>
-                        <div >
-                            Войти
+                @if (cur_controller != "Account")
+                {
+                    <div class="navbar-brand collapse navbar-collapse p-1 d-flex flex-row-reverse text-white" style="max-width: 30%;">
+                        <a class="btn text-white btn-outline-info fs-5" asp-controller="Account" asp-action="@(string.IsNullOrEmpty(userName)?"Login":"Logout")">
+                            @(string.IsNullOrEmpty(userName)?"Войти":"Выйти")
+                        </a>
+                        <div class="m-1">
+                            <div class="btn btn-outline-info fs-5 @(string.IsNullOrEmpty(userName)?"d-none":"")">
+                                Добро пожаловать, @userName
+                                @if (!string.IsNullOrEmpty(userRole))
+                                {
+                                    <span>(@userRole)</span>
+                                }
+                            </div>
                         </div>
                     </div>
-                    <div class="m-1" hidden>
-                        <div class="btn btn-outline-info fs-5">
-                            Добро пожаловать, ()
-                        </div>
-                    </div>
-                </div>
+                }
             </div>
         </nav>
     </div>

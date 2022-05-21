@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -9,8 +10,10 @@ namespace Project.Migrations
 {
     public partial class DataContext : DbContext
     {
-        public DataContext()
+        private HttpContext Context { get; set; }
+        public DataContext(HttpContext context)
         {
+            Context = context;
         }
 
         public DataContext(DbContextOptions<DataContext> options)
@@ -18,6 +21,7 @@ namespace Project.Migrations
         {
         }
 
+        public virtual DbSet<Account> Account { get; set; }
         public virtual DbSet<Availableresources> Availableresources { get; set; }
         public virtual DbSet<Busyyacht> Busyyacht { get; set; }
         public virtual DbSet<Contract> Contract { get; set; }
@@ -55,9 +59,11 @@ namespace Project.Migrations
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+                       
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=YachtClub;Username=postgres;Password=111");
+                var Role = Context.User.FindFirst("RoleName")?.Value;
+                optionsBuilder.UseNpgsql($"Host=localhost;Port=5432;Database=YachtClub;Username={(Role == null? "postgres" : "my_"+Role).ToLower()};Password={(Role == null ? "111" : "hu8jmn3")}");
             }
         }
         [DbFunction("materialmetric", "public")]
@@ -69,6 +75,17 @@ namespace Project.Migrations
         {
             modelBuilder.HasDbFunction(() => MaterialMetric(default));
             modelBuilder.HasDbFunction(() => YachtsStatus(default));
+
+            modelBuilder.Entity<Account>(entity => {
+                entity.HasIndex(e => e.Login)
+                      .HasName("account_login_key")
+                      .IsUnique();
+
+                entity.HasOne(d => d.User)
+                     .WithMany(p => p.Account)
+                     .HasForeignKey(d => d.Userid)
+                     .HasConstraintName("account_userid_fkey");
+            });
 
             modelBuilder.Entity<Availableresources>(entity =>
             {
