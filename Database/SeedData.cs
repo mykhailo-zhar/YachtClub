@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Project.Migrations;
+using System.Threading.Tasks;
+using System.Data.Entity.Core.Objects;
 
 namespace Project.Database
 {
@@ -500,23 +502,6 @@ CREATE TABLE Position_YachtType(
 	Count		int		Not Null	check (Count > 0),
 
 	Primary Key ( PositionID, YachtTypeID )
-);
-				");
-
-                //Наёмный персонал
-                dbContext.Database.ExecuteSqlRaw(@"
-CREATE TABLE HiredStaff(
-	StaffID	int		Not Null
-	References  Staff_Position(ID)	
-	On Update Cascade	
-	On Delete Cascade,
-
-	ClientID	int		Not Null
-	References 	Person(ID)	
-	On Update Cascade	
-	On Delete Cascade,
-
-	Primary Key ( StaffID, ClientID)
 );
 				");
 
@@ -1381,13 +1366,40 @@ $$ language plpgsql;
 				");
 
 			//Процедуры
+			//Капитан должен быть
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure AddCaptainToYachttype(
+YTid int
+)
+AS $$
+begin
+	insert into position_yachttype(positionid,yachttypeid,count) values ((select id from position where name = 'Captain'), YTId, 1);
+end;
+$$ language plpgsql;
+				");
 
 
-            #endregion
+			//Правила
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE RULE R_PYT_Captain_NotU AS ON UPDATE TO Position_Yachttype
+    WHERE old.positionid = (select id from position where name = 'Captain')
+    DO INSTEAD NOTHING;
+	
+CREATE OR REPLACE RULE R_PYT_Captain_NotD AS ON DELETE TO Position_Yachttype
+    WHERE old.positionid = (select id from position where name = 'Captain')
+    DO INSTEAD NOTHING;
+	
+CREATE OR REPLACE RULE R_P_Captain_NotD AS ON DELETE TO Position
+    WHERE old.name = 'Captain'
+    DO INSTEAD NOTHING;
 
-            #region Views
-            //Доступные материалы
-            dbContext.Database.ExecuteSqlRaw(@"
+
+				");
+			#endregion
+
+			#region Views
+			//Доступные материалы
+			dbContext.Database.ExecuteSqlRaw(@"
 create or replace view AvailableResources as (
 with mlcount as(
 select  ml.material, sum(ml.count) count from 
@@ -2314,11 +2326,31 @@ Before insert or update on position_yachttype
 for each row execute function PYT1 ();
 
 				");
-            #endregion
 
-            #endregion
 
-            #region SameTriggers
+			//Триггер на добавление в PYT капитана
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YT2 ()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+begin 	
+		call AddCaptainToYachttype(new.ID);
+		RETURN new;
+end;
+$$ language plpgsql;	
+
+create trigger InsertCaptain
+After insert on Yachttype
+for each row execute function YT2 ();
+
+				");
+			#endregion
+
+			#endregion
+
+			#region SameTriggers
 			void ParentRemoval(string Parent, string Child, string Property)
             {
 				dbContext.Database.ExecuteSqlRaw($@"
@@ -2377,16 +2409,15 @@ for each row execute function PYT1 ();
 				nameof(Material.Typeid)
 				);
 
+		  dbContext.Yachttype.ToList().ForEach(
+				p =>
+                {
+					dbContext.Database.ExecuteSqlRaw($"call AddCaptainToYachttype({p.Id});");
+                }
+				);
             #endregion
 
             #region BaseRoles
-
-            #region Repair_Men
-            dbContext.Database.ExecuteSqlRaw(@"
-				REVOKE UPDATE ON REPAIR_MEN FROM PUBLIC
-			");
-			#endregion
-
 
 			#endregion
 		}

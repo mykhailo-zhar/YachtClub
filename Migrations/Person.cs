@@ -11,7 +11,6 @@ namespace Project.Migrations
         public Person()
         {
             Contract = new HashSet<Contract>();
-            Hiredstaff = new HashSet<Hiredstaff>();
             Review = new HashSet<Review>();
             StaffPosition = new HashSet<StaffPosition>();
             Yacht = new HashSet<Yacht>();
@@ -47,8 +46,6 @@ namespace Project.Migrations
         public virtual ICollection<ReviewCaptain> ReviewCaptain { get; set; }
         [InverseProperty("Client")]
         public virtual ICollection<Contract> Contract { get; set; }
-        [InverseProperty("Client")]
-        public virtual ICollection<Hiredstaff> Hiredstaff { get; set; }
         [InverseProperty("Client")]
         public virtual ICollection<Review> Review { get; set; }
         [InverseProperty("Staff")]

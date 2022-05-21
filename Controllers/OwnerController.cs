@@ -788,9 +788,9 @@ namespace Project.Controllers
         private IActionResult LocalEditPositionYachttype(string ytid, string pid, PositionYachttype Object = null)
         {
             Object = Object ?? Context.PositionYachttype
-
                .First(p => p.Yachttypeid == int.Parse(ytid) && p.Positionid == int.Parse(pid));
             ViewData["Type"] = Context.Position.Where(p => p.Crewposition).ToList();
+            ViewBag.Max = Context.Yachttype.FirstOrDefault(p => p.Id == int.Parse(ytid))?.Crewcapacity;
             var Model = ObjectViewModelFactory<PositionYachttype>.Edit(Object);
             return View("PositionYachttypeEditor", Model);
         }
@@ -826,7 +826,12 @@ namespace Project.Controllers
                 Yachttypeid = id,
                 Count = 1
             };
-            ViewData["Type"] = Context.Position.Where(p => p.Crewposition && !Context.PositionYachttype.Where(z => z.Yachttypeid == PositionYachttype.Yachttypeid).Select(z => z.Positionid).Contains(p.Id)).ToList();
+            ViewData["Type"] = Context.Position
+                .Where(p => p.Crewposition && !Context.PositionYachttype.Where(z => z.Yachttypeid == PositionYachttype.Yachttypeid)
+                .Select(z => z.Positionid)
+                .Contains(p.Id))
+                .ToList();
+            ViewBag.Max = Context.Yachttype.FirstOrDefault(p => p.Id == id)?.Crewcapacity;
             var Model = ObjectViewModelFactory<PositionYachttype>.Create(PositionYachttype);
             return View("PositionYachttypeEditor", Model);
         }
@@ -849,7 +854,6 @@ namespace Project.Controllers
                 {
                     this.HandleException(exception);
                 }
-                return LocalCreatePositionYachttype(PositionYachttype.Object);
             }
             return LocalCreatePositionYachttype(PositionYachttype.Object);
         }

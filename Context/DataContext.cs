@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -21,7 +24,6 @@ namespace Project.Migrations
         public virtual DbSet<Contracttype> Contracttype { get; set; }
         public virtual DbSet<Event> Event { get; set; }
         public virtual DbSet<Extradationrequest> Extradationrequest { get; set; }
-        public virtual DbSet<Hiredstaff> Hiredstaff { get; set; }
         public virtual DbSet<Material> Material { get; set; }
         public virtual DbSet<Materiallease> Materiallease { get; set; }
         public virtual DbSet<Materialtype> Materialtype { get; set; }
@@ -60,8 +62,9 @@ namespace Project.Migrations
         }
         [DbFunction("materialmetric", "public")]
         public string MaterialMetric(int MaterialID) => throw new NotImplementedException();
-         [DbFunction("yachtsstatus", "public")]
-         public string YachtsStatus(int Yachtid) => throw new NotImplementedException();
+        [DbFunction("yachtsstatus", "public")]
+        public string YachtsStatus(int Yachtid) => throw new NotImplementedException();
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDbFunction(() => MaterialMetric(default));
@@ -135,22 +138,6 @@ namespace Project.Migrations
                     .WithMany(p => p.Extradationrequest)
                     .HasForeignKey(d => d.Staffid)
                     .HasConstraintName("extradationrequest_staffid_fkey");
-            });
-
-            modelBuilder.Entity<Hiredstaff>(entity =>
-            {
-                entity.HasKey(e => new { e.Staffid, e.Clientid })
-                    .HasName("hiredstaff_pkey");
-
-                entity.HasOne(d => d.Client)
-                    .WithMany(p => p.Hiredstaff)
-                    .HasForeignKey(d => d.Clientid)
-                    .HasConstraintName("hiredstaff_clientid_fkey");
-
-                entity.HasOne(d => d.Staff)
-                    .WithMany(p => p.Hiredstaff)
-                    .HasForeignKey(d => d.Staffid)
-                    .HasConstraintName("hiredstaff_staffid_fkey");
             });
 
             modelBuilder.Entity<Material>(entity =>

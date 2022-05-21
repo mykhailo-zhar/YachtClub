@@ -25,7 +25,7 @@
         <div>
             <span asp-validation-for="Object.Count" class="text-danger"></span>
         </div>
-        <input class="form-control" asp-for="Object.Count" min="1"
+        <input class="form-control" asp-for="Object.Count" min="1" max="@(ViewBag.Max ?? int.MaxValue)"
                readonly="@Model.ReadOnly" />
     </div>
 

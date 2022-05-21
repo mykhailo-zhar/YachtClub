@@ -57,8 +57,6 @@ namespace WebApp
                 endpoints.MapRazorPages();
             });
             
-            /*SeedData.RestartDatabase(context);
-            SeedData.SeedWithData(context);*/
         }
     }
 }

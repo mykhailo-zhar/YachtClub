@@ -4,7 +4,7 @@
     string Create = CRUD.Create + MethodName;
     string Edit = CRUD.Edit + MethodName;
     string Delete = CRUD.Delete + MethodName;
-    
+
     var MethodName1 = typeof(PositionYachttype).Name;
     string CreatePY = CRUD.Create + MethodName1;
     string EditPY = CRUD.Edit + MethodName1;
@@ -53,36 +53,44 @@
                                     Количество парусов: @obj.Yachttype.Sails
                                 </div>
                                 <div>
-                                    Количество персонала яхты: @obj.Yachttype.Crewcapacity
+                                    Количество персонала яхты: @obj.MinCrew.Sum(p => p.Count) из @obj.Yachttype.Crewcapacity доступных
                                 </div>
                                 <div>
                                     Количество пассажиров: @obj.Yachttype.Crewcapacity
                                 </div>
                             </h6>
                             <div class="m-2">
-                                <div class="fs-4">Минимальное количество персонала:</div>
-                                @foreach (var item in obj.MinCrew)
-                                {
-                                    <div class="border border-info rounded-2 m-2">
-                                        <div class="m-3">
-                                            <div class="fw-bold">
-                                                Должность: @item.Position.Name
+                                <expander class="w-100 " button-class="fw-bold fs-4" message="Минимальное количество персонала(@obj.MinCrew.Count()):">
+                                    @foreach (var item in obj.MinCrew)
+                                    {
+                                        <div class="border border-info rounded-2 m-2">
+                                            <div class="m-3">
+                                                <div class="fw-bold">
+                                                    Должность: @item.Position.Name
+                                                </div>
+                                                <div class="fst-italic">
+                                                    Количество: @item.Count
+                                                </div>
+                                                <div>Описание:</div>
+                                                <span>
+                                                    @if (item.Position.Name != "Captain")
+                                                    {
+                                                        <a class="btn btn-danger" asp-action="@DeletePY"
+                                                           asp-route-ytid="@obj.Yachttype.Id" asp-route-pid="@item.Positionid">-</a>
+                                                        <a class="btn btn-danger" asp-action="@EditPY"
+                                                           asp-route-ytid="@obj.Yachttype.Id" asp-route-pid="@item.Positionid">Edit</a>
+                                                    }
+                                                </span>
                                             </div>
-                                            <div class="fst-italic">
-                                                Количество: @item.Count
-                                            </div>
-                                            <div>Описание:</div>
-                                            <span>
-                                                <a class="btn btn-danger" asp-action="@DeletePY"
-                                                   asp-route-ytid="@obj.Yachttype.Id" asp-route-pid="@item.Positionid">-</a>
-                                                <a class="btn btn-danger" asp-action="@EditPY"
-                                                   asp-route-ytid="@obj.Yachttype.Id" asp-route-pid="@item.Positionid">Edit</a>
-                                            </span>
                                         </div>
-                                    </div>
-                                }
-                                <a class="btn btn-primary" asp-action="@CreatePY"
-                                   asp-route-ytid="@obj.Yachttype.Id">+</a>
+                                    }
+                                    @if (obj.MinCrew.Sum(p => p.Count) != obj.Yachttype.Crewcapacity)
+                                    {
+                                        <a class="btn btn-primary m-4" asp-action="@CreatePY"
+                                           asp-route-ytid="@obj.Yachttype.Id">+</a>
+                                    }
+
+                                </expander>
                             </div>
                             <div class="m-2">
                                 <div>Описание:</div>

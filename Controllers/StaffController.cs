@@ -10,8 +10,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Project.Controllers
 {
-    //TODO: Организовать доступ к персоналу клиентов
-    //TODO: Описание A) Обезопасить от NULL в базе / здесь на сервере
     public class StaffController : Controller
     {
         public DataContext Context;
@@ -150,8 +148,6 @@ namespace Project.Controllers
         #endregion
 
         //TODO: Staff_Position: Организовать персонал с клиентом
-        ///TODO: Hired_Staff: Триггер на 1 к 1 ИЛИ Организовать связь 1 к 0, второе предпочтительней. 
-        ///Или всё таки допустить, что у одного сотрудника(члена-экипажа) может быть много клиентов, но это не так.
 
         #region StaffPosition
         public IActionResult CreateStaffPosition(int sid)
