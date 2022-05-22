@@ -1,0 +1,39 @@
+﻿@model ObjectViewModel<Account>
+<div class="w-50 border border-1 border-primary rounded-1 m-2">
+    <div class="m-3">
+        <partial name="_Validation" />
+        <h5 class="bg-primary text-white text-center p-2">Войти</h5>
+        <form asp-action="@Model.Action" method="post">
+
+            <input hidden asp-for="Object.Password" value="@Model.Object.Password" />
+            <input hidden asp-for="Object.Userid" value="@Model.Object.Userid" />
+            <input hidden asp-for="Object.Login" value="@Model.Object.Login" />
+            @{
+                var col = (ViewBag.Positions as IEnumerable<string>) ?? Enumerable.Empty<string>();
+            }
+            <div class="form-group">
+                <select class="form-control" asp-for="Object.Position" asp-items="@(col.Select(p =>
+                        {
+                    var item = new SelectListItem();
+                    item.Text = p;
+                    item.Value = p;
+                    return item;
+                }))"
+                        disabled="@Model.ReadOnly">
+                    @if (col.Count() > 1)
+                    {
+                        <option value="" disabled selected>Выберите должность под которой вы хотите зайти</option>
+                    }
+                </select>
+            </div>
+
+            <partial name="_EditorBottomButtons" model="@(new EditorBottomButtonsViewModel {
+        ShowAction = Model.ShowAction,
+        Theme = Model.Theme,
+        Action = Model.Action,
+        BackController="Home",
+        BackAction="Index"
+    })" />
+        </form>
+    </div>
+</div>

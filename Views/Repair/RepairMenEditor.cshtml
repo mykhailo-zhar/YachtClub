@@ -1,32 +1,20 @@
 ﻿@model ObjectViewModel<RepairMen>
 <partial name="_Validation" />
 <h5 class="bg-@Model.Theme text-white text-center p-2">@Model.Action</h5>
-<form asp-action="@Model..Action" method="post">
+<form asp-action="@Model.Action" method="post">
 
     <div class="form-group @Model.AlwaysHidden">
         <label asp-for="Object.Id"></label>
         <input class="form-control" asp-for="Object.Id" readonly />
     </div>
-    <div class="@Model.AlwaysHidden">
 
-        <div class="dropdown-divider"></div>
-        <label>Ремонт</label>
-
-        <div class="form-group">
-            <label>Ремонт</label>
-            <select class="form-control" asp-for="Object.Repairid" asp-items="@(new SelectList(ViewData["Repair"] as IEnumerable<Repair> ?? Enumerable.Empty<Repair>(), "Id", "Id"))"
-                    disabled="@Model.ReadOnly">
-                <option value="" disabled selected>Выберите номер ремонта</option>
-            </select>
-
-        </div>
-
-    </div>
+    <input hidden asp-for="Object.Repairid" />
 
     <div class="form-group @Model.HideOnDelete">
         <div class="dropdown-divider"></div>
         <label>Сотрудник</label>
-        <select class="form-control" asp-for="Object.Staffid" asp-items="@(((ViewData["StaffPosition"] as IEnumerable<StaffPosition>) ?? Enumerable.Empty<StaffPosition>()).Select(p =>
+        <select class="form-control" asp-for="Object.Staffid" asp-items="@(((ViewData["StaffPosition"] as IEnumerable<RepairStaff>) ?? Enumerable.Empty<RepairStaff>())
+            .Select(p =>
                {
                    var item = new SelectListItem();
                    item.Text = $"{p.Staff.Name} {p.Staff.Surname} {p.Staff.Email}";

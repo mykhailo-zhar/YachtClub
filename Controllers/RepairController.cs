@@ -7,9 +7,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Project.Controllers
 {
+    [Authorize(Policy = "Repair")]
     public class RepairController : Controller
     {
         public DataContext Context;
@@ -27,7 +29,7 @@ namespace Project.Controllers
                         .Where(p => Context.RepairStaff.Any(s => s.Id == p.Staffid))
                 .Include(p => p.Yacht)
                     .ThenInclude(p => p.Type)
-                .OrderBy(p => p.Id);
+                .OrderByDescending(p => p.Date);
             return View(Yachttest);
         }
         public IActionResult DetailsYachttest(string id)
@@ -91,6 +93,7 @@ namespace Project.Controllers
             var Repair = Context.Repair
                 .Include(p => p.Yacht)
                     .ThenInclude(p => p.Type)
+                .Where(l => Context.HasRepairMan(l.Id, User.PersonId()))
                 .OrderBy(p => p.Id)
                 .Select(p => new Repair_MenViewModel { 
                     Repair = p,
@@ -102,7 +105,8 @@ namespace Project.Controllers
                     Extradationrequests = Context.Extradationrequest
                     .Include(r => r.MaterialNavigation)
                          .ThenInclude(r => r.Type)
-                    .Where(r => r.Repairid == p.Id)
+                    .Where(r => r.Repairid == p.Id),
+                    LeadRight = Context.LeadRepairMan(p.Id, User.PersonId())
                 }
                 )
                 .ToList()
@@ -130,11 +134,6 @@ namespace Project.Controllers
             {
                 try
                 {
-                    if (Repair.Option[0])
-                    {
-                        Repair.Object.Enddate = DateTime.Now;
-                        Repair.Object.Status = "Done";
-                    }
                     Repair.Object.Description = Methods.CoalesceString(Repair.Object.Description);
                     Context.Repair.Update(Repair.Object);
                     await Context.SaveChangesAsync();
@@ -154,9 +153,12 @@ namespace Project.Controllers
         }
 
         private IActionResult LocalCreateRepair(Repair Repair = null) {
-            Repair = Repair ?? new Repair();
+            Repair = Repair ?? new Repair { 
+                Duration = DateTime.Now,
+                Personnel = 1
+            };
             Repair.Startdate = DateTime.Now;
-            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type);
+            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type).Where(p => Context.Busyyacht.Any(y => !y.C && !y.E && !y.R && y.Val && y.Id == p.Id));
             var Model = ObjectViewModelFactory<Repair>.Create(Repair);
             return View("RepairEditor", Model);
         }
@@ -168,17 +170,23 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                try
+                using (var transaction = Context.Database.BeginTransaction())
                 {
-                    Repair.Object.Startdate = default;
-                    Repair.Object.Status = default;
-                    Context.Repair.Add(Repair.Object);
-                    await Context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Repair));
-                }
-                catch (Exception exception)
-                {
-                    this.HandleException(exception);
+                    try
+                    {
+                        Repair.Object.Startdate = default;
+                        Repair.Object.Status = default;
+                        Context.Repair.Add(Repair.Object);
+                        await Context.SaveChangesAsync();
+                        await Context.Database.ExecuteSqlRawAsync($"call populaterepair_men({Repair.Object.Id},{User.PersonId()});");
+                        transaction.Commit();
+                        return RedirectToAction(nameof(Repair));
+                    }
+                    catch (Exception exception)
+                    {
+                        this.HandleException(exception);
+                        transaction.Rollback();
+                    }
                 }
                 if (ModelState.IsValid)
                 {
@@ -222,8 +230,10 @@ namespace Project.Controllers
             RepairMen = RepairMen ?? new RepairMen { 
                 Repairid = RepairID
             };
-            ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repair_Staff").Include(p => p.Staff).ToList();
-            ViewData["Repair"] = Context.Repair.ToList();
+            ViewData["StaffPosition"] = Context.RepairStaff
+                .Where(p => !Context.RepairMen.Where(a => a.Repairid == RepairMen.Repairid).Any(a => a.Staffid == p.Id))
+                .Include(p => p.Staff)
+                .ToList();
             var Model = ObjectViewModelFactory<RepairMen>.Create(RepairMen);
             return View("RepairMenEditor", Model);
         }
@@ -299,27 +309,57 @@ namespace Project.Controllers
         #region Extradationrequest
         public IActionResult Extradationrequest()
         {
-            var Extradationrequest = Context.Extradationrequest
-                .Include(p => p.Repair)
-                .Include(p => p.Staff)
-                    .ThenInclude(p => p.Staff)
-                .Include(p => p.MaterialNavigation)
-                    .ThenInclude(p => p.Type)
-                .Join(
-                    Context.Availableresources,
-                    e => e.Material,
-                    a => a.Material,
-                    (e,a) => new ExtradationRequestAvalilable
-                    {
-                        Extradationrequest = e,
-                        Count = a.Count,
-                        Format = a.Format
-                    }
-                   )
-                .ToList()
-                .OrderByDescending(p => Methods.ExtradationStatusPrio(p.Extradationrequest.Status))
-                .ThenByDescending(p => p.Extradationrequest.Startdate);
-            return View(Extradationrequest);
+            if (User.Role() == RolesReadonly.Storekeeper || User.Role() == RolesReadonly.DB_Admin)
+            {
+                var Extradationrequest = Context.Extradationrequest
+                    .Include(p => p.Repair)
+                    .Include(p => p.Staff)
+                        .ThenInclude(p => p.Staff)
+                    .Include(p => p.MaterialNavigation)
+                        .ThenInclude(p => p.Type)
+                    .Join(
+                        Context.Availableresources,
+                        e => e.Material,
+                        a => a.Material,
+                        (e, a) => new ExtradationRequestAvalilableViewModel
+                        {
+                            Extradationrequest = e,
+                            Count = a.Count,
+                            Format = a.Format,
+                            LeadRight = Context.LeadRepairMan(e.Repairid, User.PersonId())
+                        }
+                       )
+                    .ToList()
+                    .OrderByDescending(p => Methods.ExtradationStatusPrio(p.Extradationrequest.Status))
+                    .ThenByDescending(p => p.Extradationrequest.Startdate);
+                return View(Extradationrequest);
+            }
+            else
+            {
+                var Extradationrequest = Context.Extradationrequest
+                    .Where(p => Context.LeadRepairMan(p.Repairid, User.PersonId()))
+                    .Include(p => p.Repair)
+                    .Include(p => p.Staff)
+                        .ThenInclude(p => p.Staff)
+                    .Include(p => p.MaterialNavigation)
+                        .ThenInclude(p => p.Type)
+                    .Join(
+                        Context.Availableresources,
+                        e => e.Material,
+                        a => a.Material,
+                        (e, a) => new ExtradationRequestAvalilableViewModel
+                        {
+                            Extradationrequest = e,
+                            Count = a.Count,
+                            Format = a.Format
+                        }
+                       )
+                    .ToList()
+                    .OrderByDescending(p => Methods.ExtradationStatusPrio(p.Extradationrequest.Status))
+                    .ThenByDescending(p => p.Extradationrequest.Startdate);
+                return View(Extradationrequest);
+            }
+            
         }
 
         private IActionResult LocalEditExtradationrequest(string id, Extradationrequest Extradationrequest = null)
@@ -331,15 +371,16 @@ namespace Project.Controllers
                     .ThenInclude(p => p.Type)
                .First(p => p.Id == int.Parse(id));
 
-            ViewData["StaffPosition"] = Context.RepairStaff.Include(p => p.Staff).ToList();
             ViewData["Material"] = Context.Material.Include(p => p.Type).ToList();
             var Model = ObjectViewModelFactory<Extradationrequest>.Edit(Extradationrequest);
             return View("ExtradationrequestEditor", Model);
         }
 
+        [Authorize(Policy = "EReq")]
         public IActionResult EditExtradationrequest(string id) => LocalEditExtradationrequest(id);
 
         [HttpPost]
+        [Authorize(Policy = "EReq")]
         public  IActionResult EditExtradationrequest([FromForm] ObjectViewModel<Extradationrequest> Extradationrequest)
         {
             if (ModelState.IsValid)
@@ -370,8 +411,8 @@ namespace Project.Controllers
 
         private IActionResult LocalCreateExtradationrequest(Extradationrequest Extradationrequest = null, int repairid = 0)
         {
-            Extradationrequest = Extradationrequest ?? new Extradationrequest { Repairid = repairid};
-            ViewData["StaffPosition"] = Context.RepairStaff.Include(p => p.Staff).ToList();
+            var staff = Context.RepairStaff.Where(p => p.Staffid == User.PersonId()).First();
+            Extradationrequest = Extradationrequest ?? new Extradationrequest { Repairid = repairid, Duration = DateTime.Now, Staffid = staff.Id};
             ViewData["Repair"] = Context.Repair.ToList();
             ViewData["Material"] = Context.Material.Include(p => p.Type).ToList();
             var Model = ObjectViewModelFactory<Extradationrequest>.Create(Extradationrequest);
@@ -405,6 +446,7 @@ namespace Project.Controllers
             }
             return LocalCreateExtradationrequest(Extradationrequest.Object);
         }
+        [Authorize(Policy = "EReq")]
         public IActionResult DeleteExtradationrequest(string id)
         {
             var Extradationrequest = Context.Extradationrequest
@@ -413,6 +455,7 @@ namespace Project.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "EReq")]
         public async Task<IActionResult> DeleteExtradationrequest([FromForm] ObjectViewModel<Extradationrequest> Extradationrequest)
         {
             try

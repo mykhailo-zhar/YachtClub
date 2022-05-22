@@ -8,5 +8,6 @@ namespace Project.Models
         public Repair Repair { get; set; }
         public IEnumerable<RepairMen> RepairMen { get; set; }
         public IEnumerable<Extradationrequest> Extradationrequests { get; set; }
+        public bool LeadRight { get; set; }
     }
 }

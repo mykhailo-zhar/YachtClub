@@ -9,19 +9,19 @@ namespace Project.Migrations
     public class RepairStaff
     {
         [Column("id")]
-        public int? Id { get; set; }
+        public int Id { get; set; }
         [Column("staffid")]
-        public int? Staffid { get; set; }
+        public int Staffid { get; set; }
         [Column("positionid")]
-        public int? Positionid { get; set; }
+        public int Positionid { get; set; }
         [Column("startdate", TypeName = "date")]
-        public DateTime? Startdate { get; set; }
+        public DateTime Startdate { get; set; }
         [Column("enddate", TypeName = "date")]
         public DateTime? Enddate { get; set; }
         [Column("salary", TypeName = "numeric")]
         public decimal Salary { get; set; }
         [Column("description")]
-        public string? Description { get; set; }
+        public string Description { get; set; }
 
         [ForeignKey(nameof(Staffid))]
         public virtual Person Staff { get; set; }

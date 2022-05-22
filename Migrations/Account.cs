@@ -16,11 +16,10 @@ namespace Project.Migrations
         public string Login { get; set; }
         [Column("password", TypeName = "character varying")]
         [DataType(DataType.Password)]
-        [Required]
         public string Password { get; set; }
 
-        [Column("role")]
-        public string? Role { get; set; }
+       /* [Column("role")]
+        public string? Role { get; set; }*/
 
         [Column("userid")]
         public int Userid { get; set; }

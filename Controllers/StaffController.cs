@@ -7,9 +7,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Project.Controllers
 {
+    [Authorize(Policy = "Staff")]
     public class StaffController : Controller
     {
         public DataContext Context;
@@ -147,8 +149,6 @@ namespace Project.Controllers
         }
         #endregion
 
-        //TODO: Staff_Position: Организовать персонал с клиентом
-
         #region StaffPosition
         public IActionResult CreateStaffPosition(int sid)
         {
@@ -277,7 +277,7 @@ namespace Project.Controllers
                 ;
             ViewBag.Yacht = Context.Yacht
                 .Include(p => p.Type)
-                .Where(p => Context.Busyyacht.Any(b => b.Id == p.Id && b.Val.Value))
+                .Where(p => Context.Busyyacht.Any(b => b.Id == p.Id && b.Val))
                 .Where(p => p.Type.Crewcapacity - Context.YachtCrew.Where(c => c.Enddate == null && c.Yachtid == p.Id).Count() > 0)
                 ;
         }

@@ -20,6 +20,17 @@
                readonly="@Model.ReadOnly" />
     </div>
 
+    @{
+        var List = new List<SelectListItem> {
+                                            new SelectListItem {Text = "Waits", Selected = true },
+                                            new SelectListItem { Text = "Canceled" },
+
+                                };
+        if (!User.IsInRole(RolesReadonly.Repairman))
+        {
+            List.Add(new SelectListItem { Text = "Done" });
+        }
+    }
 
 
     <div class="form-group @Model.HideOnCreate @Model.HideOnDelete">
@@ -28,11 +39,7 @@
             <span asp-validation-for="Object.Status" class="text-danger"></span>
         </div>
         <select class="form-control" asp-for="Object.Status"
-                asp-items="@(new List<SelectListItem> {
-                                            new SelectListItem {Text = "Waits", Selected = true },
-                                            new SelectListItem { Text = "Canceled" },
-                                            new SelectListItem {Text = "Done" }
-                                })">
+                asp-items="@(List)">
         </select>
     </div>
 
@@ -57,25 +64,7 @@
         <input hidden asp-for="Object.Material" />
     </div>
 
-
-
-    <div class="form-group @Model.HideOnDelete @Model.HideOnEdit">
-        <label>Сотрудник</label>
-        <select class="form-control" asp-for="Object.Staffid" asp-items="@(((ViewData["StaffPosition"] as IEnumerable<RepairStaff>) ?? Enumerable.Empty<RepairStaff>()).Select(p =>
-                       {
-                           var item = new SelectListItem();
-                           item.Text = Methods.PersonPhone(p.Staff);
-                           item.Value = $"{p.Id}";
-                           return item;
-                       }))"
-                disabled="@Model.ReadOnly">
-            <option value="" disabled selected>Выберите сотрудника</option>
-        </select>
-        <input hidden asp-for="Object.Staffid" />
-    </div>
-
-
-
+    <input hidden asp-for="Object.Staffid" />
     <input hidden asp-for="Object.Repairid" />
 
 

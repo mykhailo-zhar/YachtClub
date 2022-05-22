@@ -3,6 +3,7 @@ using System.Linq;
 using Project.Migrations;
 using System.Threading.Tasks;
 using System.Data.Entity.Core.Objects;
+using Project.Models;
 
 namespace Project.Database
 {
@@ -508,7 +509,6 @@ CREATE TABLE Account(
 	ID				serial		Not Null	Primary Key,
 	Login			text		Not Null	Unique,
 	Password		varchar		Not Null,
-	Role			varchar,
 	UserID			int			Not Null
 	References 	Person(ID)	
 	On Update Cascade	
@@ -540,6 +540,7 @@ CREATE TABLE Account(
                                ('Boatswain',				2500.0),
                                ('Cook', 					1500.0),
                                ('Shipboy', 				    0.0),
+                               ('DB Admin', 				4000.0),
                                ('None', 					0.0),
                                ('Fired', 					0.0);
 
@@ -1189,7 +1190,7 @@ values
 
 		public static void SeedWithProcedure(DataContext dbContext)
         {
-            #region Функции и процедурки
+            #region Функции
 			//Функции
 
             //Доступные материалы
@@ -1349,6 +1350,32 @@ $$ language plpgsql;
 			as $$
 			begin return current_timestamp::timestamp(2); end;
 			$$ language plpgsql;
+				");             
+			//Ремонтники
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function LeadRepairMan (RepID int, RepairManID int)
+	returns boolean
+as $$
+declare 
+rec RECORD;
+begin 	
+		return (select s.staffid from Repair_men r 
+				 join Staff_position s on r.staffid = s.id
+				 where r.repairid = RepID limit 1 ) = RepairManID;
+end;
+$$ language plpgsql;
+
+create or replace function HasRepairMan (RepID int, RepairManID int)
+	returns boolean
+as $$
+declare 
+rec RECORD;
+begin 	
+		return exists (select s.staffid from Repair_men r 
+				 join Staff_position s on r.staffid = s.id
+				 where r.repairid = RepID and s.staffid = RepairManID);
+end;
+$$ language plpgsql;
 				"); 
 			//AUTOGRANTER
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1375,7 +1402,9 @@ end;
 $$ language plpgsql;
 				");
 
-			//Процедуры
+			#endregion
+
+			#region Процедуры
 			//Капитан должен быть
 			dbContext.Database.ExecuteSqlRaw(@"
 CREATE OR REPLACE Procedure AddCaptainToYachttype(
@@ -1387,8 +1416,52 @@ begin
 end;
 $$ language plpgsql;
 				");
+			//ДАйте мне новый аккаунт пожалуйста
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure CreateAccountByPO(
+PersonID int,
+_password varchar
+)
+AS $$
+declare
+rec record;
+begin
+	execute 'select email from person where id = ' || PersonID || ' ;' into rec;
+	insert into account(login, password, UserID) 
+	values
+	(rec.email, _password, PersonID);
+end;
+$$ language plpgsql;
+				");
+			//Новый ремонт, новый ремонтник
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure PopulateRepair_Men(
+_dur timestamp(2),
+_p int,
+_yid int,
+_desc text,
+_PersonID int
+)
+AS $$
+declare
+rec record;
+begin
+	execute 'select * from repair_staff where staffid = ' || PersonID || ' ;' into rec;
+	
+	insert into repair(duration, personnel, yachtid, description)
+	values
+	(_dur, _p, _yid, _desc);
+	
+	insert into repair_men(repairid, staffid) 
+	values
+	(_RepairID, rec.id);
+end;
+$$ language plpgsql;
 
+				");
+			#endregion
 
+			#region Правила
 			//Правила
 			dbContext.Database.ExecuteSqlRaw(@"
 CREATE OR REPLACE RULE R_PYT_Captain_NotU AS ON UPDATE TO Position_Yachttype
@@ -1723,6 +1796,10 @@ begin
 			if(rec <> old) then raise exception 'Изменены запрещенные поля';
 			end if;
 
+			if(old.personnel > new.personnel) then 
+				raise exception 'Количество персонала может только увеличиваться';
+			end if;
+
 			if( new.duration < current_timestamp or new.duration is null) then new.duration = current_timestamp; end if;
 			return new;
         ELSIF (TG_OP = 'INSERT') then
@@ -1742,7 +1819,7 @@ begin
 				raise exception 'Попытка удаления закрытого ремонта';			
 			end if;
 			if(exists (select * from extradationrequest er where er.repairid = old.id and er.Status = 'Done')) then
-				raise exception 'На ремонт были выданы материалы';
+				raise exception 'На ремонт уже были выданы материалы';
 			end if;
 			return old;
         END IF;
@@ -1813,12 +1890,11 @@ begin
 			new.registrydate = current_timestamp;
             RETURN NEW;
         END IF;
-		return new;
 end;
 $$ language plpgsql;	
 
 create trigger ReadonlyConstraint
-Before insert or update or delete on Person
+Before insert or update on Person
 for each row execute function P1();
 				");
 
@@ -2366,12 +2442,15 @@ declare
 rec RECORD;
 begin 	
 		execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = ''my_' || lower(regexp_replace (old.name, ' ', '_')) || ''';' into rec;
-		IF(TG_OP = 'INSERT' or TG_OP = 'UPDATE') then 
+		IF(TG_OP = 'INSERT') then 
 			if(rec.count = 0 ) then
-			  execute 'CREATE ROLE MY_'||regexp_replace (old.name, ' ', '_')||' WITH LOGIN PASSWORD ''hu8jmn3'';';
+			  execute 'CREATE ROLE MY_'||regexp_replace (new.name, ' ', '_')||' WITH LOGIN PASSWORD ''hu8jmn3'';';
 			end if;
 		end if;
 		IF(TG_OP = 'UPDATE') then
+			if(rec.count = 0 ) then
+			  execute 'CREATE ROLE MY_'||regexp_replace (old.name, ' ', '_')||' WITH LOGIN PASSWORD ''hu8jmn3'';';
+			end if;
 			if(old.name <> new.name) then 
 				execute 'ALTER ROLE MY_'||regexp_replace (old.name, ' ', '_')||' RENAME TO MY_'|| regexp_replace (old.name, ' ', '_')||';';	
 			end if;
@@ -2422,6 +2501,11 @@ for each row execute function POS1 ();
 				nameof(Yachtlease.Yachtleasetypeid)
 				);
 			ParentRemoval(
+				"Yacht_Crew",
+				nameof(Contract),
+				nameof(Contract.Captaininyachtid)
+				);
+			ParentRemoval(
 				nameof(Yachttype),
 				nameof(Yacht),
 				nameof(Yacht.Typeid)
@@ -2454,8 +2538,54 @@ for each row execute function POS1 ();
                 }
 				);
             #endregion
+		}
 
-            #region BaseRoles
+		public static void SeedAccounts(DataContext dbContext)
+        {
+			var ps = Hash_Extension.GetPassword();
+			//Account персонала
+			dbContext.Person.ToList().ForEach(p => {
+				dbContext.Account.Add(new Account { Login = p.Email, Userid = p.Id, Password = ps });
+			});
+
+			//Добавить все несуществующие должности
+			dbContext.Position.ToList().ForEach(p => {
+				p.Salary = p.Salary;
+				dbContext.Position.Update(p);
+			});
+
+			dbContext.SaveChanges();
+
+			#region GRANTS
+
+			//Кладовщик
+			dbContext.Database.ExecuteSqlRaw(@"
+grant ALL PRIVILEGES on material, materiallease, materialtype, seller to my_storekeeper;
+
+grant select on availableresources, repair, staff_position, person, position, repair_staff to my_storekeeper;
+
+grant select,update,delete on extradationrequest to my_storekeeper;
+				");
+
+			//Кадровик
+			dbContext.Database.ExecuteSqlRaw(@"
+grant ALL PRIVILEGES on staff, position, staff_position, person to my_personell_officer;
+grant insert on account to my_personell_officer;
+grant select on yacht_crew, yacht, yachttype, busyyacht to my_personell_officer;
+
+				");
+			//Ремонтник
+			dbContext.Database.ExecuteSqlRaw(@"
+grant select on person, position, repair_staff, material, materialtype, availableresources to my_repairman;
+grant all PRIVILEGES on yachttest, repair, repair_men, extradationrequest to my_repairman;
+
+
+				");
+
+			//Стандартные типы данных
+			dbContext.Database.ExecuteSqlRaw(@"
+grant ALL PRIVILEGES on ALL SEQUENCES IN SCHEMA PUBLIC to my_data_types;
+				");
 
 			#endregion
 		}

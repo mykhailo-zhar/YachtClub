@@ -3,7 +3,7 @@
     string Edit = CRUD.Edit + MethodName;
     string Delete = CRUD.Delete + MethodName;
 }
-@model IEnumerable<ExtradationRequestAvalilable>
+@model IEnumerable<ExtradationRequestAvalilableViewModel>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
@@ -23,7 +23,7 @@
                     <div class="card" style="width: auto;">
                         <div class="card-body">
                             <div class="position-absolute" style="right:20px;">
-                                @if (obj.Extradationrequest.Enddate == null)
+                                @if (obj.Extradationrequest.Enddate == null && obj.LeadRight)
                                 {
                                     <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Extradationrequest.Id"> Изменить </a>
                                     <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Extradationrequest.Id">Удалить</a>

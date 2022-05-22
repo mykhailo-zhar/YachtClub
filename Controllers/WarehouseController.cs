@@ -7,9 +7,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Project.Controllers
 {
+    [Authorize(Policy = "Warehouse")]
     public class WarehouseController : Controller
     {
         public DataContext Context;
@@ -423,5 +425,7 @@ namespace Project.Controllers
         }
         #endregion
 
+
+        //TODO: Статусы заявок Done могут выставлять только кладовщики
     }
 }

@@ -7,25 +7,13 @@
         <label asp-for="Object.Id"></label>
         <input class="form-control" asp-for="Object.Id" readonly />
     </div>
-
+    @{
+        Model.Option[0] |= Model.Object.Enddate != null;
+    }
 
     <input hidden readonly asp-for="Object.Startdate" />
 
 
-    <div class="form-group @Model.HideOnCreate">
-        <label>Завершить ремонт?</label>
-        @if (Model.Action == "Edit" && Model.Object.Enddate == null && !Model.ReadOnly)
-        {
-            <select class="form-control" asp-for="Option[0]" asp-items="@(new List<SelectListItem> {
-                        new SelectListItem { Selected = true, Text="Да", Value="true" },
-                        new SelectListItem { Text="Нет", Value="false" },
-                 })"></select>
-        }
-        else
-        {
-            <input class="form-control" readonly value="@(Model.Object.Enddate != null? "Да": "Нет")" />
-        }
-    </div>
 
 
     <div class="form-group">
@@ -42,23 +30,29 @@
         <div>
             <span asp-validation-for="Object.Personnel" class="text-danger"></span>
         </div>
-        <input class="form-control" asp-for="Object.Personnel" min="1" value="1"
+        <input class="form-control" asp-for="Object.Personnel" min="1"
                readonly="@Model.ReadOnly" />
     </div>
 
 
-    <div class="form-group @Model.HideOnDelete">
+    @{
+        var List = new List<SelectListItem>();
+
+        if(Model.Object.Status == "Created") List.Add( new SelectListItem { Text = "Создан", Value = "Created" } );
+        List.Add(new SelectListItem { Text = "Ожидает материалы", Value = "Waits" });
+        List.Add(new SelectListItem { Text = "В процессе", Value = "In Progress" });
+        List.Add(new SelectListItem { Text = "Отменён", Value = "Canceled" });
+        if(Model.Object.Status == "In Progress") List.Add(new SelectListItem { Text = "Окончен", Value = "Done" });
+
+    }
+
+    <div class="form-group @Model.HideOnDelete @Model.HideOnCreate">
         <label asp-for="Object.Status"></label>
         <div>
             <span asp-validation-for="Object.Status" class="text-danger"></span>
         </div>
         <select class="form-control" asp-for="Object.Status"
-                asp-items="@(new List<SelectListItem> {
-                new SelectListItem {Text = "Создан", Value="Created" },
-                new SelectListItem {Text = "Ожидает материалы", Value="Waits" },
-                new SelectListItem { Text = "В процессе", Value="In Progress" },
-                new SelectListItem { Text = "Отменён", Value="Canceled" },})"
-                >
+                asp-items="@List">
         </select>
     </div>
 

@@ -38,7 +38,7 @@
                     <div class="card" style="width: auto;">
                         <div class="card-body">
                             <div class="position-absolute" style="right:20px;">
-                                @if (obj.Repair.Enddate == null)
+                                @if (obj.Repair.Enddate == null && obj.LeadRight)
                                 {
                                     <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Repair.Id"> Изменить </a>
                                     <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Repair.Id">Удалить</a>
@@ -75,7 +75,7 @@
                                                         <div>
                                                             @item.Staff.Staff.Name @item.Staff.Staff.Surname @item.Staff.Staff.Email
 
-                                                            @if (obj.Repair.Enddate == null)
+                                                            @if (obj.Repair.Enddate == null && obj.LeadRight)
                                                             {
                                                                 <span>
                                                                     <a class="btn btn-danger m-2" asp-action="@DeleteRM"
@@ -88,7 +88,7 @@
                                             }
                                         </div>
 
-                                        @if (obj.RepairMen.Count() < obj.Repair.Personnel && obj.Repair.Enddate == null)
+                                        @if (obj.RepairMen.Count() < obj.Repair.Personnel && obj.Repair.Enddate == null && obj.LeadRight)
                                         {
                                             <a class="btn btn-primary m-4" asp-action="@CreateRM" asp-route-repairid="@obj.Repair.Id">+</a>
                                         }
@@ -113,7 +113,7 @@
                                                         <div>
                                                             Статус: @item.Status
                                                         </div>
-                                                        @if (obj.Repair.Enddate == null)
+                                                        @if (obj.Repair.Enddate == null && obj.LeadRight)
                                                         {
                                                             <span>
                                                                 <a class="btn btn-danger" asp-action="@DeleteER"

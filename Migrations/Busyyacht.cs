@@ -9,17 +9,17 @@ namespace Project.Migrations
     public partial class Busyyacht
     {
         [Column("id")]
-        public int? Id { get; set; }
+        public int Id { get; set; }
         [Column("r")]
-        public bool? R { get; set; }
+        public bool R { get; set; }
         [Column("c")]
-        public bool? C { get; set; }
+        public bool C { get; set; }
         [Column("e")]
-        public bool? E { get; set; }
+        public bool E { get; set; }
         [Column("val")]
-        public bool? Val { get; set; }
+        public bool Val { get; set; }
         [Column("filled")]
-        public bool? Filled { get; set; }
+        public bool Filled { get; set; }
 
         public virtual Yacht Yacht { get; set; }
     }

@@ -6,10 +6,11 @@ using Project.Migrations;
 
 namespace Project.Models
 {
-    public class ExtradationRequestAvalilable
+    public class ExtradationRequestAvalilableViewModel
     {
         public Extradationrequest Extradationrequest { get; set; }
         public long Count { get; set; }
         public string Format { get; set; }
+        public bool LeadRight { get; set; }
     }
 }

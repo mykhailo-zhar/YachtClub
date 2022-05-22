@@ -7,6 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Project.Controllers
 {
@@ -22,11 +23,13 @@ namespace Project.Controllers
             return View();
         }
 
+        [Authorize(Roles = RolesReadonly.DB_Admin)]
         public IActionResult ReloadDatabase()
         {
             SeedData.RestartDatabase(Context);
             SeedData.SeedWithData(Context);
             SeedData.SeedWithProcedure(Context);
+            SeedData.SeedAccounts(Context);
             return View(nameof(Index));
         }
     }

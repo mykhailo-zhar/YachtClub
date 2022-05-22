@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,15 +11,12 @@ namespace Project.Migrations
 {
     public partial class DataContext : DbContext
     {
-        private HttpContext Context { get; set; }
-        public DataContext(HttpContext context)
-        {
-            Context = context;
-        }
+        private IHttpContextAccessor Context { get; }
 
-        public DataContext(DbContextOptions<DataContext> options)
+        public DataContext(DbContextOptions<DataContext> options, IHttpContextAccessor context)
             : base(options)
         {
+            Context = context;
         }
 
         public virtual DbSet<Account> Account { get; set; }
@@ -59,22 +57,35 @@ namespace Project.Migrations
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-                       
             if (!optionsBuilder.IsConfigured)
             {
-                var Role = Context.User.FindFirst("RoleName")?.Value;
-                optionsBuilder.UseNpgsql($"Host=localhost;Port=5432;Database=YachtClub;Username={(Role == null? "postgres" : "my_"+Role).ToLower()};Password={(Role == null ? "111" : "hu8jmn3")}");
+                var Role = Context.HttpContext.User.FindFirst(ClaimsIdentity.DefaultRoleClaimType)?.Value ?? "Default";
+                optionsBuilder.UseNpgsql($"Host=localhost;Port=5432;Database=YachtClub;Username={(Role == null ? "postgres" : "my_" + Role.Replace(' ', '_')).ToLower()};Password={(Role == null ? "111" : "hu8jmn3")}");
+
             }
         }
         [DbFunction("materialmetric", "public")]
         public string MaterialMetric(int MaterialID) => throw new NotImplementedException();
+
         [DbFunction("yachtsstatus", "public")]
         public string YachtsStatus(int Yachtid) => throw new NotImplementedException();
+       
+        [DbFunction("leadrepairman", "public")]
+        public bool LeadRepairMan(int RepID, int RepairManID) => throw new NotImplementedException();
+
+        [DbFunction("isstaff", "public")]
+        public bool IsStaff(int PersonId) => throw new NotImplementedException();
+
+        [DbFunction("hasrepairman", "public")]
+        public bool HasRepairMan(int RepID, int RepairManID) => throw new NotImplementedException();
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDbFunction(() => MaterialMetric(default));
             modelBuilder.HasDbFunction(() => YachtsStatus(default));
+            modelBuilder.HasDbFunction(() => IsStaff(default));
+            modelBuilder.HasDbFunction(() => LeadRepairMan(default, default));
+            modelBuilder.HasDbFunction(() => HasRepairMan(default, default));
 
             modelBuilder.Entity<Account>(entity => {
                 entity.HasIndex(e => e.Login)

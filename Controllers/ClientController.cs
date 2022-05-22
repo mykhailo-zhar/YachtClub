@@ -27,7 +27,7 @@ namespace Project.Controllers
             return View(Person);
         }
 
-        public IActionResult EditPerson(string id, bool? staffonly )
+        public IActionResult EditPerson(string id, bool? staffonly)
         {
 
             ViewBag.FromStaff = staffonly ?? false;
@@ -63,17 +63,20 @@ namespace Project.Controllers
             return View("PersonEditor", ObjectViewModelFactory<Person>.Edit(Person.Object));
         }
 
-        public IActionResult CreatePerson(bool? staffonly = false)
+
+        [Authorize(Roles = RolesReadonly.Personell_Officer)]
+        public IActionResult CreatePerson()
         {
-            ViewBag.FromStaff = staffonly ?? false;
+            ViewBag.FromStaff = true;
             var Person = new Person
             {
                 Birthdate = DateTime.Now,
-                Staffonly = staffonly ?? false
+                Staffonly = true
             };
             return View("PersonEditor", ObjectViewModelFactory<Person>.Create(Person));
         }
 
+        [Authorize(Roles = RolesReadonly.Personell_Officer)]
         [HttpPost]
         public async Task<IActionResult> CreatePerson([FromForm] ObjectViewModel<Person> Person)
         {
@@ -83,6 +86,9 @@ namespace Project.Controllers
                 {
                     Context.Person.Add(Person.Object);
                     await Context.SaveChangesAsync();
+
+                    Context.Database.ExecuteSqlRaw($"call CreateAccountByPO({Person.Object.Id},'{Hash_Extension.GetPassword()}');");
+
                     return RedirectToAction(nameof(Person));
                 }
                 catch (Exception exception)
@@ -93,6 +99,8 @@ namespace Project.Controllers
 
             return View("PersonEditor", ObjectViewModelFactory<Person>.Create(Person.Object));
         }
+
+
         public IActionResult DeletePerson(string id)
         {
             var Person = Context.Person.First(p => p.Id == int.Parse(id));
@@ -174,7 +182,8 @@ namespace Project.Controllers
 
         public IActionResult CreateYacht()
         {
-            var Yacht = new Yacht { 
+            var Yacht = new Yacht
+            {
                 Description = "",
                 Rentable = false
             };
@@ -289,7 +298,8 @@ namespace Project.Controllers
 
         private IActionResult LocalCreateReview(Review Review = null)
         {
-            Review = Review ?? new Review { 
+            Review = Review ?? new Review
+            {
                 Rate = 1,
                 Public = true,
                 Date = DateTime.Now
@@ -352,10 +362,11 @@ namespace Project.Controllers
         {
             ViewBag.Other = Context.Yacht.Include(p => p.Type);
         }
-        private IActionResult LocalCreateReviewYacht(int rid = 0, string ReturnUrl = null , ReviewYacht ReviewYacht = null)
+        private IActionResult LocalCreateReviewYacht(int rid = 0, string ReturnUrl = null, ReviewYacht ReviewYacht = null)
         {
-            ReviewYacht = ReviewYacht ?? new ReviewYacht { 
-                 Reviewid = rid
+            ReviewYacht = ReviewYacht ?? new ReviewYacht
+            {
+                Reviewid = rid
             };
             /*Включение навигационных свойств*/
             var Model = ObjectViewModelFactory<ReviewYacht>.Create(ReviewYacht, ReturnUrl);
@@ -415,10 +426,11 @@ namespace Project.Controllers
         {
             ViewBag.Other = Context.Person.Where(a => Context.YachtCrew.Include(p => p.Crew).Any(p => p.Enddate == null && p.Crew.Staffid == a.Id));
         }
-        private IActionResult LocalCreateReviewCaptain(int rid = 0, string ReturnUrl = null,  ReviewCaptain ReviewCaptain = null)
+        private IActionResult LocalCreateReviewCaptain(int rid = 0, string ReturnUrl = null, ReviewCaptain ReviewCaptain = null)
         {
-            ReviewCaptain = ReviewCaptain ?? new ReviewCaptain { 
-                 Reviewid = rid
+            ReviewCaptain = ReviewCaptain ?? new ReviewCaptain
+            {
+                Reviewid = rid
             };
             /*Включение навигационных свойств*/
             var Model = ObjectViewModelFactory<ReviewCaptain>.Create(ReviewCaptain, ReturnUrl);

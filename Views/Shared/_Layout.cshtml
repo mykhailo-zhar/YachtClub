@@ -11,10 +11,11 @@
 @{
     var cur_controller = ViewContext.RouteData.Values["controller"].ToString();
     var userName = User.Identity.Name;
-    var userRole = User.FindFirst("RoleName")?.Value;
+    var userRole = User.Role();
+    var admin = userRole == RolesReadonly.DB_Admin;
 }
 <body class="layout_image">
-    <div class="m-2">
+    <div class="m-2" style="min-width: 780px;">
         <nav class="navbar navbar-expand-lg navbar-light bg-primary bg-opacity-75 text-opacity-100">
             <div class="container-fluid  d-flex">
                 <a class="btn navbar-brand text-white" asp-controller="Home" asp-action="Index">
@@ -27,147 +28,170 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
-                        <!--Отладочная панель-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="Home" asp-action="ReloadDatabase">Перезагрузить базу данных</a>
-                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Home" asp-action="ReloadDatabase">Перезагрузить базу данных</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!--Панель кладовщика-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="Warehouse" asp-action="Material">
-                                    Кладовщик
-                                </a>
-                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Warehouse" asp-action="Material">
-                                            Материалы
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Warehouse" asp-action="Materialtype">
-                                            Типы материалов
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Warehouse" asp-action="Seller">
-                                            Поставщик материала
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Warehouse" asp-action="Materiallease">
-                                            Договор на поставку материалов
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Repair" asp-action="Extradationrequest">Заявка на выдачу</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!--Панель персонала-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="Staff" asp-action="Staff">
-                                    Персонал
-                                </a>
-                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Staff" asp-action="Staff">
-                                            Персонал
-                                        </a>
-                                    </li>
-                                    <li><a class="dropdown-item" asp-controller="Staff" asp-action="Position">Должности</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Staff" asp-action="YachtCrew">Экипаж яхт</a></li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!--Панель ремонта-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="Repair" asp-action="RepairStaff">
-                                    Ремонтники
-                                </a>
-                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Repair" asp-action="RepairStaff">
-                                            Ремонтники
-                                        </a>
-                                    </li>
-                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="Yachttest">Тестовые заплывы</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Repair" asp-action="Repair">Ремонт</a></li>
-                                </ul>
-                            </div>
-                        </li>
-                        <!--Типы контрактов-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="" asp-action="">
-                                    Панель управления
-                                </a>
-                                <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Owner" asp-action="Yachtleasetype">
-                                            Тип контракта на яхты
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Owner" asp-action="Contracttype">
-                                            Тип контрактов для клиентов
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Owner" asp-action="Yachttype">
-                                            Тип яхт
-                                        </a>
-                                    </li>
-                                    <li><hr /></li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Owner" asp-action="Contract">
-                                            Контракт
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Owner" asp-action="Yachtlease">
-                                            Договор по яхте
-                                        </a>
-                                    </li>
-                                    <li><hr /></li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Owner" asp-action="Event">
-                                            События
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Client" asp-action="Review">
-                                            Отзывы
-                                        </a>
-                                    </li>
+                        @if (admin)
+                        {
+                            <!--Отладочная панель-->
+                            <li class="nav-item">
+                                <div class="btn-group">
+                                    <a class="btn text-white" asp-controller="Home" asp-action="ReloadDatabase">Перезагрузить базу данных</a>
+                                    <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Home" asp-action="ReloadDatabase">Перезагрузить базу данных</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        }
+                        @if (userRole == RolesReadonly.Storekeeper || admin)
+                        {
+                            <!--Панель кладовщика-->
+                            <li class="nav-item">
+                                <div class="btn-group">
+                                    <a class="btn text-white" asp-controller="Warehouse" asp-action="Material">
+                                        Кладовщик
+                                    </a>
+                                    <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Warehouse" asp-action="Material">
+                                                Материалы
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Warehouse" asp-action="Materialtype">
+                                                Типы материалов
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Warehouse" asp-action="Seller">
+                                                Поставщик материала
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Warehouse" asp-action="Materiallease">
+                                                Договор на поставку материалов
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Repair" asp-action="Extradationrequest">Заявка на выдачу</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        }
 
-                                </ul>
-                            </div>
-                        </li>
+                        @if (userRole == RolesReadonly.Personell_Officer || admin)
+                        {
+                            <!--Панель персонала-->
+                            <li class="nav-item">
+                                <div class="btn-group">
+                                    <a class="btn text-white" asp-controller="Staff" asp-action="Staff">
+                                        Персонал
+                                    </a>
+                                    <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Staff" asp-action="Staff">
+                                                Персонал
+                                            </a>
+                                        </li>
+                                        <li><a class="dropdown-item" asp-controller="Staff" asp-action="Position">Должности</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Staff" asp-action="YachtCrew">Экипаж яхт</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        }
+                        @if (userRole == RolesReadonly.Repairman || admin)
+                        {
+                            <!--Панель ремонта-->
+                            <li class="nav-item">
+                                <div class="btn-group">
+                                    <a class="btn text-white" asp-controller="Repair" asp-action="RepairStaff">
+                                        Ремонтники
+                                    </a>
+                                    <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Repair" asp-action="RepairStaff">
+                                                Ремонтники
+                                            </a>
+                                        </li>
+                                        <li><a class="dropdown-item" asp-controller="Repair" asp-action="Yachttest">Тестовые заплывы</a></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Repair" asp-action="Repair">
+                                                Ремонт
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Repair" asp-action="Extradationrequest">Заявка на выдачу</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        }
+                        @if ((userRole == RolesReadonly.Owner || admin))
+                        {
+                            <!--Типы контрактов-->
+                            <li class="nav-item">
+                                <div class="btn-group">
+                                    <a class="btn text-white" asp-controller="" asp-action="">
+                                        Панель управления
+                                    </a>
+                                    <button type="button" class="btn text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Owner" asp-action="Yachtleasetype">
+                                                Тип контракта на яхты
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Owner" asp-action="Contracttype">
+                                                Тип контрактов для клиентов
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Owner" asp-action="Yachttype">
+                                                Тип яхт
+                                            </a>
+                                        </li>
+                                        <li><hr /></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Owner" asp-action="Contract">
+                                                Контракт
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Owner" asp-action="Yachtlease">
+                                                Договор по яхте
+                                            </a>
+                                        </li>
+                                        <li><hr /></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Owner" asp-action="Event">
+                                                События
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Client" asp-action="Review">
+                                                Отзывы
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </li>
+                        }
                         <!--Яхты-->
                         <li class="nav-item">
                             <div class="btn-group">
@@ -187,38 +211,49 @@
                             </div>
                         </li>
                         <!--Клиенты-->
-                        <li class="nav-item">
-                            <div class="btn-group">
-                                <a class="btn text-white" asp-controller="Client" asp-action="Person">
-                                    Клиент
-                                </a>
-                            </div>
+                        <li class="nav-item ">
+                            @if (cur_controller != "Account")
+                            {
+                                <style>
+                                    div > a, div {
+                                        margin: 2px;
+                                    }
+                                </style>
+                                <div class="navbar-brand position-absolute collapse navbar-collapse d-flex flex-row-reverse text-white" style="right: 60px; top: 2px;">
+                                    @if (string.IsNullOrEmpty(userName))
+                                    {
+                                        <a class="btn text-white btn-outline-info fs-5" asp-controller="Account" asp-action="Registry">
+                                            Регистрация
+                                        </a>
+                                    }
+                                    <a class="btn text-white btn-outline-info fs-5 " asp-controller="Account" asp-action="@(string.IsNullOrEmpty(userName)?"Login":"Logout")">
+                                        @(string.IsNullOrEmpty(userName)?"Войти":"Выйти")
+                                    </a>
+
+                                    @if (!(string.IsNullOrEmpty(userRole) || userRole == "Default"))
+                                    {
+                                        <div class="btn btn-outline-info fs-5">
+                                            @userRole
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(userName))
+                                    {
+                                        <a class="btn btn-outline-info fs-5" asp-controller="Account" asp-action="MyProfile">
+                                            Добро пожаловать, @userName
+                                        </a>
+                                    }
+                                </div>
+                            }
                         </li>
                     </ul>
                 </div>
-                @if (cur_controller != "Account")
-                {
-                    <div class="navbar-brand collapse navbar-collapse p-1 d-flex flex-row-reverse text-white" style="max-width: 30%;">
-                        <a class="btn text-white btn-outline-info fs-5" asp-controller="Account" asp-action="@(string.IsNullOrEmpty(userName)?"Login":"Logout")">
-                            @(string.IsNullOrEmpty(userName)?"Войти":"Выйти")
-                        </a>
-                        <div class="m-1">
-                            <div class="btn btn-outline-info fs-5 @(string.IsNullOrEmpty(userName)?"d-none":"")">
-                                Добро пожаловать, @userName
-                                @if (!string.IsNullOrEmpty(userRole))
-                                {
-                                    <span>(@userRole)</span>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                }
+              
             </div>
         </nav>
     </div>
     <div align="center">
         <div class="initial_div bg-white">
-            <div id="ContentDiv" style="min-height: calc(100vw - 1px);">
+            <div id="ContentDiv" style="min-height: calc(100vw - 1px); min-width: 682px;">
                 <div>
                     @RenderBody()
                 </div>

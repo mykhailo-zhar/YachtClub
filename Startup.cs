@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Project.Migrations;
+using Project.Models;
 using Project.Database;
 
 namespace WebApp
@@ -20,19 +21,34 @@ namespace WebApp
         public IConfiguration Configuration { get; set; }
         public void ConfigureServices(IServiceCollection services)
         {
+            Hash_Extension.StandartPassword = Configuration["StandartPassword"];
             services.AddDbContext<DataContext>(opts =>
             {
-                opts.UseNpgsql(Configuration[
-                "ConnectionStrings:YachtClubConnection"]);
+                //opts.UseNpgsql(Configuration["ConnectionStrings:YachtClubConnection"]);
                 opts.EnableSensitiveDataLogging(true);
             });
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages().AddRazorRuntimeCompilation();
 
+            services.AddHttpContextAccessor();
+
             services.Configure<AntiforgeryOptions>(opts =>
             {
                 opts.HeaderName = "X-XSRF-TOKEN";
             });
+
+           services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Warehouse", policy =>
+                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Storekeeper));
+                options.AddPolicy("Staff", policy =>
+                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Personell_Officer));
+                options.AddPolicy("Repair", policy =>
+                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Repairman));
+                options.AddPolicy("EReq", policy =>
+                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Repairman, RolesReadonly.Storekeeper));
+            });
+
             services.Configure<MvcOptions>(opts => {
                 opts.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(value => "Пожалуйста введите значение:");
                 opts.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(value => $"Заполните пожалуйста, {value}");

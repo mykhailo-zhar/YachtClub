@@ -29,13 +29,18 @@
     <tbody>
         @foreach (var obj in Model)
         {
+
+
             <tr class="text-black">
                 <td>
                     <div class="card m-2" style="width: auto;">
                         <div class="card-body">
                             <div class="position-absolute" style="right:20px;">
-                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Event.Id"> Изменить </a>
-                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Event.Id"> Удалить </a>
+                                @if (obj.Event.Enddate == null)
+                                {
+                                    <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Event.Id"> Изменить </a>
+                                    <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Event.Id"> Удалить </a>
+                                }
                             </div>
                             <h5 class="card-title fs-3">
                                 @obj.Event.Name
@@ -65,18 +70,23 @@
                                             @if (obj.Event.Canhavewinners.Value)
                                             {<div>Место: @item.Place</div>}
                                             <span>
-                                                <a class="btn btn-danger" asp-action="@DeleteSP"
-                                                   asp-route-eid="@item.Eventid" asp-route-yid="@item.Yachtid">-</a>
-                                                <a class="btn btn-danger" asp-action="@EditSP"
-                                                   asp-route-eid="@item.Eventid" asp-route-yid="@item.Yachtid">Edit</a>
+                                                @if (obj.Event.Enddate == null)
+                                                {
+                                                    <a class="btn btn-danger" asp-action="@DeleteSP"
+                                                       asp-route-eid="@item.Eventid" asp-route-yid="@item.Yachtid">-</a>
+                                                    <a class="btn btn-danger" asp-action="@EditSP"
+                                                       asp-route-eid="@item.Eventid" asp-route-yid="@item.Yachtid">Edit</a>
+                                                }
                                             </span>
 
                                         </div>
                                     </div>
                                 }
-
-                                <a class="btn btn-primary m-4" asp-action="@CreateSP" asp-route-eid="@obj.Event.Id">+</a>
-                            </expander>
+                                @if (obj.Event.Enddate == null)
+                                {
+                                    <a class="btn btn-primary m-4" asp-action="@CreateSP" asp-route-eid="@obj.Event.Id">+</a>
+                                }
+                                </expander>
                             <hr />
                             <div class="m-2 fs-3">
                                 Описание:

@@ -11,5 +11,6 @@ namespace Project.Models
     {
         public Person Person { get; set; }
         public Account Account { get; set; }
+        public bool IsStaff { get; set; }
     }
 }

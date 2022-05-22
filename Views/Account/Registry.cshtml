@@ -1,131 +1,117 @@
 ﻿@model ObjectViewModel<RegistryViewModel>
 <partial name="_Validation" />
-<h5 class="bg-primary text-white text-center p-2 ">Регистрация</h5>
+<h5 class="bg-primary text-white text-center p-2 ">@if (Model.Action == "Registry")
+{ <span>Регистрация</span>}
+else {<span>Мой профиль</span> }</h5>
+
 
 <script>
-    $(document).ready(() => {
-        $(submit_button).prop('disabled', true);
-        let c = $(c_lable);
-        c.css("color", "red");
-        c.text("Поле пароля пусто");
-    });
-    function submitter() {
-        let conf = $(confirm_inp);
-        let pasw = $(password);
-        let c = $(c_lable);
-        let b1 = (conf.val() == pasw.val());
-        let b2 = pasw.val().length > 3;
+function submitter() {
+    let conf = $(confirm_inp);
+    let pasw = $(password);
+    let c = $(c_lable);
+    let b1 = (conf.val() == pasw.val());
+    let b2 = pasw.val().length > 3;
 
-        console.log("conf: ", conf.val(),"pasw: ", pasw.val());
+    console.log("conf: ", conf.val(), "pasw: ", pasw.val());
         $(submit_button).prop('disabled', !(b1 && b2));
 
-        if (!b1) {
-            c.text("Пароли не совпадают");
-            c.css("color", "red");
-        }
-        if (!b2) {
-            c.text("Длина пароля меньше чем 3");
-            c.css("color", "red");
-        }
-        if (b1 && b2) {
-            c.text("Подтверждено");
-            c.css("color", "green");
-        }
+    if (!b1) {
+        c.text("Пароли не совпадают");
+        c.css("color", "red");
     }
-   
+    if (!b2) {
+        c.text("Длина пароля меньше чем 3");
+        c.css("color", "red");
+    }
+    if (b1 && b2) {
+        c.text("Подтверждено");
+        c.css("color", "green");
+    }
+}
+
 </script>
-<form asp-action="@Model.Action" method="post">
+<div class="w-50 border border-1 border-primary rounded-1 m-2">
+    <div class="m-3">
+        <form asp-action="@Model.Action" method="post">
 
-    <div class="form-group">
-        <label asp-for="Object.Person.Name"></label>
-        <div>
-            <span asp-validation-for="Object.Person.Name" class="text-danger"></span>
-        </div>
-        <input class="form-control" asp-for="Object.Person.Name" />
-    </div>
+            <input hidden asp-for="Object.Account.Id" />
+            <input hidden asp-for="Object.Person.Id" />
 
-    <div class="form-group">
-        <label asp-for="Object.Person.Surname"></label>
-        <div>
-            <span asp-validation-for="Object.Person.Surname" class="text-danger"></span>
-        </div>
-        <input class="form-control" asp-for="Object.Person.Surname" />
-    </div>
-
-    <hr />
-    <input hidden asp-for="Object.Account.Login"/>
-    <div class="form-group">
-        <label>Введите ваш пароль</label>
-        <div>
-            <span asp-validation-for="Object.Account.Password" class="text-danger"></span>
-        </div>
-        <input class="form-control" id="password" asp-for="Object.Account.Password"  oninput="submitter();"/>
-    </div>
-    <div class="form-group">
-        <label>Подтвердите пароль</label>
-        <input class="form-control" type="password" id="confirm_inp" oninput="submitter();"/>
-    </div>
-    <label id="c_lable"></label>
-    <hr />
-
-    <div class="form-group">
-        <label asp-for="Object.Person.Birthdate"></label>
-        <div>
-            <span asp-validation-for="Object.Person.Birthdate" class="text-danger"></span>
-        </div>
-        <input class="form-control" asp-for="Object.Person.Birthdate" type="date" />
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Object.Person.Sex">Category</label>
-        <div>
-            <span asp-validation-for="Object.Person.Sex" class="text-danger"></span>
-        </div>
-        <select asp-for="Object.Person.Sex" class="form-control"
-                asp-items="@(new SelectList(new List<string> { "Male", "Female", "Other" }))">
-            <option value="" disabled selected>Выберите пол</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Object.Person.Email"></label>
-        <div>
-            <span asp-validation-for="Object.Person.Email" class="text-danger"></span>
-        </div>
-        <input class="form-control" asp-for="Object.Person.Email" type="email" />
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Object.Person.Phone"></label>
-        <div>
-            <span asp-validation-for="Object.Person.Phone" class="text-danger"></span>
-        </div>
-        <input class="form-control" asp-for="Object.Person.Phone" type="tel" />
-    </div>
-
-@*    @if (ViewBag.FromStaff || Model.Object.Person.Staffonly)
-    {
-        <div class="form-group @Model.HideOnDelete">
-            <div class="form-check form-switch position-relative d-flex" style="left: 20px">
+            <div class="form-group">
+                <label asp-for="Object.Person.Name"></label>
                 <div>
-                    <input asp-for="Object.Person.Staffonly" class="form-check-input" type="checkbox">
+                    <span asp-validation-for="Object.Person.Name" class="text-danger"></span>
                 </div>
-                <div>
-                    <label>Только для персонала</label>
-                </div>
+                <input class="form-control" asp-for="Object.Person.Name" />
             </div>
-        </div>
-    }
-    else
-    {
-        <input hidden asp-for="Object.Person.Staffonly" />
-    }*@
 
-    <partial name="_EditorBottomButtons" model="@(new EditorBottomButtonsViewModel {
+            <div class="form-group">
+                <label asp-for="Object.Person.Surname"></label>
+                <div>
+                    <span asp-validation-for="Object.Person.Surname" class="text-danger"></span>
+                </div>
+                <input class="form-control" asp-for="Object.Person.Surname" />
+            </div>
+
+            <hr />
+            <input hidden asp-for="Object.Account.Login" />
+            <div class="form-group">
+                <label>Введите ваш пароль</label>
+                <div>
+                    <span asp-validation-for="Object.Account.Password" class="text-danger"></span>
+                </div>
+                <input class="form-control" id="password" asp-for="Object.Account.Password" oninput="submitter();" />
+            </div>
+            <div class="form-group">
+                <label>Подтвердите пароль</label>
+                <input class="form-control" type="password" id="confirm_inp" oninput="submitter();" />
+            </div>
+            <label id="c_lable"></label>
+            <hr />
+
+            <div class="form-group">
+                <label asp-for="Object.Person.Birthdate"></label>
+                <div>
+                    <span asp-validation-for="Object.Person.Birthdate" class="text-danger"></span>
+                </div>
+                <input class="form-control" asp-for="Object.Person.Birthdate" type="date" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Object.Person.Sex">Category</label>
+                <div>
+                    <span asp-validation-for="Object.Person.Sex" class="text-danger"></span>
+                </div>
+                <select asp-for="Object.Person.Sex" class="form-control"
+                        asp-items="@(new SelectList(new List<string> { "Male", "Female", "Other" }))">
+                    <option value="" disabled selected>Выберите пол</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Object.Person.Email"></label>
+                <div>
+                    <span asp-validation-for="Object.Person.Email" class="text-danger"></span>
+                </div>
+                <input class="form-control" asp-for="Object.Person.Email" type="email" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Object.Person.Phone"></label>
+                <div>
+                    <span asp-validation-for="Object.Person.Phone" class="text-danger"></span>
+                </div>
+                <input class="form-control" asp-for="Object.Person.Phone" type="tel" />
+            </div>
+
+            <partial name="_EditorBottomButtons" model="@(new EditorBottomButtonsViewModel {
     ShowAction = Model.ShowAction,
     Theme = Model.Theme,
     Action = Model.Action,
     BackController = "Home",
     BackAction = "Index"
 })" />
-</form>
+        </form>
+    </div>
+</div>

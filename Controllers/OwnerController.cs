@@ -147,7 +147,7 @@ namespace Project.Controllers
         {
             ViewBag.Yacht = Context.Yacht
                 .Include(p => p.Type)
-                .Where(p => Context.Busyyacht.Any(y => p.Id == y.Id && !y.R.Value && !y.C.Value && !y.E.Value && y.Val.Value))
+                .Where(p => Context.Busyyacht.Any(y => p.Id == y.Id && !y.R && !y.C && !y.E && y.Val))
                 .Where(y => y.YachtCrew.Any(yc => yc.Enddate == null && yc.Crew.Position.Name == "Captain"));
             ViewBag.Event = Context.Event.First(p => p.Id == eid);
         }
@@ -389,7 +389,7 @@ namespace Project.Controllers
                     .ThenInclude(p => p.Staff)
                 .Where(p => p.Crew.Position.Name == "Captain")
                 .Where(c => c.Enddate == null)
-                .Where(c => Context.Busyyacht.Any(b => b.Id == c.Yachtid && !b.R.Value && !b.C.Value && !b.E.Value && b.Filled.Value && b.Val.Value))
+                .Where(c => Context.Busyyacht.Any(b => b.Id == c.Yachtid && !b.R && !b.C && !b.E && b.Filled && b.Val))
                 ;
             ViewBag.Client = Context.Person.Where(p => !p.Staffonly);
             ViewBag.Type = Context.Contracttype.ToList();
