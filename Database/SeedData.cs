@@ -36,7 +36,7 @@ Cascade;
 
                 //Удаление доменов
                 dbContext.Database.ExecuteSqlRaw(@"
-drop domain if exists Sex, My_Money, Mail, Phonenumber
+drop domain if exists Sex, My_Money, Mail, Phonenumber cascade
 ;
 				");
                 #endregion
@@ -503,7 +503,7 @@ CREATE TABLE Position_YachtType(
 );
 				");
 
-				//Account
+/*				//Account
 				dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Account(
 	ID				serial		Not Null	Primary Key,
@@ -514,7 +514,7 @@ CREATE TABLE Account(
 	On Update Cascade	
 	On Delete Cascade
 );
-				");
+				");*/
 				#endregion
 
 				#endregion
@@ -1400,6 +1400,46 @@ begin
    return;
 end;
 $$ language plpgsql;
+				");	
+			//Роль по текущему пользователю
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function RoleByName (
+	username varchar
+)
+	returns varchar
+as $$
+declare 
+rec RECORD;
+begin 	
+		select role.rolname into rec from pg_auth_members m 
+		join pg_authid role on m.roleid = role.oid
+		join pg_authid member on m.member = member.oid
+		where member.rolname = username;
+return rec.rolname;
+end;
+$$ language plpgsql;
+				");
+			//Опознавание черт
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function LowerUserName (
+	username varchar
+)
+	returns varchar
+as $$
+begin 	
+return lower(regexp_replace (username, '[ [:punct:]]', '_','g'));
+end;
+$$ language plpgsql;
+
+create or replace function MyRoleName (
+	posname varchar
+)
+	returns varchar
+as $$
+begin 	
+return 'my_' || lower(regexp_replace (posname, '[ [:punct:]]', '_','g'));
+end;
+$$ language plpgsql;
 				");
 
 			#endregion
@@ -1417,7 +1457,7 @@ end;
 $$ language plpgsql;
 				");
 			//ДАйте мне новый аккаунт пожалуйста
-			dbContext.Database.ExecuteSqlRaw(@"
+/*			dbContext.Database.ExecuteSqlRaw(@"
 CREATE OR REPLACE Procedure CreateAccountByPO(
 PersonID int,
 _password varchar
@@ -1432,7 +1472,7 @@ begin
 	(rec.email, _password, PersonID);
 end;
 $$ language plpgsql;
-				");
+				");*/
 			//Новый ремонт, новый ремонтник
 			dbContext.Database.ExecuteSqlRaw(@"
 CREATE OR REPLACE Procedure PopulateRepair_Men(
@@ -1458,6 +1498,129 @@ begin
 end;
 $$ language plpgsql;
 
+				");
+			//Выдача новых активных ролей
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure PopulateAllValidSP(
+_email varchar, 
+_pass varchar
+)
+AS $$
+declare
+rec record;
+username varchar;
+_email_ varchar;
+begin
+	_email_ := LowerUserName(_email);
+	for rec in select po.name, p.email from 
+	staff_position sp join person p on sp.staffid = p.id
+	join position po on po.id = sp.positionid 
+	where p.email = _email and sp.enddate is null
+	Loop
+		username := LowerUserName(rec.name) || '_' || _email_;
+		if(not exists (select rolname from pg_roles where rolname = username)) then
+			execute 'CREATE ROLE ' || username || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
+			execute 'GRANT ' || MyRoleName(rec.name) || ' TO ' || username || ' ;';
+		end if;
+	end loop;
+	execute 'CREATE ROLE client_' || _email_ || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
+	execute 'GRANT my_client TO client_' || _email_  || ' ;';
+end;
+$$ language plpgsql;
+				");
+			//Обновление пароля активных ролей
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure updateexistingroles(
+_email varchar, 
+_bpass varchar
+)
+AS $$
+declare
+rec record;
+username varchar;
+_email_ varchar;
+begin
+	_email_ := LowerUserName(_email);
+	for rec in select rolname from pg_roles where rolname like '%' || _email_ ||'%'
+	Loop
+		execute 'ALTER ROLE ' || rec.rolname ||' WITH PASSWORD ''' || _bpass || ''' ;';
+	end loop;
+end;
+$$ language plpgsql;
+				");
+			//Удаление активных ролей
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure RemoveAllExistingRoles(
+_email varchar
+)
+AS $$
+declare
+rec record;
+username varchar;
+begin
+	for rec in select rolname from pg_roles where 
+		rolname LIKE '%' || LowerUserName(_email) || '%'
+	Loop
+		execute 'DROP ROLE IF EXISTS '|| rec.rolname ||' ;';
+	end loop;
+end;
+$$ language plpgsql;
+
+				");
+			//Пинг
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE procedure TryConnect(
+_email varchar, 
+_role varchar,
+_pass varchar
+)
+AS $$
+declare
+begin
+	execute 'SELECT dblink_connect(''session__11'',''dbname=YachtClub user='|| LowerUserName(_role) || '_' || LowerUserName(_email) ||' password='|| _pass ||''');';
+	execute 'select dblink_disconnect(''session__11'');'; 
+end;
+$$ language plpgsql;
+
+
+				");	
+			//Добавить одну роль
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure addnewacc(
+_email varchar, 
+_role int,
+_pass varchar
+)
+AS $$
+declare
+rec RECORD;
+usy varchar;
+begin
+	execute ' select name  from position where id = ' || _role ' ;' into rec;
+	usy :=  LowerUserName(rec.name) || LowerUserName(_email);
+	
+	execute 'CREATE ROLE client_' || usy || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
+	execute 'GRANT' || myrolename(rec.name) ||' TO client_' || usy  || ' ;';
+end;
+$$ language plpgsql;
+
+CREATE OR REPLACE Procedure addnewacc(
+_email varchar, 
+_pass varchar
+)
+AS $$
+declare
+usy varchar;
+begin
+	usy :=  'client_' || LowerUserName(_email);
+	
+	execute 'CREATE ROLE client_' || usy || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
+	execute 'GRANT my_client TO ' || usy  || ' ;';
+end;
+$$ language plpgsql;
 				");
 			#endregion
 
@@ -2433,28 +2596,35 @@ for each row execute function YT2 ();
 				");
 			#endregion
 
-			#region Position
+
+			//Аккаунты
+			#region Accs
 			dbContext.Database.ExecuteSqlRaw(@"
 create or replace function POS1 ()
 	returns trigger
 as $$
 declare 
 rec RECORD;
+rolename varchar;
 begin 	
-		execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = ''my_' || lower(regexp_replace (old.name, ' ', '_')) || ''';' into rec;
+
 		IF(TG_OP = 'INSERT') then 
+			rolename :=  MyRoleName(new.name); 
+			execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = ''' || rolename || ''';' into rec;
 			if(rec.count = 0 ) then
-			  execute 'CREATE ROLE MY_'||regexp_replace (new.name, ' ', '_')||' ;';
-			  execute 'GRANT amy_user to MY_'||regexp_replace (new.name, ' ', '_')||' ;';
+			  execute 'CREATE ROLE '|| rolename || ' ;';
+			  execute 'GRANT amy_user to '|| rolename ||' ;';
 			end if;
 		end if;
 		IF(TG_OP = 'UPDATE') then
+			rolename :=  MyRoleName(old.name); 
+			execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = ''' || rolename || ''';' into rec;
 			if(rec.count = 0 ) then
-			  execute 'CREATE ROLE MY_'||regexp_replace (old.name, ' ', '_')||' ;';
-			  execute 'GRANT amy_user to MY_'||regexp_replace (old.name, ' ', '_')||' ;';
+			  execute 'CREATE ROLE '|| rolename ||' ;';
+			  execute 'GRANT amy_user to '|| rolename ||' ;';
 			end if;
 			if(old.name <> new.name) then 
-				execute 'ALTER ROLE MY_'||regexp_replace (old.name, ' ', '_')||' RENAME TO MY_'|| regexp_replace (old.name, ' ', '_')||';';	
+				execute 'ALTER ROLE '|| rolename ||' RENAME TO '|| 'my_' || MyRoleName(new.name) ||';';	
 			end if;
 		end if;
 		return new;
@@ -2465,12 +2635,87 @@ create trigger InsertCaptain
 After insert or update on Position
 for each row execute function POS1 ();
 				");
-			#endregion
 
-			#endregion
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function SPosition1 ()
+	returns trigger
+as $$
+declare 
+usy RECORD;
+rec RECORD;
+username varchar;
+rolename varchar;
+begin 	
+		IF(TG_OP = 'INSERT') then 
+		
+				select p.name, pe.email into usy from staff_position sp 
+				join position p on p.id = sp.positionid 
+				join person pe on pe.id = sp.staffid
+				where sp.id = new.id;
 
-			#region SameTriggers
-			void ParentRemoval(string Parent, string Child, string Property)
+				username := LowerUserName(usy.name) || '_' || LowerUserName(usy.email);
+				rolename := MyRoleName(usy.name);
+
+				execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = '''
+				|| username || ''';' into rec;
+		
+			if(rec.count = 0 ) then
+			  execute 'CREATE ROLE '|| username ||' WITH LOGIN ;';
+			  execute 'GRANT '|| rolename || ' TO '||  username || ' ;';
+			end if;
+			return new;
+		end if;
+		IF(TG_OP = 'UPDATE') then
+		
+				select p.name, pe.email into usy from staff_position sp 
+				join position p on p.id = sp.positionid 
+				join person pe on pe.id = sp.staffid
+				where sp.id = new.id;
+
+				username := LowerUserName(usy.name) || '_' || LowerUserName(usy.email);
+				rolename := MyRoleName(usy.name);
+
+				execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = '''
+				|| username || ''';' into rec;
+		
+			if(rec.count = 0 and new.enddate is null and old.enddate is null  ) then
+			   execute 'CREATE ROLE '|| username ||' WITH LOGIN ;';
+			   execute 'GRANT '|| rolename || ' TO '||  username || ' ;';
+			end if;
+			if(new.enddate is not null) then 
+				execute 'DROP ROLE IF EXISTS '|| username ||' ;';	
+			end if;
+			return new;
+		end if;
+		IF(TG_OP = 'DELETE') then
+				select p.name, pe.email into usy from staff_position sp 
+				join position p on p.id = sp.positionid 
+				join person pe on pe.id = sp.staffid
+				where sp.id = old.id;
+
+				username := LowerUserName(usy.name) || '_' || LowerUserName(usy.email);
+				rolename := MyRoleName(usy.name);
+				
+				execute 'DROP ROLE IF EXISTS '|| username ||' ;';	
+			return old;
+		end if;
+end;
+$$ language plpgsql;	
+
+create trigger InsertAccount
+After insert or update or delete on Staff_Position
+for each row execute function SPosition1 ();
+				");
+            #endregion
+
+            #region 
+
+            #endregion
+
+            #endregion
+
+            #region SameTriggers
+            void ParentRemoval(string Parent, string Child, string Property)
             {
 				dbContext.Database.ExecuteSqlRaw($@"
 		create or replace function {Parent}_{Child}()
@@ -2544,19 +2789,14 @@ for each row execute function POS1 ();
 
 		public static void SeedAccounts(DataContext dbContext)
         {
-			var ps = Hash_Extension.GetPassword();
+			var ps = Hash_Extension.StandartPassword;
 			//Account персонала
 			dbContext.Person.ToList().ForEach(p => {
-				dbContext.Account.Add(new Account { Login = p.Email, Userid = p.Id, Password = ps });
+			    dbContext.Database.ExecuteSqlInterpolated($"call removeallexistingroles({p.Email});");
+				dbContext.Database.ExecuteSqlInterpolated($"call populateallvalidsp({p.Email},{ps});");
 			});
 
-			//Добавить все несуществующие должности
-			dbContext.Position.ToList().ForEach(p => {
-				p.Salary = p.Salary;
-				dbContext.Position.Update(p);
-			});
-
-			dbContext.SaveChanges();
+			
 
 			#region GRANTS
 
@@ -2572,7 +2812,7 @@ grant select,update,delete on extradationrequest to my_storekeeper;
 			//Кадровик
 			dbContext.Database.ExecuteSqlRaw(@"
 grant ALL PRIVILEGES on staff, position, staff_position, person to my_personell_officer;
-grant insert on account to my_personell_officer;
+
 grant select on yacht_crew, yacht, yachttype, busyyacht to my_personell_officer;
 
 				");
@@ -2596,7 +2836,7 @@ grant select on yacht_crew, yacht_crew_position to my_owner;
 
 			//Стандартные типы данных
 			dbContext.Database.ExecuteSqlRaw(@"
-grant ALL PRIVILEGES on ALL SEQUENCES IN SCHEMA PUBLIC to my_data_types;
+grant ALL PRIVILEGES on ALL SEQUENCES IN SCHEMA PUBLIC to amy_data_types;
 				");
 
 			#endregion

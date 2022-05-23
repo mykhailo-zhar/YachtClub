@@ -1,4 +1,4 @@
-﻿@model ObjectViewModel<Account>
+﻿@model ObjectViewModel<AccountViewModel>
     <div>
         <div class="w-50 border border-1 border-primary rounded-1">
             <div class="m-3">
@@ -20,7 +20,7 @@
                         <div>
                             <span asp-validation-for="Object.Password" class="text-danger"></span>
                         </div>
-                        <input class="form-control" asp-for="Object.Password" />
+                        <input class="form-control" asp-for="Object.Password" type="password" />
                     </div>
 
                     <div>

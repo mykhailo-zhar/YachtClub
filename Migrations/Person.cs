@@ -15,7 +15,7 @@ namespace Project.Migrations
             StaffPosition = new HashSet<StaffPosition>();
             Yacht = new HashSet<Yacht>();
             ReviewCaptain = new HashSet<ReviewCaptain>();
-            Account = new HashSet<Account>();
+            //Account = new HashSet<Account>();
         }
 
         [Key]
@@ -53,7 +53,7 @@ namespace Project.Migrations
         public virtual ICollection<StaffPosition> StaffPosition { get; set; }
         [InverseProperty("Yachtowner")]
         public virtual ICollection<Yacht> Yacht { get; set; }
-        [InverseProperty("User")]
-        public virtual ICollection<Account> Account { get; set; }
+        /*[InverseProperty("User")]
+        public virtual ICollection<Account> Account { get; set; }*/
     }
 }

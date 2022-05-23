@@ -25,12 +25,14 @@ namespace Project.Controllers
         }
         #region Login
 
-        private IActionResult PrivateLogin(Account account = null)
+        private IActionResult PrivateLogin(AccountViewModel account = null)
         {
             return View(
-                new ObjectViewModel<Account>
+                new ObjectViewModel<AccountViewModel>
                 {
-                    Object = account ?? new Account(),
+                    Object = account ?? new AccountViewModel { 
+                        User = new Person()
+                    },
                     Action = "Login"
                 }
                 );
@@ -40,20 +42,20 @@ namespace Project.Controllers
             return PrivateLogin();
         }
 
-        private IActionResult LoginToRolePrivate(ObjectViewModel<Account> Account)
+        private IActionResult LoginToRolePrivate(ObjectViewModel<AccountViewModel> Account)
         {
             Account.Action = nameof(LoginToRole);
             return View("LoginToRole", Account);
         }
         [HttpPost]
-        public async Task<IActionResult> LoginToRole(ObjectViewModel<Account> Account)
+        public async Task<IActionResult> LoginToRole(ObjectViewModel<AccountViewModel> Account)
         {
             Account.Object.AsWho = "Staff";
             return await Login(Account);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login([FromForm] ObjectViewModel<Account> Account)
+        public async Task<IActionResult> Login([FromForm] ObjectViewModel<AccountViewModel> Account)
         {
             if (ModelState.IsValid)
             {
@@ -67,16 +69,26 @@ namespace Project.Controllers
                         default:
                             throw new Exception("Войдите, пожалуйста, либо как сотрудник, либо как клиент");
                     }
+
                     if (string.IsNullOrEmpty(Account.Object.Password))
                     {
                         throw new Exception("Некорректные логин и(или) пароль");
                     }
-                    var login = Account.Object.Login;
-                    var passwd = Hash_Extension.HashToString(Account.Object.Password);
-                    var user = Context.Account.Include(p => p.User).FirstOrDefault(p => p.Login == login && p.Password == passwd);
 
-                    if (user == null)
+                    var login = Account.Object.Login;
+                    var position = Account.Object.Position;
+                    var passwd = Account.Object.Password;
+
+                    Account.Object.User = Context.Person.FirstOrDefault(p => p.Email == login);
+
+                    try
                     {
+                        if (Account.Object.User == null) throw new Exception();
+                        Context.Ping(login, position ?? "Client", passwd);
+                    }
+                    catch (Exception)
+                    {
+
                         throw new Exception("Некорректные логин и(или) пароль");
                     }
 
@@ -84,27 +96,29 @@ namespace Project.Controllers
                     {
                         var collection = Context.StaffPosition
                             .Include(p => p.Position)
-                            .Where(p => p.Staffid == user.Userid && p.Enddate == null)
+                            .Where(p => p.Staffid == Account.Object.User.Id && p.Enddate == null)
                             .Select(p => p.Position.Name)
                             .ToList();
-                        if(collection.Count() == 0)
+                        if (collection.Count() == 0)
                         {
                             throw new Exception("Вы не можете войти как сотрудник");
                         }
 
                         ViewBag.Positions = collection;
-                        
-                        Account.Object.Userid = user.Id;
+
                         return LoginToRolePrivate(Account);
                     }
 
-                    if (user.User.Staffonly && Account.Object.AsWho == "Client")
+
+                     
+
+                    if (Account.Object.User.Staffonly && Account.Object.AsWho == "Client")
                     {
                         throw new Exception("Человек с служебным аккаунтом не может зайти как клиент");
                     }
 
-                    await Authenticate(user.Login,
-                        Account.Object.Position ?? "Client", user.Userid, user.Id);
+                    await Authenticate(login,
+                        position ?? "Client", Account.Object.User.Id, passwd);
 
                     Context.Dispose();
 
@@ -118,7 +132,7 @@ namespace Project.Controllers
             return PrivateLogin(Account.Object);
         }
         #endregion
-        private async Task Authenticate(string userName, string RoleName, int PersonId, int AccountId)
+        private async Task Authenticate(string userName, string RoleName, int PersonId, string Password)
         {
             // создаем один claim
             var claims = new List<Claim>
@@ -126,7 +140,7 @@ namespace Project.Controllers
                 new Claim(ClaimsIdentity.DefaultNameClaimType, userName),
                 new Claim(ClaimsIdentity.DefaultRoleClaimType, RoleName),
                 new Claim(nameof(PersonId), PersonId.ToString()),
-                new Claim(nameof(AccountId), AccountId.ToString())
+                new Claim(nameof(Password), Password),
             };
             // создаем объект ClaimsIdentity
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
@@ -169,9 +183,9 @@ namespace Project.Controllers
                             Staffonly = false,
                             Birthdate = DateTime.Now
                         },
-                        Account = new Account
+                        Account = new AccountViewModel
                         {
-                            Login = "__-2132123113_"
+                            Login = ""
                         }
                     },
                     Action = "Registry"
@@ -187,31 +201,28 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                try
+                using (var trans = Context.Database.BeginTransaction())
                 {
-                    var person = Context.Person.FirstOrDefault(u => u.Email == Registry.Object.Person.Email);
-                    if (person == null)
+                    try
                     {
-                        Context.Add(Registry.Object.Person);
-                        await Context.SaveChangesAsync();
-                        person = Context.Person.FirstOrDefault(u => u.Email == Registry.Object.Person.Email);
-                        var Acc = Registry.Object.Account;
-                        var Hash = MD5.Create();
-                        Acc = new Account
+                        var person = Context.Person.FirstOrDefault(u => u.Email == Registry.Object.Person.Email);
+                        if (person == null)
                         {
-                            Login = person.Email,
-                            Userid = person.Id,
-                            Password = Hash_Extension.HashToString(Acc.Password)
-                        };
-                        Context.Account.Add(Acc);
-                        await Context.SaveChangesAsync();
-                        return RedirectToAction("Index", "Home");
+                            Registry.Object.Account.Login = Registry.Object.Person.Email;
+                            Context.Add(Registry.Object.Person);
+                            await Context.SaveChangesAsync();
+
+                            await Context.Database.ExecuteSqlInterpolatedAsync($"call addnewacc('{Registry.Object.Account.Login}','{Registry.Object.Account.Password}')");
+                            trans.Commit();
+                            return RedirectToAction("Index", "Home");
+                        }
+                        ModelState.AddModelError("", "Некорректные логин и(или) пароль");
                     }
-                    ModelState.AddModelError("", "Некорректные логин и(или) пароль");
-                }
-                catch (Exception exception)
-                {
-                    this.HandleException(exception);
+                    catch (Exception exception)
+                    {
+                        trans.Rollback();
+                        this.HandleException(exception);
+                    }
                 }
             }
             return PrivateRegistry(Registry.Object);
@@ -226,7 +237,10 @@ namespace Project.Controllers
                 {
                     Object = MyProfile ?? new RegistryViewModel
                     {
-                        Account = Context.Account.First(p => p.Id == User.AccountId()),
+                        Account = new AccountViewModel { 
+                            Login = User.Identity.Name,
+                            Password = User.Password()
+                        },//Context.Account.First(p => p.Id == User.AccountId()),
                         Person = Context.Person.First(p => p.Id == User.PersonId()),
                         IsStaff = Context.Person.Select(a => Context.IsStaff(User.PersonId())).First()
                     },
@@ -255,19 +269,31 @@ namespace Project.Controllers
                         Person.Birthdate = MyProfile.Object.Person.Birthdate;
                         Person.Sex = MyProfile.Object.Person.Sex;
                         Person.Staffonly = MyProfile.Object.Person.Staffonly;
-                        
-                        await Context.SaveChangesAsync();
-                        var Acc = await Context.Account.FirstAsync(p => p.Id == MyProfile.Object.Account.Id);
 
-                        if(!string.IsNullOrEmpty(MyProfile.Object.Account.Password))
+                        await Context.SaveChangesAsync();
+
+                        MyProfile.Object.Account.Login = Person.Email;
+
+                        if(string.IsNullOrEmpty( MyProfile.Object.Account.Password))
                         {
-                            Acc.Password = Hash_Extension.HashToString(MyProfile.Object.Account.Password);
+                            MyProfile.Object.Account.Password = User.Password();
                         }
-                        Acc.Login = Person.Email;
-                        await Context.SaveChangesAsync();
+                        else if (User.Identity.Name == MyProfile.Object.Account.Login)
+                        {
+                            await Context.Database.ExecuteSqlInterpolatedAsync($" call updateexistingroles({MyProfile.Object.Account.Login}, {MyProfile.Object.Account.Password});");
+                        }
 
-                        await Authenticate(Acc.Login, User.Role() , Person.Id, Acc.Id);
-
+                        if (User.Identity.Name != MyProfile.Object.Account.Login)
+                        {
+                            string oldLogin = User.Identity.Name;
+                            await Context.Database.ExecuteSqlInterpolatedAsync($"call populateallvalidsp({MyProfile.Object.Account.Login},{MyProfile.Object.Account.Password});");
+                            await Authenticate(MyProfile.Object.Account.Login, User.Role(), Person.Id, MyProfile.Object.Account.Password);
+                            await Context.Database.ExecuteSqlInterpolatedAsync($"call removeallexistingroles({oldLogin});");
+                        }
+                        else
+                        {
+                            await Authenticate(MyProfile.Object.Account.Login, User.Role(), Person.Id, MyProfile.Object.Account.Password);
+                        }
                         await transaction.CommitAsync();
                         return RedirectToAction("Index", "Home");
                     }

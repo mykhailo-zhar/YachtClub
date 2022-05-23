@@ -10,7 +10,7 @@ namespace Project.Models
     public class RegistryViewModel
     {
         public Person Person { get; set; }
-        public Account Account { get; set; }
+        public AccountViewModel Account { get; set; }
         public bool IsStaff { get; set; }
     }
 }

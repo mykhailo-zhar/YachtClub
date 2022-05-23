@@ -12,7 +12,7 @@
     var cur_controller = ViewContext.RouteData.Values["controller"].ToString();
     var userName = User.Identity.Name;
     var userRole = User.Role();
-    var admin = userRole == RolesReadonly.DB_Admin || true;
+    var admin = userRole == RolesReadonly.DB_Admin;
 }
 <body class="layout_image">
     <div class="m-2" style="min-width: 780px;">

@@ -35,7 +35,6 @@ function submitter() {
     <div class="m-3">
         <form asp-action="@Model.Action" method="post">
 
-            <input hidden asp-for="Object.Account.Id" />
             <input hidden asp-for="Object.Person.Id" />
 
             <div class="form-group">
@@ -55,13 +54,13 @@ function submitter() {
             </div>
 
             <hr />
-            <input hidden asp-for="Object.Account.Login" />
+            <input hidden asp-for="Object.Account.Login"  />
             <div class="form-group">
-                <label>Введите ваш пароль</label>
+                <label>Введите ваш новый пароль</label>
                 <div>
                     <span asp-validation-for="Object.Account.Password" class="text-danger"></span>
                 </div>
-                <input class="form-control" id="password" asp-for="Object.Account.Password" oninput="submitter();" />
+                <input class="form-control" id="password" asp-for="Object.Account.Password"  type="password" oninput="submitter();" />
             </div>
             <div class="form-group">
                 <label>Подтвердите пароль</label>
@@ -104,6 +103,8 @@ function submitter() {
                 </div>
                 <input class="form-control" asp-for="Object.Person.Phone" type="tel" />
             </div>
+
+            <input asp-for="Object.Person.Staffonly" hidden/>
 
             <partial name="_EditorBottomButtons" model="@(new EditorBottomButtonsViewModel {
     ShowAction = Model.ShowAction,

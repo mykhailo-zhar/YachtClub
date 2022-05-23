@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Project.Models
@@ -16,6 +17,18 @@ namespace Project.Models
         public const string Captain = "Captain";
     }
 
+    public static class RegexExtension
+    {
+        public static string ReplaceAll(string str, Regex regex, string res)
+        {
+            foreach (var item in regex.Matches(str).Distinct().ToList())
+            {
+               str = str.Replace(item.Value, res);
+            }
+            return str;
+        }
+    }
+
     public static class Claim_Extensions
     {
         public static string Role(this ClaimsPrincipal principal) => principal.FindFirst(p => p.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value ?? "Default";
@@ -24,7 +37,8 @@ namespace Project.Models
         
 
         public static int PersonId(this ClaimsPrincipal principal) => int.Parse(principal.FindFirst(p => p.Type == "PersonId")?.Value ?? "0");
-        public static int AccountId(this ClaimsPrincipal principal) => int.Parse(principal.FindFirst(p => p.Type == "AccountId")?.Value ?? "0");
+        public static string Password(this ClaimsPrincipal principal) => principal.FindFirst(p => p.Type == "Password")?.Value ?? "";
+
 
     }
 }

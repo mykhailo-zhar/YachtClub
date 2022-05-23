@@ -129,7 +129,7 @@ namespace Project.Controllers
         public async Task<IActionResult> DeletePosition([FromForm] ObjectViewModel<Position> Position)
         {
 
-           
+
             try
             {
                 Context.Position.Remove(Position.Object);
@@ -150,13 +150,18 @@ namespace Project.Controllers
         #endregion
 
         #region StaffPosition
-        public IActionResult CreateStaffPosition(int sid)
+
+        private void ConfigureViewBagStaffPosition()
         {
-            var StaffPosition = new StaffPosition { Staffid = sid};
             ViewData["Staff"] = Context.Person.ToList();
             ViewData["Position"] = Context.Position.ToList();
+        }
+        private IActionResult PrivateCreateStaffPosition(int sid = 0, StaffPosition StaffPosition = null){
+            StaffPosition = StaffPosition ?? new StaffPosition { Staffid = sid };
+            ConfigureViewBagStaffPosition();
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Create(StaffPosition));
         }
+        public IActionResult CreateStaffPosition(int sid) => PrivateCreateStaffPosition(sid);
 
         [HttpPost]
         public async Task<IActionResult> CreateStaffPosition([FromForm] ObjectViewModel<StaffPosition> StaffPosition)
@@ -174,14 +179,9 @@ namespace Project.Controllers
                 {
                     this.HandleException(exception);
                 }
-                if (ModelState.IsValid)
-                {
-                    return RedirectToAction(nameof(Staff));
-                }
-                return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Create(StaffPosition.Object));
             }
 
-            return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Create(StaffPosition.Object));
+            return PrivateCreateStaffPosition(StaffPosition: StaffPosition.Object);
         }
 
         public IActionResult EditStaffPosition(string id)

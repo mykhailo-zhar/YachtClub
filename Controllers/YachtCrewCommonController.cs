@@ -100,6 +100,7 @@ namespace Project.Controllers
                ;
             }
             //TODO: Запретить добавлять капитанов в яхту, если уже есть капитан
+            //TODO: Запретить удалять None, Empty
             else
             {
                 ViewBag.Crew = Context.StaffPosition

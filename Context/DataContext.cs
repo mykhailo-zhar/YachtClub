@@ -1,25 +1,29 @@
 ﻿using System;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
+using System.Linq;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Project.Models;
 
 namespace Project.Migrations
 {
     public partial class DataContext : DbContext
     {
         private IHttpContextAccessor Context { get; }
-
+        private HttpContext HttpContext => Context.HttpContext;
+        private ClaimsPrincipal User => HttpContext.User;
         public DataContext(DbContextOptions<DataContext> options, IHttpContextAccessor context)
             : base(options)
         {
             Context = context;
         }
 
-        public virtual DbSet<Account> Account { get; set; }
+        //public virtual DbSet<Account> Account { get; set; }
         public virtual DbSet<Availableresources> Availableresources { get; set; }
         public virtual DbSet<Busyyacht> Busyyacht { get; set; }
         public virtual DbSet<Contract> Contract { get; set; }
@@ -59,8 +63,20 @@ namespace Project.Migrations
         {
             if (!optionsBuilder.IsConfigured)
             {
-                var Role = Context.HttpContext.User.FindFirst(ClaimsIdentity.DefaultRoleClaimType)?.Value ?? "Default";
-                optionsBuilder.UseNpgsql($"Host=localhost;Port=5432;Database=YachtClub;Username={(Role == null ? "postgres" : "my_" + Role.Replace(' ', '_')).ToLower()};Password={(Role == null ? "111" : "hu8jmn3")}");
+                var Role = User.FindFirst(ClaimsIdentity.DefaultRoleClaimType)?.Value;
+
+                string Password = User.FindFirst("Password")?.Value ?? "";
+
+                if (Role == null)
+                {
+                    Role = "guest";
+                    Password = "1111";
+                }
+                else
+                {
+                    Role = GetLowerName(Role) + "_" + GetLowerName(User.Identity.Name);
+                }
+                optionsBuilder.UseNpgsql($"Host=localhost;Port=5432;ConnectionIdleLifetime=30;Database=YachtClub;Username={Role};Password={Password}");
 
             }
         }
@@ -69,7 +85,7 @@ namespace Project.Migrations
 
         [DbFunction("yachtsstatus", "public")]
         public string YachtsStatus(int Yachtid) => throw new NotImplementedException();
-       
+
         [DbFunction("leadrepairman", "public")]
         public bool LeadRepairMan(int RepID, int RepairManID) => throw new NotImplementedException();
 
@@ -78,25 +94,38 @@ namespace Project.Migrations
 
         [DbFunction("hasrepairman", "public")]
         public bool HasRepairMan(int RepID, int RepairManID) => throw new NotImplementedException();
-        
+
+
+        public string GetMyRole(string Role) => "my_" + RegexExtension.ReplaceAll(Role, new Regex("[ !\"#$%&'()*+,./:;<=>?@\\^_`{|}~]"), "_").ToLower();
+
+        public string GetLowerName(string Name) => RegexExtension.ReplaceAll(Name,new Regex("[ !\"#$%&'()*+,./:;<=>?@\\^_`{|}~]"),"_").ToLower();
+
+
+        public void Ping(string login, string role, string password) => Database.ExecuteSqlInterpolated($"call tryconnect({login},{role},{password});");
+
+
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDbFunction(() => MaterialMetric(default));
             modelBuilder.HasDbFunction(() => YachtsStatus(default));
             modelBuilder.HasDbFunction(() => IsStaff(default));
+            /*            modelBuilder.HasDbFunction(() => GetMyRole(default));
+                        modelBuilder.HasDbFunction(() => GetLowerName(default));*/
             modelBuilder.HasDbFunction(() => LeadRepairMan(default, default));
             modelBuilder.HasDbFunction(() => HasRepairMan(default, default));
 
-            modelBuilder.Entity<Account>(entity => {
-                entity.HasIndex(e => e.Login)
-                      .HasName("account_login_key")
-                      .IsUnique();
+            /* modelBuilder.Entity<Account>(entity => {
+                 entity.HasIndex(e => e.Login)
+                       .HasName("account_login_key")
+                       .IsUnique();
 
-                entity.HasOne(d => d.User)
-                     .WithMany(p => p.Account)
-                     .HasForeignKey(d => d.Userid)
-                     .HasConstraintName("account_userid_fkey");
-            });
+                 entity.HasOne(d => d.User)
+                      .WithMany(p => p.Account)
+                      .HasForeignKey(d => d.Userid)
+                      .HasConstraintName("account_userid_fkey");
+             });*/
 
             modelBuilder.Entity<Availableresources>(entity =>
             {

@@ -82,18 +82,24 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                try
+                using (var trans = Context.Database.BeginTransaction())
                 {
-                    Context.Person.Add(Person.Object);
-                    await Context.SaveChangesAsync();
+                    try
+                    {
+                        Context.Person.Add(Person.Object);
+                        await Context.SaveChangesAsync();
 
-                    Context.Database.ExecuteSqlRaw($"call CreateAccountByPO({Person.Object.Id},'{Hash_Extension.GetPassword()}');");
 
-                    return RedirectToAction(nameof(Person));
-                }
-                catch (Exception exception)
-                {
-                    this.HandleException(exception);
+                        Context.Database.ExecuteSqlRaw($"call addnewacc('{Person.Object.Email}', '{Hash_Extension.StandartPassword}');");
+
+                        trans.Commit();
+                        return RedirectToAction(nameof(Staff),nameof(Staff));
+                    }
+                    catch (Exception exception)
+                    {
+                        trans.Rollback();
+                        this.HandleException(exception);
+                    }
                 }
             }
 

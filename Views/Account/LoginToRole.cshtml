@@ -1,4 +1,4 @@
-﻿@model ObjectViewModel<Account>
+﻿@model ObjectViewModel<AccountViewModel>
 <div class="w-50 border border-1 border-primary rounded-1 m-2">
     <div class="m-3">
         <partial name="_Validation" />
@@ -6,7 +6,6 @@
         <form asp-action="@Model.Action" method="post">
 
             <input hidden asp-for="Object.Password" value="@Model.Object.Password" />
-            <input hidden asp-for="Object.Userid" value="@Model.Object.Userid" />
             <input hidden asp-for="Object.Login" value="@Model.Object.Login" />
             @{
                 var col = (ViewBag.Positions as IEnumerable<string>) ?? Enumerable.Empty<string>();
