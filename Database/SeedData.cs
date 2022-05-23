@@ -2444,12 +2444,14 @@ begin
 		execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = ''my_' || lower(regexp_replace (old.name, ' ', '_')) || ''';' into rec;
 		IF(TG_OP = 'INSERT') then 
 			if(rec.count = 0 ) then
-			  execute 'CREATE ROLE MY_'||regexp_replace (new.name, ' ', '_')||' WITH LOGIN PASSWORD ''hu8jmn3'';';
+			  execute 'CREATE ROLE MY_'||regexp_replace (new.name, ' ', '_')||' ;';
+			  execute 'GRANT amy_user to MY_'||regexp_replace (new.name, ' ', '_')||' ;';
 			end if;
 		end if;
 		IF(TG_OP = 'UPDATE') then
 			if(rec.count = 0 ) then
-			  execute 'CREATE ROLE MY_'||regexp_replace (old.name, ' ', '_')||' WITH LOGIN PASSWORD ''hu8jmn3'';';
+			  execute 'CREATE ROLE MY_'||regexp_replace (old.name, ' ', '_')||' ;';
+			  execute 'GRANT amy_user to MY_'||regexp_replace (old.name, ' ', '_')||' ;';
 			end if;
 			if(old.name <> new.name) then 
 				execute 'ALTER ROLE MY_'||regexp_replace (old.name, ' ', '_')||' RENAME TO MY_'|| regexp_replace (old.name, ' ', '_')||';';	
@@ -2580,6 +2582,16 @@ grant select on person, position, repair_staff, material, materialtype, availabl
 grant all PRIVILEGES on yachttest, repair, repair_men, extradationrequest to my_repairman;
 
 
+				");
+			//Владелец
+			dbContext.Database.ExecuteSqlRaw(@"
+grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
+grant select on yacht_crew, yacht_crew_position to my_owner;
+				");	
+			//Владелец
+			dbContext.Database.ExecuteSqlRaw(@"
+grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
+grant select on yacht_crew, yacht_crew_position to my_owner;
 				");
 
 			//Стандартные типы данных

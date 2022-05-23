@@ -24,7 +24,7 @@ namespace WebApp
             Hash_Extension.StandartPassword = Configuration["StandartPassword"];
             services.AddDbContext<DataContext>(opts =>
             {
-                //opts.UseNpgsql(Configuration["ConnectionStrings:YachtClubConnection"]);
+                opts.UseNpgsql(Configuration["ConnectionStrings:YachtClubConnection"]);
                 opts.EnableSensitiveDataLogging(true);
             });
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
@@ -41,10 +41,16 @@ namespace WebApp
             {
                 options.AddPolicy("Warehouse", policy =>
                       policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Storekeeper));
+
                 options.AddPolicy("Staff", policy =>
-                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Personell_Officer));
+                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Personell_Officer)); 
+
+                options.AddPolicy("CaptainCrew", policy =>
+                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Personell_Officer, RolesReadonly.Captain));
+
                 options.AddPolicy("Repair", policy =>
                       policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Repairman));
+
                 options.AddPolicy("EReq", policy =>
                       policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Repairman, RolesReadonly.Storekeeper));
             });

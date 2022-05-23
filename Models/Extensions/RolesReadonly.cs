@@ -19,6 +19,9 @@ namespace Project.Models
     public static class Claim_Extensions
     {
         public static string Role(this ClaimsPrincipal principal) => principal.FindFirst(p => p.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value ?? "Default";
+        public static bool IsInRolesOr(this ClaimsPrincipal principal, params string[] Roles) => Roles.Aggregate(false, (start, th) => start || principal.IsInRole(th));
+        public static bool IsInRolesAnd(this ClaimsPrincipal principal, params string[] Roles) => Roles.Aggregate(false, (start, th) => start && principal.IsInRole(th));
+        
 
         public static int PersonId(this ClaimsPrincipal principal) => int.Parse(principal.FindFirst(p => p.Type == "PersonId")?.Value ?? "0");
         public static int AccountId(this ClaimsPrincipal principal) => int.Parse(principal.FindFirst(p => p.Type == "AccountId")?.Value ?? "0");

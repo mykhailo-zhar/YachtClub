@@ -1,11 +1,14 @@
-﻿@{
+﻿
+@model IEnumerable<YachtCrewGroupingViewModel>
+
+@{
     var MethodName = typeof(YachtCrew).Name;
     string Create = CRUD.Create + MethodName;
     string Edit = CRUD.Edit + MethodName;
     string Delete = CRUD.Delete + MethodName;
     string card = "";
+    YachtCrew obj;
 }
-@model IEnumerable<IGrouping<Yacht, YachtCrew>>
 
 <table class="table table-sm table-striped table-bordered text-white">
     <thead>
@@ -28,17 +31,19 @@
             <tr class="text-black">
                 <td>
                     <div class="">
-                        <expander class="w-100 " button-class="fw-bold fs-4" message="Экипаж яхты @col.Key.Name - @col.Key.Type.Name (@col.Count()):">
-                            @foreach (var obj in col)
+                        <expander class="w-100 " button-class="fw-bold fs-4" message="Экипаж яхты @col.Group.Key.Name - @col.Group.Key.Type.Name (@col.Group.Count()):">
+                            @foreach (var mod in col.Group)
                             {
                                 {
+                                    obj = mod.Crew;
                                     card = obj.Enddate == null ? "" : "lightcoral";
                                 }
                                 <div class="card m-2" style="width: auto; background-color: @card;">
                                     <div class="position-absolute" style="right:20px;">
-                                        @if (obj.Enddate == null) { 
-                                        <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id"> Удалить </a>
-                                        <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                                        @if (obj.Enddate == null && (obj.Crew.Position.Name == "Captain" ^ col.AllowedOnlyCaptain))
+                                        {
+                                            <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id"> Удалить </a>
+                                            <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
                                         }
                                     </div>
                                     <div class="card-body">
@@ -58,6 +63,9 @@
                                         </h6>
                                         <hr />
                                         <div class="card-text" style="max-width: 75vw">
+                                            <div>
+                                                Статус яхты: <div class="text-center" style="width: 25%; font-size: 1em; border: 1px solid red;">@mod.Status</div>
+                                            </div>
                                             <span>Описание</span>
                                             <p style="text-indent: 2em; white-space: pre-line;">
                                                 @(obj.Description)
