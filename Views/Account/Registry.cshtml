@@ -105,6 +105,12 @@ function submitter() {
             </div>
 
             <input asp-for="Object.Person.Staffonly" hidden/>
+            @if (Model.Action != "Registry")
+            {
+            <div class="m-2">
+                <a class="btn bg-danger text-white" asp-action="SubmitDelete" >Удалить аккаунт</a>
+            </div>
+            }
 
             <partial name="_EditorBottomButtons" model="@(new EditorBottomButtonsViewModel {
     ShowAction = Model.ShowAction,

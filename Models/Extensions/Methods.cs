@@ -44,6 +44,10 @@ namespace Project.Models
         public static string PersonEmail(Person person) => $"{person.Name} {person.Surname} {person.Email}";
         public static string PersonPhone(Person person) => $"{person.Name} {person.Surname} {person.Phone}";
         public static string PersonNameSurname(Person person) => $"{person.Name} {person.Surname}";
+        
+        public static string YachtNameType(Yacht yacht) => $"{yacht.Name} ( {yacht.Type.Name} )";
+
+
 
         public static string YesNo(bool Bool) => Bool ? "Да" : "Нет";
 
@@ -68,7 +72,7 @@ namespace Project.Models
             {
                 case "Created": return 100;
                 case "Waits": return 50;
-                case "InProgress": return 25;
+                case "In Progress": return 25;
                 case "Done": return 5;
                 case "Canceled": return 0;
                 default:

@@ -1,4 +1,35 @@
-﻿
-<div>
-    Хохо, добро пожаловать на основную страницу
+﻿@model IEnumerable<EventWinnerCrewViewModel>
+<div class="fs-2">
+    Наши события:
 </div>
+@{
+    int index = 1;
+}
+@foreach (var obj in Model)
+{
+    <div class="w-75 m-xxl-5">
+        <div class="card">
+            <img src="/image/Events/E_@(index++).jpg" class="card-img-top w-100" style="align-self: center">
+            <div class="card-body">
+                <h5 class="card-title">@obj.Event.Name</h5>
+                <h5 class="card-subtitle">@obj.Event.Startdate - @obj.Event.Duration (@Methods.CoalesceDateTime(obj.Event.Enddate))</h5>
+                <p class="card-text">@obj.Event.Description</p>
+                <expander class="w-100 " button-class="fw-bold fs-4" message="Участники события события(@obj.Winners.Count()):">
+                    @foreach (var item in obj.Winners)
+                    {
+                        <div>
+                            <div class="fs-2 m-2">
+                                Капитан @Methods.PersonNameSurname(item.Crew.Crew.Staff) с яхты @Methods.YachtNameType(item.Crew.Yacht) 
+                                @if (item.Winner.Place != null)
+                                {
+                                    <span>Место: @item.Winner.Place</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </expander>
+
+            </div>
+        </div>
+    </div>
+}

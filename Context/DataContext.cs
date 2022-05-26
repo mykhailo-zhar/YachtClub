@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace Project.Migrations
         {
             Context = context;
         }
-
+        #region DBSets       
         //public virtual DbSet<Account> Account { get; set; }
         public virtual DbSet<Availableresources> Availableresources { get; set; }
         public virtual DbSet<Busyyacht> Busyyacht { get; set; }
@@ -58,6 +59,7 @@ namespace Project.Migrations
         public virtual DbSet<Yachtleasetype> Yachtleasetype { get; set; }
         public virtual DbSet<Yachttest> Yachttest { get; set; }
         public virtual DbSet<Yachttype> Yachttype { get; set; }
+        #endregion
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -77,9 +79,10 @@ namespace Project.Migrations
                     Role = GetLowerName(Role) + "_" + GetLowerName(User.Identity.Name);
                 }
                 optionsBuilder.UseNpgsql($"Host=localhost;Port=5432;ConnectionIdleLifetime=30;Database=YachtClub;Username={Role};Password={Password}");
-
             }
         }
+        #region Functions
+
         [DbFunction("materialmetric", "public")]
         public string MaterialMetric(int MaterialID) => throw new NotImplementedException();
 
@@ -90,21 +93,30 @@ namespace Project.Migrations
         public bool LeadRepairMan(int RepID, int RepairManID) => throw new NotImplementedException();
 
         [DbFunction("isstaff", "public")]
-        public bool IsStaff(int PersonId) => throw new NotImplementedException();
+        public bool IsStaff(int PersonId) => throw new NotImplementedException(); 
+        [DbFunction("isinterm", "public")]
+        public bool IsInTerm(DateTime Start1, DateTime Start2, DateTime End2, DateTime End1) => throw new NotImplementedException();
 
         [DbFunction("hasrepairman", "public")]
         public bool HasRepairMan(int RepID, int RepairManID) => throw new NotImplementedException();
+        [DbFunction("countactivecrew", "public")]
+        public int CountActiveCrew(int Yachtid) => throw new NotImplementedException(); 
+        [DbFunction("rolebyname", "public")]
+        public int CountRoleByName(string email) => throw new NotImplementedException();   
 
+        public IQueryable<YachtCrew> YachtCrewByEvent(int eventid) => YachtCrew.FromSqlRaw($"select * from  YachtCrewByEvent({eventid})"); 
+
+        #endregion
+
+        #region Procedures
+        public void Ping(string login, string role, string password) => Database.ExecuteSqlInterpolated($"call tryconnect({login},{role},{password});");
+        public void DeleteProfile() => Database.ExecuteSqlInterpolated($"call removeallexistingroles_r({User.Identity.Name});");
+
+        #endregion
 
         public string GetMyRole(string Role) => "my_" + RegexExtension.ReplaceAll(Role, new Regex("[ !\"#$%&'()*+,./:;<=>?@\\^_`{|}~]"), "_").ToLower();
 
         public string GetLowerName(string Name) => RegexExtension.ReplaceAll(Name,new Regex("[ !\"#$%&'()*+,./:;<=>?@\\^_`{|}~]"),"_").ToLower();
-
-
-        public void Ping(string login, string role, string password) => Database.ExecuteSqlInterpolated($"call tryconnect({login},{role},{password});");
-
-
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -115,6 +127,10 @@ namespace Project.Migrations
                         modelBuilder.HasDbFunction(() => GetLowerName(default));*/
             modelBuilder.HasDbFunction(() => LeadRepairMan(default, default));
             modelBuilder.HasDbFunction(() => HasRepairMan(default, default));
+            modelBuilder.HasDbFunction(() => IsInTerm(default, default, default, default));
+            modelBuilder.HasDbFunction(() => CountActiveCrew(default));
+            modelBuilder.HasDbFunction(() => CountRoleByName(default));
+            //modelBuilder.HasDbFunction(() => YachtCrewByEvent(default));
 
             /* modelBuilder.Entity<Account>(entity => {
                  entity.HasIndex(e => e.Login)

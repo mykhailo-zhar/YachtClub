@@ -444,7 +444,6 @@ namespace Project.Controllers
         }
         #endregion
 
-        //TODO: Исправить ошибки в договоре на яхты и пофиксить интерфейс
         #region Yachtlease
         public IActionResult Yachtlease()
         {

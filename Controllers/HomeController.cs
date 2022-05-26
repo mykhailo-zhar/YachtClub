@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Project.Controllers
 {
@@ -18,12 +20,39 @@ namespace Project.Controllers
         {
             Context = context;
         }
+
+
         public IActionResult Index()
         {
-            return View();
+            var Object = Context.Event
+                .OrderBy(p => p.Startdate)
+                .Take(5)
+                .ToList()
+                .Select(a => new EventWinnerCrewViewModel
+                {
+                    Event = a,
+                    Winners = Context.YachtCrewByEvent(a.Id)
+                        .Include(p => p.Crew)
+                            .ThenInclude(p => p.Staff)
+                        .Include(p => p.Yacht)
+                            .ThenInclude(p => p.Type)
+                        .ToList()
+                        .Select(p => new YachtCrewWinners
+                        {
+                            Crew = p,
+                            Winner = Context.Winner.FirstOrDefault(z => z.Eventid == a.Id && p.Yachtid == z.Yachtid)
+                        })
+                        .OrderBy(p => p.Winner.Place)
+                    ,
+                   
+                        
+                })
+                ;
+
+            return View(Object);
         }
 
-        [Authorize(Roles = RolesReadonly.DB_Admin)]
+        //[Authorize(Roles = RolesReadonly.DB_Admin)]
         public IActionResult ReloadDatabase()
         {
             SeedData.RestartDatabase(Context);

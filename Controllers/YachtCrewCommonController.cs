@@ -29,20 +29,23 @@ namespace Project.Controllers
             {
                 var Object = Context.YachtCrew
                     .Include(p => p.Yacht)
-                        .ThenInclude(p => p.Type)
+                        .ThenInclude(p => p.Type) 
+                    .Include(p => p.Yacht)
+                        .ThenInclude(p => p.Yachtowner)
                     .Include(p => p.Crew)
                         .ThenInclude(p => p.Position)
                     .Include(p => p.Crew)
                         .ThenInclude(p => p.Staff)
                     .Select(p => new YachtCrewStatusViewModel
                     {
-                        Crew = p,
-                        Status = Context.YachtsStatus(p.Yachtid)
+                        Captain = p,
+                        Status = Context.YachtsStatus(p.Yachtid),
+                        CurrentCrew = Context.CountActiveCrew(p.Yachtid)
                     })
-                    .OrderByDescending(p => p.Crew.Enddate ?? DateTime.Now)
-                    .ThenBy(p => p.Crew.Crew.Positionid)
+                    .OrderByDescending(p => p.Captain.Enddate ?? DateTime.Now)
+                    .ThenBy(p => p.Captain.Crew.Positionid)
                     .ToList()
-                    .GroupBy(p => p.Crew.Yacht)
+                    .GroupBy(p => p.Captain.Yacht)
                     .Select(p => new YachtCrewGroupingViewModel
                     {
                         Group = p,
@@ -57,18 +60,22 @@ namespace Project.Controllers
                        .ThenInclude(p => p.Type)
                    .Include(p => p.Crew)
                        .ThenInclude(p => p.Position)
+                   .Include(p => p.Yacht)
+                        .ThenInclude(p => p.Yachtowner)
                    .Include(p => p.Crew)
                        .ThenInclude(p => p.Staff)
-                   .Where(p => p.Crew.Staffid == User.PersonId() && p.Crew.Position.Name == "Captain")
+                   .Where(p => p.Crew.Staffid == User.PersonId() && p.Crew.Position.Name == RolesReadonly.Captain)
+                   .Where(p => p.Enddate == null || p.Crew.Position.Name != RolesReadonly.Captain)
                    .Select(p => new YachtCrewStatusViewModel
                    {
-                       Crew = p,
+                       Captain = p,
+                       Crew = Context.YachtCrew.Where(a => p.Id != a.Id && a.Yachtid == p.Yachtid && a.Enddate == null),
                        Status = Context.YachtsStatus(p.Yachtid)
                    })
-                   .OrderByDescending(p => p.Crew.Enddate ?? DateTime.Now)
-                   .ThenBy(p => p.Crew.Crew.Positionid)
+                   .OrderByDescending(p => p.Captain.Enddate ?? DateTime.Now)
+                   .ThenBy(p => p.Captain.Crew.Positionid)
                    .ToList()
-                   .GroupBy(p => p.Crew.Yacht)
+                   .GroupBy(p => p.Captain.Yacht)
                    .Select(p => new YachtCrewGroupingViewModel
                    {
                        Group = p,
@@ -100,6 +107,7 @@ namespace Project.Controllers
                ;
             }
             //TODO: Запретить добавлять капитанов в яхту, если уже есть капитан
+            //TODO: Запретить заключать контракты с служебными должносятми
             //TODO: Запретить удалять None, Empty
             else
             {
@@ -119,6 +127,7 @@ namespace Project.Controllers
                                            .Include(p => p.Crew)
                                            .ThenInclude(p => p.Position)
                                            .Where(p => p.Crew.Position.Name == RolesReadonly.Captain && p.Crew.Staffid == User.PersonId())
+                                           .Where(p => p.Enddate == null)
                                            .Any(p => p.Yachtid == y.Id)
                      )
                .Where(p => Context.Busyyacht.Any(b => b.Id == p.Id && b.Val))

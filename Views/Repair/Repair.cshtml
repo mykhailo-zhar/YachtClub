@@ -113,21 +113,21 @@
                                                         <div>
                                                             Статус: @item.Status
                                                         </div>
-                                                        @if (obj.Repair.Enddate == null && obj.LeadRight)
+                                                        @if (obj.Repair.Enddate == null && item.Enddate == null && obj.LeadRight)
                                                         {
                                                             <span>
-                                                                <a class="btn btn-danger" asp-action="@DeleteER"
+                                                                <a class="btn btn-danger" asp-controller="RepairStorekeeperCommon" asp-action="@DeleteER"
                                                                    asp-route-id="@item.Id">-</a>
-                                                                <a class="btn btn-danger" asp-action="@EditER"
+                                                                <a class="btn btn-danger"  asp-controller="RepairStorekeeperCommon" asp-action="@EditER"
                                                                    asp-route-id="@item.Id">Edit</a>
                                                             </span>
                                                         }
                                                     </div>
                                                 </div>
                                             }
-                                            @if (obj.Repair.Enddate == null)
+                                            @if (obj.Repair.Enddate == null && obj.LeadRight)
                                             {
-                                                <a class="btn btn-primary m-4" asp-action="@CreateER" asp-route-repairid="@obj.Repair.Id">+</a>
+                                                <a class="btn btn-primary m-4" asp-action="@CreateER"  asp-controller="RepairStorekeeperCommon" asp-route-repairid="@obj.Repair.Id">+</a>
                                             }
                                         </div>
                                     </expander>

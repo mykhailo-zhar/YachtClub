@@ -15,6 +15,7 @@ namespace Project.Models
         public const string Repairman = "Repairman";
         public const string DB_Admin = "DB Admin";
         public const string Captain = "Captain";
+        public const string Client = "Client";
     }
 
     public static class RegexExtension

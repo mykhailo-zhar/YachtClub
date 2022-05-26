@@ -7,5 +7,6 @@ namespace Project.Models
     {
         public Yacht Yacht { get; set; }
         public string Status { get; set; }
+        public IEnumerable< YachtCrew> Crew { get; set; }
     }
 }

@@ -107,10 +107,7 @@ namespace Project.Controllers
                         ViewBag.Positions = collection;
 
                         return LoginToRolePrivate(Account);
-                    }
-
-
-                     
+                    } 
 
                     if (Account.Object.User.Staffonly && Account.Object.AsWho == "Client")
                     {
@@ -132,6 +129,7 @@ namespace Project.Controllers
             return PrivateLogin(Account.Object);
         }
         #endregion
+
         private async Task Authenticate(string userName, string RoleName, int PersonId, string Password)
         {
             // создаем один claim
@@ -212,11 +210,18 @@ namespace Project.Controllers
                             Context.Add(Registry.Object.Person);
                             await Context.SaveChangesAsync();
 
-                            await Context.Database.ExecuteSqlInterpolatedAsync($"call addnewacc('{Registry.Object.Account.Login}','{Registry.Object.Account.Password}')");
+                            await Context.Database.ExecuteSqlRawAsync($"call addnewacc_r('{Registry.Object.Account.Login}','{Registry.Object.Account.Password}');");
                             trans.Commit();
                             return RedirectToAction("Index", "Home");
                         }
-                        ModelState.AddModelError("", "Некорректные логин и(или) пароль");
+                        if (Context.Person.Select(p => Context.CountRoleByName(person.Email) == 0).First() )
+                        {
+                            throw new Exception("Мы знаем, что вы были клиентом нашего клуба, свяжитесь с нашим менеджером, чтобы восстановить аккаунт");
+                        }
+                        else
+                        {
+                            throw new Exception("Некорректные логин и(или) пароль");
+                        }
                     }
                     catch (Exception exception)
                     {
@@ -307,5 +312,26 @@ namespace Project.Controllers
             return PrivateMyProfile(MyProfile.Object);
         }
         #endregion
+
+        #region SubmitDelete
+        public IActionResult SubmitDelete()
+        {
+            return View(new ObjectViewModel<int>
+            {
+                Action = nameof(SubmitDelete)
+            }
+            );
+        }
+
+        [HttpPost]
+        [ActionName("SubmitDelete")]
+        public async Task<IActionResult> SubmitDeletePost()
+        {
+            Context.DeleteProfile();
+
+            return await LogoutPost();
+        }
+        #endregion
+
     }
 }

@@ -1258,6 +1258,7 @@ Begin
 END;
 $$ language plpgsql;
 				");
+
             //Пересечение дат
             dbContext.Database.ExecuteSqlRaw(@"
 create or replace function IsInTerm(
@@ -1403,7 +1404,7 @@ $$ language plpgsql;
 				");	
 			//Роль по текущему пользователю
             dbContext.Database.ExecuteSqlRaw(@"
-create or replace function RoleByName (
+/*create or replace function RoleByName (
 	username varchar
 )
 	returns varchar
@@ -1417,7 +1418,18 @@ begin
 		where member.rolname = username;
 return rec.rolname;
 end;
+$$ language plpgsql;*/
+
+create or replace function rolebyname (
+	_email varchar
+)
+	returns int
+as $$
+begin 	
+	return (select count(*) from pg_roles p where p.rolname like '%' || lowerusername(_email) || '%');
+end; 
 $$ language plpgsql;
+
 				");
 			//Опознавание черт
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1440,6 +1452,36 @@ begin
 return 'my_' || lower(regexp_replace (posname, '[ [:punct:]]', '_','g'));
 end;
 $$ language plpgsql;
+				");	
+			//Активное количество персонала
+            dbContext.Database.ExecuteSqlRaw(@"
+CREATE or replace Function CountActiveCrew (_yachtid int)
+	Returns int
+as $$
+Begin
+	Return ( select count(*) from yacht_crew where yachtid = _yachtid and enddate is null );
+END;
+$$ language plpgsql;
+				");
+			//Капитан по событию
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YachtCrewByEvent (
+	_eventid int
+)
+	returns setof Yacht_crew
+as $$
+begin 	
+	return query 
+	select * from yacht_crew where id in (	
+		select distinct yc.id from yacht_crew yc 
+		join winner w on w.yachtid = yc.yachtid 
+		join event e on w.eventid = e.id and e.id = _eventid
+		join staff_position sp on yc.crewid = sp.id 
+		join position p on p.id = sp.positionid and p.name = 'Captain'
+		where isinterm(yc.startdate, e.startdate, coalesce(e.enddate, curstmp() ),coalesce(yc.enddate, curstmp() ))
+	);
+end; 
+$$ language plpgsql;
 				");
 
 			#endregion
@@ -1456,42 +1498,39 @@ begin
 end;
 $$ language plpgsql;
 				");
+
+			#region Хлам
 			//ДАйте мне новый аккаунт пожалуйста
-/*			dbContext.Database.ExecuteSqlRaw(@"
-CREATE OR REPLACE Procedure CreateAccountByPO(
-PersonID int,
-_password varchar
-)
-AS $$
-declare
-rec record;
-begin
-	execute 'select email from person where id = ' || PersonID || ' ;' into rec;
-	insert into account(login, password, UserID) 
-	values
-	(rec.email, _password, PersonID);
-end;
-$$ language plpgsql;
-				");*/
+			/*			dbContext.Database.ExecuteSqlRaw(@"
+			CREATE OR REPLACE Procedure CreateAccountByPO(
+			PersonID int,
+			_password varchar
+			)
+			AS $$
+			declare
+			rec record;
+			begin
+				execute 'select email from person where id = ' || PersonID || ' ;' into rec;
+				insert into account(login, password, UserID) 
+				values
+				(rec.email, _password, PersonID);
+			end;
+			$$ language plpgsql;
+							");*/
+			#endregion
+
 			//Новый ремонт, новый ремонтник
 			dbContext.Database.ExecuteSqlRaw(@"
 CREATE OR REPLACE Procedure PopulateRepair_Men(
-_dur timestamp(2),
-_p int,
-_yid int,
-_desc text,
+_RepairID int,
 _PersonID int
 )
 AS $$
 declare
 rec record;
 begin
-	execute 'select * from repair_staff where staffid = ' || PersonID || ' ;' into rec;
-	
-	insert into repair(duration, personnel, yachtid, description)
-	values
-	(_dur, _p, _yid, _desc);
-	
+	execute 'select * from repair_staff where staffid = ' || _PersonID || ' ;' into rec;
+		
 	insert into repair_men(repairid, staffid) 
 	values
 	(_RepairID, rec.id);
@@ -1499,6 +1538,7 @@ end;
 $$ language plpgsql;
 
 				");
+
 			//Выдача новых активных ролей
 			dbContext.Database.ExecuteSqlRaw(@"
 CREATE OR REPLACE Procedure PopulateAllValidSP(
@@ -1527,7 +1567,21 @@ begin
 	execute 'GRANT my_client TO client_' || _email_  || ' ;';
 end;
 $$ language plpgsql;
+				");	
+			//Выдача новых активных ролей Защищено
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure PopulateAllValidSP_r(
+_email varchar, 
+_pass varchar
+)
+AS $$
+begin
+	call exec_by_rolecreator('call PopulateAllValidSP('''''|| _email ||''''','''''|| _pass ||''''');');
+end;
+$$ language plpgsql;
 				");
+
+
 			//Обновление пароля активных ролей
 			dbContext.Database.ExecuteSqlRaw(@"
 CREATE OR REPLACE Procedure updateexistingroles(
@@ -1548,6 +1602,20 @@ begin
 end;
 $$ language plpgsql;
 				");
+			//Обновление пароля активных ролей Защищено
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure updateexistingroles_r(
+_email varchar, 
+_bpass varchar
+)
+AS $$
+begin
+	call exec_by_rolecreator('call  updateexistingroles('''''|| _email ||''''','''''|| _bpass ||''''');');
+end;
+$$ language plpgsql;
+
+				");
+
 			//Удаление активных ролей
 			dbContext.Database.ExecuteSqlRaw(@"
 
@@ -1568,6 +1636,20 @@ end;
 $$ language plpgsql;
 
 				");
+			//Удаление активных ролей Защищено
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure RemoveAllExistingRoles_R(
+_email varchar
+)
+AS $$
+begin
+	call exec_by_rolecreator('call removeallexistingroles('''''|| _email ||''''');');
+end;
+$$ language plpgsql;
+
+				");
+
 			//Пинг
 			dbContext.Database.ExecuteSqlRaw(@"
 
@@ -1586,6 +1668,7 @@ $$ language plpgsql;
 
 
 				");	
+
 			//Добавить одну роль
 			dbContext.Database.ExecuteSqlRaw(@"
 
@@ -1617,8 +1700,54 @@ usy varchar;
 begin
 	usy :=  'client_' || LowerUserName(_email);
 	
-	execute 'CREATE ROLE client_' || usy || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
+	execute 'CREATE ROLE ' || usy || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
 	execute 'GRANT my_client TO ' || usy  || ' ;';
+end;
+$$ language plpgsql;
+				");
+			//Добавить одну роль Защищённая
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure addnewacc_r(
+_email varchar, 
+_role int,
+_pass varchar
+)
+AS $$
+declare
+begin
+	call exec_by_rolecreator('call addnewacc('''''|| _email ||''''','''''|| _role ||''''','''''|| _pass ||''''');');
+end;
+$$ language plpgsql;
+
+CREATE OR REPLACE Procedure addnewacc_r(
+_email varchar, 
+_pass varchar
+)
+AS $$
+begin
+	call exec_by_rolecreator('call addnewacc('''''|| _email ||''''','''''|| _pass ||''''');');
+end;
+$$ language plpgsql;
+				");
+
+			//Запуск команды от имени
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure exec_by_rolecreator(
+command text
+)
+AS $$
+declare
+usy varchar;
+begin
+	execute 'SELECT dblink_connect(''___session__11_'',''dbname=YachtClub user=guest_rollercoaster password=jesuschrist'');';
+	begin
+	execute 'select dblink(''___session__11_'','''|| command || ''');';
+	EXCEPTION WHEN OTHERS THEN
+		execute 'select dblink_disconnect(''___session__11_'');'; 
+		raise exception '%', SQLERRM using ERRCODE = SQLSTATE;
+	end;
+    execute 'select dblink_disconnect(''___session__11_'');'; 
 end;
 $$ language plpgsql;
 				");
@@ -2708,10 +2837,6 @@ for each row execute function SPosition1 ();
 				");
             #endregion
 
-            #region 
-
-            #endregion
-
             #endregion
 
             #region SameTriggers
@@ -2792,8 +2917,8 @@ for each row execute function SPosition1 ();
 			var ps = Hash_Extension.StandartPassword;
 			//Account персонала
 			dbContext.Person.ToList().ForEach(p => {
-			    dbContext.Database.ExecuteSqlInterpolated($"call removeallexistingroles({p.Email});");
-				dbContext.Database.ExecuteSqlInterpolated($"call populateallvalidsp({p.Email},{ps});");
+			    dbContext.Database.ExecuteSqlRaw($"call removeallexistingroles('{p.Email}');");
+				dbContext.Database.ExecuteSqlRaw($"call populateallvalidsp('{p.Email}','{ps}');");
 			});
 
 			
@@ -2828,15 +2953,21 @@ grant all PRIVILEGES on yachttest, repair, repair_men, extradationrequest to my_
 grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
 grant select on yacht_crew, yacht_crew_position to my_owner;
 				");	
-			//Владелец
-			dbContext.Database.ExecuteSqlRaw(@"
-grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
-grant select on yacht_crew, yacht_crew_position to my_owner;
-				");
 
 			//Стандартные типы данных
 			dbContext.Database.ExecuteSqlRaw(@"
 grant ALL PRIVILEGES on ALL SEQUENCES IN SCHEMA PUBLIC to amy_data_types;
+				");
+						
+			//MyDefault
+			dbContext.Database.ExecuteSqlRaw(@"
+grant select on event,winner,yacht_crew,staff,staff_position,person,yacht,yachttype,position to my_default;
+grant insert on person to my_default;
+				");
+			//Клиент
+			dbContext.Database.ExecuteSqlRaw(@"
+grant select on yachtlease, yachtleasetype, busyyacht to my_client;
+grant insert,update on yacht to my_client;
 				");
 
 			#endregion

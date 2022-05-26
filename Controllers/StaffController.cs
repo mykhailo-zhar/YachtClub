@@ -156,7 +156,8 @@ namespace Project.Controllers
             ViewData["Staff"] = Context.Person.ToList();
             ViewData["Position"] = Context.Position.ToList();
         }
-        private IActionResult PrivateCreateStaffPosition(int sid = 0, StaffPosition StaffPosition = null){
+        private IActionResult PrivateCreateStaffPosition(int sid = 0, StaffPosition StaffPosition = null)
+        {
             StaffPosition = StaffPosition ?? new StaffPosition { Staffid = sid };
             ConfigureViewBagStaffPosition();
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Create(StaffPosition));
@@ -168,16 +169,21 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                try
+                using (var trans = Context.Database.BeginTransaction())
                 {
-                    StaffPosition.Object.Startdate = DateTime.Now;
-                    Context.StaffPosition.Add(StaffPosition.Object);
-                    await Context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Staff));
-                }
-                catch (Exception exception)
-                {
-                    this.HandleException(exception);
+                    try
+                    {
+                        StaffPosition.Object.Startdate = DateTime.Now;
+                        Context.StaffPosition.Add(StaffPosition.Object);
+                        await Context.SaveChangesAsync();
+                        trans.Commit();
+                        return RedirectToAction(nameof(Staff));
+                    }
+                    catch (Exception exception)
+                    {
+                        trans.Rollback();
+                        this.HandleException(exception);
+                    }
                 }
             }
 
@@ -196,7 +202,7 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                
+
                 try
                 {
                     if (StaffPosition.Option[0]) StaffPosition.Object.Enddate = DateTime.Now;
@@ -208,11 +214,6 @@ namespace Project.Controllers
                 {
                     this.HandleException(exception);
                 }
-                if (ModelState.IsValid)
-                {
-                    return RedirectToAction(nameof(Staff));
-                }
-                return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Edit(StaffPosition.Object));
             }
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Edit(StaffPosition.Object));
         }
@@ -237,10 +238,6 @@ namespace Project.Controllers
             catch (Exception exception)
             {
                 this.HandleException(exception);
-            }
-            if (ModelState.IsValid)
-            {
-                return RedirectToAction(nameof(Staff));
             }
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Delete(StaffPosition.Object));
 

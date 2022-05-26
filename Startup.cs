@@ -24,7 +24,7 @@ namespace WebApp
             Hash_Extension.StandartPassword = Configuration["StandartPassword"];
             services.AddDbContext<DataContext>(opts =>
             {
-                opts.UseNpgsql(Configuration["ConnectionStrings:YachtClubConnection"]);
+               // opts.UseNpgsql(Configuration["ConnectionStrings:YachtClubConnection"]);
                 opts.EnableSensitiveDataLogging(true);
             });
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
@@ -64,6 +64,7 @@ namespace WebApp
                     .AddCookie(options => 
                                         {
                                             options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
+                                            options.ExpireTimeSpan = System.TimeSpan.FromHours(10);
                                         })
                     ;
         }
@@ -85,7 +86,12 @@ namespace WebApp
             });
 
             app.UseAuthentication();    
-            app.UseAuthorization();    
+            app.UseAuthorization();
+
+           /* SeedData.RestartDatabase(context);
+            SeedData.SeedWithData(context);
+            SeedData.SeedWithProcedure(context);
+            SeedData.SeedAccounts(context);*/
 
             app.UseEndpoints(endpoints =>
             {
