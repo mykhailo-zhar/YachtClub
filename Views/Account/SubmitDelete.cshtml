@@ -1,10 +1,10 @@
 ﻿@model ObjectViewModel<int>
 <partial name="_Validation" />
-<h5 class="bg-primary text-white text-center p-2 ">Выход</h5>
+<h5 class="bg-danger text-white text-center p-2 ">Удалить акааунт</h5>
 <form asp-action="@Model.Action" method="post">
     <partial name="_EditorBottomButtons" model="@(new EditorBottomButtonsViewModel {
     ShowAction = Model.ShowAction,
-    Theme = Model.Theme,
+    Theme = "danger",
     Action = Model.Action,
     BackController = "Home",
     BackAction = "Index"

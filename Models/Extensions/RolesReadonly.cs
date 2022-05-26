@@ -10,6 +10,7 @@ namespace Project.Models
     public class RolesReadonly
     {
         public const string Owner = "Owner";
+        public const string Guest = "guest";
         public const string Personell_Officer = "Personell Officer";
         public const string Storekeeper = "Storekeeper";
         public const string Repairman = "Repairman";

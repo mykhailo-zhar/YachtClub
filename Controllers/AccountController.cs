@@ -285,15 +285,15 @@ namespace Project.Controllers
                         }
                         else if (User.Identity.Name == MyProfile.Object.Account.Login)
                         {
-                            await Context.Database.ExecuteSqlInterpolatedAsync($" call updateexistingroles({MyProfile.Object.Account.Login}, {MyProfile.Object.Account.Password});");
+                            await Context.Database.ExecuteSqlInterpolatedAsync($" call updateexistingroles_r({MyProfile.Object.Account.Login}, {MyProfile.Object.Account.Password});");
                         }
 
                         if (User.Identity.Name != MyProfile.Object.Account.Login)
                         {
                             string oldLogin = User.Identity.Name;
-                            await Context.Database.ExecuteSqlInterpolatedAsync($"call populateallvalidsp({MyProfile.Object.Account.Login},{MyProfile.Object.Account.Password});");
+                            await Context.Database.ExecuteSqlInterpolatedAsync($"call populateallvalidsp_r({MyProfile.Object.Account.Login},{MyProfile.Object.Account.Password});");
                             await Authenticate(MyProfile.Object.Account.Login, User.Role(), Person.Id, MyProfile.Object.Account.Password);
-                            await Context.Database.ExecuteSqlInterpolatedAsync($"call removeallexistingroles({oldLogin});");
+                            await Context.Database.ExecuteSqlInterpolatedAsync($"call removeallexistingroles_r({oldLogin});");
                         }
                         else
                         {

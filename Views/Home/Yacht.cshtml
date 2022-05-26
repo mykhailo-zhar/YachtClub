@@ -1,0 +1,62 @@
+﻿@model IEnumerable<YachtWithStatusViewModel>
+@{
+    var MethodName = typeof(Yacht).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+
+    string card = "";
+}
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Яхта
+                </div>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model)
+        {
+            <tr class="text-black">
+                <td>
+                    <div class="card m-2" style="width: auto;">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                @obj.Yacht.Name
+                            </h3>
+                            <h4 class="card-subtitle">
+                                Тип: @obj.Yacht.Type.Name
+                            </h4>
+                            <h5 class="card-subtitle fst-italic">
+                                Владелец: @Methods.PersonPhone(obj.Yacht.Yachtowner)
+                            </h5>
+                            <h5 class="card-subtitle fst-italic">
+                                Капитан: @Methods.PersonPhone(obj.Crew.FirstOrDefault().Crew.Staff)
+                            </h5>
+                            <div class="m-2">
+                                <div>
+                                    <div class="text-center" style="width: 25%; font-size: 1em; border: 1px solid red;">@obj.Status</div>
+                                </div>
+                                <div>
+                                    Дата регистрации: @obj.Yacht.Registrydate
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(obj.Yacht.Description))
+                                {
+                                <div class="fs-4">
+                                    <div>Описание:</div>
+                                    <div class="card-text" style="max-width: 75vw">
+                                        <div class="m-2 fw-light" style=" white-space: pre-line;"> @(obj.Yacht.Description)</div>
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -71,7 +71,7 @@ namespace Project.Migrations
 
                 if (Role == null)
                 {
-                    Role = "guest";
+                    Role = RolesReadonly.Guest;
                     Password = "1111";
                 }
                 else
@@ -102,9 +102,11 @@ namespace Project.Migrations
         [DbFunction("countactivecrew", "public")]
         public int CountActiveCrew(int Yachtid) => throw new NotImplementedException(); 
         [DbFunction("rolebyname", "public")]
-        public int CountRoleByName(string email) => throw new NotImplementedException();   
+        public int CountRoleByName(string email) => throw new NotImplementedException();  
+
 
         public IQueryable<YachtCrew> YachtCrewByEvent(int eventid) => YachtCrew.FromSqlRaw($"select * from  YachtCrewByEvent({eventid})"); 
+        public IQueryable<YachtCrew> CaptainByYachtid(int yachtid) => YachtCrew.FromSqlRaw($"select * from  CaptainByYachtid({yachtid})");
 
         #endregion
 

@@ -21,7 +21,7 @@ namespace Project.Controllers
             Context = context;
         }
 
-
+        //TODO: Типы яхт, типы контрактов, типы контрактов на яхты, победители и яхты
         public IActionResult Index()
         {
             var Object = Context.Event
@@ -52,7 +52,59 @@ namespace Project.Controllers
             return View(Object);
         }
 
-        //[Authorize(Roles = RolesReadonly.DB_Admin)]
+        public IActionResult Yachttype()
+        {
+            var Object = Context.Yachttype
+              .OrderBy(p => p.Id)
+                .Select(p => new MinCrewViewModel { 
+                    Yachttype = p
+                })
+                ;
+            return View(Object);
+        }
+        public IActionResult Contracttype()
+        {
+            var Object = Context.Contracttype
+               .OrderBy(p => p.Id);
+            return View(Object);
+        }        
+        public IActionResult Yacht()
+        {
+            var Object = Context.Yacht
+                .Include(p => p.Yachtowner)
+                .Include(p => p.Type)
+                .Select(
+                    p => new YachtWithStatusViewModel
+                    {
+                        Yacht = p,
+                        Status = Context.YachtsStatus(p.Id),
+
+                    }
+                )
+                .Where(p => p.Status == "Готова принимать контракты")
+                .ToList()
+                ;
+            Object.ForEach(p =>
+            {
+                p.Crew = Context.CaptainByYachtid(p.Yacht.Id)
+                   .Include(p => p.Crew)
+                       .ThenInclude(p => p.Staff);
+
+            });
+            return View(Object);
+        }
+
+        public IActionResult Yachtleasetype()
+        {
+            var Object = Context.Yachtleasetype
+                .Where(p => !p.Staffonly)
+                .OrderBy(p => p.Id);
+            return View(Object);
+        }
+
+
+
+        [Authorize(Roles = RolesReadonly.DB_Admin)]
         public IActionResult ReloadDatabase()
         {
             SeedData.RestartDatabase(Context);

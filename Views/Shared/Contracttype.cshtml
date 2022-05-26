@@ -4,6 +4,7 @@
     string Create = CRUD.Create + MethodName;
     string Edit = CRUD.Edit + MethodName;
     string Delete = CRUD.Delete + MethodName;
+
 }
 
 <table class="table table-sm table-striped table-bordered text-white">
@@ -14,9 +15,12 @@
                     Тип контракта на яхту
                 </div>
                 <div align="center">
-                    <a asp-action="@Create" class="btn btn-primary w-75">
-                        Создать
-                    </a>
+                    @if (User.IsInRole(RolesReadonly.Owner))
+                    {
+                        <a asp-action="@Create" class="btn btn-primary w-75">
+                            Создать
+                        </a>
+                    }
                 </div>
             </th>
         </tr>
@@ -28,25 +32,31 @@
                 <td>
                     <div class="card" style="width: auto;">
                         <div class="card-body">
-                            <div class="position-absolute" style="right:20px;">
-                                <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
-                                <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>
-                            </div>
+                            @if (User.IsInRole(RolesReadonly.Owner))
+                            {
+                                <div class="position-absolute" style="right:20px;">
+                                    <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                                    <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>
+                                </div>
+                            }
                             <h5 class="card-title">
                                 @obj.Name
                             </h5>
                             <h6 class="card-subtitle">
                                 @obj.Price
                             </h6>
-                            <hr />
-                            <div class="card-text" style="max-width: 75vw">
+                            @if (!string.IsNullOrWhiteSpace(obj.Description))
+                            {
+                                <hr />
                                 <div class="card-text" style="max-width: 75vw">
-                                    <span>Описание</span>
-                                    <p style="text-indent: 2em; white-space: pre-line;">
-                                        @(obj.Description)
-                                    </p>
+                                    <div class="card-text" style="max-width: 75vw">
+                                        <span>Описание</span>
+                                        <p style="text-indent: 2em; white-space: pre-line;">
+                                            @(obj.Description)
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
+                            }
                         </div>
                     </div>
                 </td>

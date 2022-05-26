@@ -125,6 +125,7 @@ namespace Project.Controllers
                         .Include(p => p.Crew)
                             .ThenInclude(p => p.Position)
                         .Where(y => y.Enddate == null && y.Yachtid == p.Id)
+                        .ToList()
                     }
                 )
                 .ToList();
@@ -139,7 +140,7 @@ namespace Project.Controllers
                .ToList();
         }
 
-        //TODO: Типы яхт, типы контрактов, типы контрактов на яхты, победители и яхты
+        
         public IActionResult EditYacht(string id)
         {
             var Yacht = Context.Yacht

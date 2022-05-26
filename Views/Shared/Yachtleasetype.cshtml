@@ -1,0 +1,72 @@
+﻿@model IEnumerable<Yachtleasetype>
+@{
+    var MethodName = typeof(Yachtleasetype).Name;
+    string Create = CRUD.Create + MethodName;
+    string Edit = CRUD.Edit + MethodName;
+    string Delete = CRUD.Delete + MethodName;
+}
+
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    Тип контракта на яхту
+                </div>
+                @if (User.IsInRole(RolesReadonly.Owner))
+                {
+                    <div align="center">
+                        <a asp-action="@Create" class="btn btn-primary w-75">
+                            Создать
+                        </a>
+                    </div>
+                }
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model)
+        {
+            <tr class="text-black">
+                <td>
+                    <div class="card" style="width: auto;">
+                        <div class="card-body">
+                            @if (User.IsInRole(RolesReadonly.Owner))
+                            {
+                                <div class="position-absolute" style="right:20px;">
+                                    <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
+                                    <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>
+                                </div>
+                            }
+                            <h5 class="card-title">
+                                @obj.Name
+                            </h5>
+                            <h6 class="card-subtitle">
+                                @obj.Price
+                            </h6>
+                            <hr />
+                            <div class="card-text" style="max-width: 75vw">
+                                @if (User.IsInRole(RolesReadonly.Owner))
+                                {
+                                    <div>
+                                        Для служебного пользования: @Methods.YesNo(obj.Staffonly)
+                                    </div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(obj.Description))
+                                {
+                                    <div class="card-text" style="max-width: 75vw">
+                                        <span>Описание</span>
+                                        <p style="text-indent: 2em; white-space: pre-line;">
+                                            @(obj.Description)
+                                        </p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

@@ -1482,6 +1482,25 @@ begin
 	);
 end; 
 $$ language plpgsql;
+				");	
+			//Текущий капитан яхты
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function CaptainByYachtid (
+	_yachtid int
+)
+	returns setof Yacht_crew
+as $$
+begin 	
+	return query 
+	select * from yacht_crew where id in (	
+		select distinct yc.id from yacht_crew yc 
+		join staff_position sp on yc.crewid = sp.id 
+		join position p on p.id = sp.positionid and p.name = 'Captain'
+		where yc.enddate is null and yc.yachtid = _yachtid
+		Limit 1
+	);
+end; 
+$$ language plpgsql;
 				");
 
 			#endregion
@@ -2953,6 +2972,11 @@ grant all PRIVILEGES on yachttest, repair, repair_men, extradationrequest to my_
 grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
 grant select on yacht_crew, yacht_crew_position to my_owner;
 				");	
+			//Капитан
+			dbContext.Database.ExecuteSqlRaw(@"
+grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
+grant select on yacht_crew, yacht_crew_position to my_owner;
+				");
 
 			//Стандартные типы данных
 			dbContext.Database.ExecuteSqlRaw(@"
@@ -2961,12 +2985,12 @@ grant ALL PRIVILEGES on ALL SEQUENCES IN SCHEMA PUBLIC to amy_data_types;
 						
 			//MyDefault
 			dbContext.Database.ExecuteSqlRaw(@"
-grant select on event,winner,yacht_crew,staff,staff_position,person,yacht,yachttype,position to my_default;
+grant select on event, winner, yacht_crew, staff, staff_position, person, yacht, yachttype, yachtleasetype, contracttype , position, busyyacht to my_default;
 grant insert on person to my_default;
 				");
 			//Клиент
 			dbContext.Database.ExecuteSqlRaw(@"
-grant select on yachtlease, yachtleasetype, busyyacht to my_client;
+grant select on yachtlease, busyyacht to my_client;
 grant insert,update on yacht to my_client;
 				");
 
