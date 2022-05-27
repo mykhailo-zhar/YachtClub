@@ -56,7 +56,7 @@
         </div>
         <input class="form-control" asp-for="Object.Priceperunit"
                id="PPU" oninput="calcval()"
-               placeholder="Цена за единицу"
+               placeholder="Цена за единицу @Methods.MoneyCulture"
                readonly="@(Model.ReadOnly)" />
     </div>
 
@@ -78,7 +78,7 @@
 
     <div class="form-group @Model.HideOnDelete">
         <label>Предварительная цена</label>
-        <div class="form-control" style="background-color: #dddddd" ><span id="show_price">@(Model.Object.Count * @Model.Object.Priceperunit)</span> @(ViewBag.Metric ?? "")<span></span></div>
+        <div class="form-control" style="background-color: #dddddd" ><span id="show_price">@(Model.Object.Count * @Model.Object.Priceperunit)</span> @(@Methods.MoneyCulture)<span></span></div>
 
     </div>
 

@@ -39,11 +39,12 @@
                                     <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>
                                 </div>
                             }
-                            <h5 class="card-title">
+                            <h5 class="card-title fs-2">
                                 @obj.Name
+                                <div class="fs-4 m-2">Было заключено @obj.Count контрактов этого типа</div>
                             </h5>
-                            <h6 class="card-subtitle">
-                                @obj.Price
+                            <h6 class="card-subtitle m-3">
+                                Цена: @Methods.Money(obj.Price)
                             </h6>
                             @if (!string.IsNullOrWhiteSpace(obj.Description))
                             {

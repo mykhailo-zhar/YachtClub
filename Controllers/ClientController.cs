@@ -162,29 +162,42 @@ namespace Project.Controllers
         #region Review
         public IActionResult Review()
         {
-            var Object = Context.Review
-                .Include(p => p.Client)
-                .OrderBy(p => p.Id)
-                .Select(p => new ReviewViewModel
-                {
-                    Review = p,
-                    Captains = Context.ReviewCaptain.Include(p => p.Captain).Where(r => r.Reviewid == p.Id),
-                    Yachts = Context.ReviewYacht.Include(p => p.Yacht).ThenInclude(p => p.Type).Where(r => r.Reviewid == p.Id)
-                })
-                ;
-            return View(Object);
+            if (User.IsInRole(RolesReadonly.Client))
+            {
+                var Object = Context.Review
+                    .Include(p => p.Client)
+                    .Where(p => p.Clientid == User.PersonId())
+                    .OrderByDescending(p => p.Date)
+                    .Select(p => new ReviewViewModel
+                    {
+                        Review = p
+                    })
+                    ;
+                return View(Object);
+            }
+            else
+            {
+                var Object = Context.Review
+                                   .Include(p => p.Client)
+                                   .OrderByDescending(p => p.Date)
+                                   .Select(p => new ReviewViewModel
+                                   {
+                                       Review = p
+                                   })
+                                   ;
+                return View(Object);
+            }
         }
 
         private void ReviewConfigureViewBag()
         {
-            if (Methods.IsDev) ViewBag.Client = Context.Person;
         }
 
         private IActionResult LocalEditReview(string id, Review Review = null)
         {
             Review = Review ?? Context.Review
                /*Включение навигационных свойств*/
-               .First(p => p.Id == int.Parse(id));
+               .First(p => p.Id == int.Parse(id) && p.Clientid == User.PersonId());
             /*Включение навигационных свойств*/
             var Model = ObjectViewModelFactory<Review>.Edit(Review);
             ReviewConfigureViewBag();
@@ -220,6 +233,7 @@ namespace Project.Controllers
             {
                 Rate = 1,
                 Public = true,
+                Clientid = User.PersonId(),
                 Date = DateTime.Now
             };
             /*Включение навигационных свойств*/
@@ -253,7 +267,7 @@ namespace Project.Controllers
         {
             var Review = Context.Review
                 /*Включение навигационных свойств*/
-                .First(p => p.Id == int.Parse(id));
+                .First(p => p.Id == int.Parse(id) && p.Clientid == User.PersonId());
             return View("ReviewEditor", ObjectViewModelFactory<Review>.Delete(Review));
         }
 

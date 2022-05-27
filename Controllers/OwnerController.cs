@@ -255,8 +255,15 @@ namespace Project.Controllers
         public IActionResult Contracttype()
         {
             var Object = Context.Contracttype
-                /*Включение навигационных свойств*/
-                .OrderBy(p => p.Id);
+                .Select(p => new Contracttype
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Price = p.Price,
+                    Description = p.Description,
+                    Count = Context.Contract.Count(a => a.Contracttypeid == p.Id)
+                })
+                .OrderByDescending(p => p.Count);
             return View(Object);
         }
 
@@ -362,9 +369,18 @@ namespace Project.Controllers
         #region Yachtleasetype
         public IActionResult Yachtleasetype()
         {
-            var Yachtleasetype = Context.Yachtleasetype
-                .OrderBy(p => p.Id);
-            return View(Yachtleasetype);
+            var Object = Context.Yachtleasetype
+                .Where(p => !p.Staffonly)
+                .Select(p => new Yachtleasetype
+                {
+                    Id = p.Id,
+                    Count = Context.Yachtlease.Count(a => a.Yachtleasetypeid == p.Id),
+                    Name = p.Name,
+                    Price = p.Price,
+                    Description = p.Description
+                })
+                .OrderByDescending(p => p.Count);
+            return View(Object);
         }
         public IActionResult EditYachtleasetype(string id)
         {
@@ -565,6 +581,7 @@ namespace Project.Controllers
             var Yachttype = Context.Yachttype.Select(p => new MinCrewViewModel
             {
                 Yachttype = p,
+                Yachts = Context.Yacht.Count(a => a.Typeid == p.Id),
                 MinCrew = Context.PositionYachttype
                     .Where(z => z.Yachttypeid == p.Id)
                     .Include(l => l.Position)

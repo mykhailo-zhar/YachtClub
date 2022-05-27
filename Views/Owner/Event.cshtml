@@ -67,8 +67,10 @@
                                                 Яхта: @item.Yacht.Name (@item.Yacht.Type.Name)
                                             </div>
 
-                                            @if (obj.Event.Canhavewinners.Value)
-                                            {<div>Место: @item.Place</div>}
+                                            @if (obj.Event.Canhavewinners.Value && item.Place != null)
+                                            {
+                                                <div>Место: @item.Place</div>
+                                            }
                                             <span>
                                                 @if (obj.Event.Enddate == null)
                                                 {

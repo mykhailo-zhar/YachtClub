@@ -42,10 +42,11 @@
                                     <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Yachttype.Id">Удалить</a>
                                 </div>
                             }
-                            <h5 class="card-title">
-                                @obj.Yachttype.Name
+                            <h5 class="card-title fs-2">
+                                @obj.Yachttype.Name 
                             </h5>
                             <h6 class="card-subtitle">
+                                <span class="fs-4">В клубе сейчас @obj.Yachts яхт(а) такого типа</span>
                                 <div>
                                     Рама: @obj.Yachttype.Frame
                                 </div>

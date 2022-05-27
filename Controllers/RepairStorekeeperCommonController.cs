@@ -125,7 +125,12 @@ namespace Project.Controllers
         private IActionResult LocalCreateExtradationrequest(Extradationrequest Extradationrequest = null, int repairid = 0)
         {
             var staff = Context.RepairStaff.Where(p => p.Staffid == User.PersonId()).First();
-            Extradationrequest = Extradationrequest ?? new Extradationrequest { Repairid = repairid, Duration = DateTime.Now, Staffid = staff.Id };
+            Extradationrequest = Extradationrequest ?? new Extradationrequest { 
+                Repairid = repairid, 
+                Duration = DateTime.Now, 
+                Staffid = staff.Id,
+                Count = 1
+            };
             ViewData["Repair"] = Context.Repair.ToList();
             ViewData["Material"] = Context.Material.Include(p => p.Type).ToList();
             var Model = ObjectViewModelFactory<Extradationrequest>.Create(Extradationrequest);
@@ -142,7 +147,6 @@ namespace Project.Controllers
             {
                 try
                 {
-                    if (Extradationrequest.Option[0]) Extradationrequest.Object.Status = "Done";
                     Extradationrequest.Object.Startdate = DateTime.Now;
                     Context.Extradationrequest.Add(Extradationrequest.Object);
                     await Context.SaveChangesAsync();

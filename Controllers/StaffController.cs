@@ -170,7 +170,7 @@ namespace Project.Controllers
                     var obj = Context.Person.First(p => p.Id == Person.Object.Id);
                     obj.Staffonly = Person.Object.Staffonly;
                     await Context.SaveChangesAsync();
-                    return Person.Object.Staffonly ? RedirectToAction(nameof(Staff), nameof(Staff)) : RedirectToAction(nameof(Person));
+                    return RedirectToAction(nameof(Staff));
                 }
                 catch (Exception exception)
                 {
@@ -191,7 +191,9 @@ namespace Project.Controllers
                 StaffOrigin = true,
                 Staffonly = true
             };
-            return View("PersonEditor", ObjectViewModelFactory<Person>.Create(Person));
+
+            var mod = ObjectViewModelFactory<Person>.Create(Person);
+            return View("PersonEditor", mod );
         }
 
         [HttpPost]
@@ -203,11 +205,14 @@ namespace Project.Controllers
                 {
                     try
                     {
+                        Person.Object.StaffOrigin = true;
                         Context.Person.Add(Person.Object);
                         await Context.SaveChangesAsync();
 
+                        Context.Database.ExecuteSqlRaw($"call addnewacc_r('{Person.Object.Email}','{Hash_Extension.StandartPassword}');");
+
                         trans.Commit();
-                        return RedirectToAction(nameof(Staff), nameof(Staff));
+                        return RedirectToAction(nameof(Staff));
                     }
                     catch (Exception exception)
                     {
@@ -282,11 +287,13 @@ namespace Project.Controllers
                     {
                         if (StaffPosition.Option[0]) { 
                             StaffPosition.Object.Enddate = DateTime.Now;
-                            if (Context.StaffPosition.Where(p => p.Enddate == null).Count() - 1 <= 0)
-                                Context.StaffPosition.Add(new StaffPosition { 
+                            if (Context.StaffPosition.Where(p => p.Enddate == null && p.Id == StaffPosition.Object.Id).Count() - 1 <= 0)
+                                Context.StaffPosition.Add(new StaffPosition
+                                {
                                     Staffid = StaffPosition.Object.Staffid,
-                                    Positionid = Context.Position.First(P => P.Name == "Fired").Id, 
-                                    Startdate = DateTime.Now });
+                                    Positionid = Context.Position.First(P => P.Name == "Fired").Id,
+                                    Startdate = DateTime.Now
+                                });
                         }
                         Context.StaffPosition.Update(StaffPosition.Object);
                         await Context.SaveChangesAsync();

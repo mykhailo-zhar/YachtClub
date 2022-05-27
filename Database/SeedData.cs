@@ -549,7 +549,7 @@ CREATE TABLE Account(
 
 								update Position set CrewPosition = true where id in (5, 6, 7, 8);
 								update Position set DeclineDelete = true where not id in (6, 7, 8, 9);
-								update Position set DeclineAccess = true where not id in (10);
+								update Position set DeclineAccess = true where id in (10);
                            ");
 
                 //Типы яхт
@@ -2012,7 +2012,7 @@ begin
 	execute ' select name  from position where id = ' || _role ||  ' ;' into rec;
 	usy :=  LowerUserName(rec.name) || '_' || LowerUserName(_email);
 	
-	execute 'CREATE ROLE client_' || usy || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
+	execute 'CREATE ROLE ' || usy || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
 	execute 'GRANT ' || myrolename(rec.name) ||' TO ' || usy || ' ;';
 end;
 $$ language plpgsql;
@@ -2176,7 +2176,7 @@ Create or replace View Staff as (
             //Морские волки
             dbContext.Database.ExecuteSqlRaw(@"
 create or replace view yacht_crew_position as (
-	select yc.id, yc.yachtid, yc.crewid, p.id positionid, p.name positionname from yacht_crew yc 
+	select yc.id, yc.yachtid, yc.crewid, p.id positionid, p.name positionname, yc.startdate, yc.enddate from yacht_crew yc 
 	join staff_position sp on yc.crewid = sp.id  
 	join position p on sp.positionid = p.id
 	);
@@ -2488,19 +2488,19 @@ begin
 	if (old.status = 'Created' and new.Status not in ( 'Waits', 'In Progress' , 'Canceled', 'Created') ) then 
 		raise exception 'Переход из статуса создан, может быть только в статус Ожидает, В процессе или Отменён';
 	elsif(old.status = 'Created' and new.Status = 'Waits' and 
-		 not CHECK_ER_FOR_RER(false, new.id) ) then
+		 not CHECK_ER_FOR_REPS(false, new.id) ) then
 		raise exception 'Переход в статус Ожидает невозможен, ведь отсутствуют активные заявки';
 	/*ОЖИДАЕТ МАТЕРИАЛОВ -> (В ПРОЦЕССЕ ЛИБО ОТМЕНЁН)*/
 	elsif (old.status = 'Waits' and new.Status not in ('In Progress' , 'Canceled', 'Waits') ) then
 		raise exception 'Переход из статуса Ожидает, может быть только в статус В Процессе или Отменён';
 	elsif(old.status = 'Waits' and new.Status = 'In Progress' and 
-		 not CHECK_ER_FOR_RER(true, new.id) ) then
+		 not CHECK_ER_FOR_REPS(true, new.id) ) then
 		raise exception 'Переход в статус В Процессе невозможен, ведь отсутствуют закрытые заявки';
 	/*В ПРОЦЕССЕ -> (ОЖИДАЕТ МАТЕРИАЛОВ ЛИБО ГОТОВ ЛИБО ОТМЕНЁН)*/
 	elsif (old.status = 'In Progress' and new.Status not in ('Waits', 'Done', 'Canceled', 'In Progress') ) then
 		raise exception 'Переход из статуса В Процессе, может быть только в статус Ожидает или Готов или Отменён';	
 	elsif(old.status = 'In Progress' and new.Status = 'Waits' and 
-		 not CHECK_ER_FOR_RER(false, new.id) ) then
+		 not CHECK_ER_FOR_REPS(false, new.id) ) then
 		raise exception 'Переход в статус Ожидает невозможен, ведь отсутствуют активные заявки';
 	end if;
 	
@@ -2566,10 +2566,10 @@ begin
 			end if;
 			if(new.enddate is not null) then 
 				update Yacht_Crew set enddate = new.enddate where crewid = new.id;
-				/*if( (select count(*) from staff_position sp where old.id = sp.id and sp.enddate is null) - 1 <= 0) then
+				if( (select count(*) from staff_position sp where old.id = sp.id and sp.enddate is null) - 1 <= 0) then
 					insert into staff_position(staffid, positionid, startdate) values
 					(old.staffid, (select id from position where name = 'Fired'), curstmp());
-				end if;*/
+				end if;
 			end if;
 			
         ELSIF (TG_OP = 'INSERT') then
@@ -2698,6 +2698,7 @@ begin
 				raise exception 'Попытка изменения уволеного члена экипажа';			
 			end if;	
         ELSIF (TG_OP = 'INSERT') then
+			if(exists (select * from yacht_crew_position))
 			new.startdate = current_timestamp;
 			new.enddate = null;
 		ELSIF (TG_OP = 'DELETE') then 
@@ -2732,6 +2733,17 @@ begin
 				raise exception 'Попытка добавить переведённого на другую должность сотрудника';
 			  elsif ( exists (select * from yacht_crew yc where yc.crewid = new.crewid and yc.enddate is null ) ) then
 				raise exception 'Данный моряк уже служит на другой яхте';
+			  elsif( exists (select * from yacht_crew_position y
+					   where y.yachtid = new.yachtid
+					   and y.enddate is null
+						and positionname = 'Captain'
+					   ) 
+			   and exists ( select * from staff_position sp join position p on p.id = sp.positionid
+							where sp.id = new.crewid and sp.enddate is null and p.name = 'Captain' )
+			  
+			  ) then
+			   	raise exception 'На этой яхте уже есть капитан';
+			  
 			  end if;
 		elsif(TG_OP = 'UPDATE') then
 			  if ( (select b.c from busyyacht b where b.id = new.yachtid and new.enddate is not null ) ) then
@@ -3149,20 +3161,16 @@ username varchar;
 begin 	
 		IF(TG_OP = 'INSERT') then 
 		
-				select p.id, p.name, pe.email into usy from staff_position sp 
-				join position p on p.id = sp.positionid 
-				join person pe on pe.id = sp.staffid
-				where sp.id = new.id;
-
+				select p.id, p.name, pe.email into usy from position p 
+				join person pe on pe.id = new.staffid and p.id = new.positionid;
+								
 				username := LowerUserName(usy.name) || '_' || LowerUserName(usy.email);
 
-				execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = '''
-				|| username || ''';' into rec;
+				execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = ''' || username || ''';' into rec;
 		
 			if(rec.count = 0 ) then
 			  execute 'call addnewacc_r('''|| usy.email || ''', '|| usy.id ||', ''{Hash_Extension.StandartPassword}'' );';
 			end if;
-			
 			
 			return new;
 		end if;
@@ -3201,7 +3209,7 @@ end;
 $$ language plpgsql;
 
 create trigger InsertAccount
-After insert or update or delete on Staff_Position
+Before insert or update or delete on Staff_Position
 for each row execute function SPosition1 ();
 				");
             #endregion
@@ -3344,7 +3352,7 @@ grant all PRIVILEGES on yachttest, repair, repair_men, extradationrequest to my_
 				");
 			//Владелец
 			dbContext.Database.ExecuteSqlRaw(@"
-grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
+grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, review, event, winner, yachtlease to my_owner;
 grant select on yacht_crew, contract, yacht_crew_position to my_owner;
 				");	
 			//Капитан
@@ -3365,8 +3373,9 @@ grant insert on person to my_default;
 				");
 			//Клиент
 			dbContext.Database.ExecuteSqlRaw(@"
-grant select on yachtlease, busyyacht to my_client;
-grant insert,update on yacht to my_client;
+grant select on yachtlease, busyyacht, contract to my_client;
+grant insert,update,delete on yacht to my_client;
+grant insert, select, update on review to my_client;
 				");
 
 			#endregion

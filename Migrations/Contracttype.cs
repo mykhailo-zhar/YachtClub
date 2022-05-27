@@ -24,6 +24,9 @@ namespace Project.Migrations
         [Column("description")]
         public string Description { get; set; }
 
+        [NotMapped]
+        public int? Count { get; set; }
+
         [InverseProperty("Contracttype")]
         public virtual ICollection<Contract> Contract { get; set; }
     }

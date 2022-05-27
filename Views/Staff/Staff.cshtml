@@ -77,17 +77,17 @@
                                                             С @item.Startdate по @Methods.CoalesceDateTime(item.Enddate)
                                                         </div>
                                                         <div class="fst-italic">
-                                                            Зарплата: @item.Position.Salary (Премия: @item.Salary)
+                                                            Зарплата: @Methods.Money(item.Position.Salary) (Премия: @Methods.Money(item.Salary))
                                                         </div>
                                                         <div>Описание:</div>
                                                         <div class="card-text" style="max-width: 75vw">
                                                             <div class="m-2 fw-light" style=" white-space: pre-line;"> @(item.Description)</div>
                                                         </div>
                                                         <span>
-                                                            @if (item.Enddate == null)
+                                                            @if (item.Enddate == null && item.Position.Name != RolesReadonly.Fired)
                                                             {
-                                                                @*<a class="btn btn-danger" asp-action="@DeleteSP"
-                                                                   asp-route-id="@item.Id">-</a>*@
+                                                                <a class="btn btn-danger" asp-action="@DeleteSP"
+                                                                   asp-route-id="@item.Id">-</a>
                                                                 <a class="btn btn-danger" asp-action="@EditSP"
                                                                    asp-route-id="@item.Id">Edit</a>
                                                             }

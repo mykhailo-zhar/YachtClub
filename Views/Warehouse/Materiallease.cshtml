@@ -56,10 +56,10 @@
                                     Количество: @obj.Materiallease.Count 
                                 </div>
                                  <div>
-                                     Цена за единицу: @obj.Materiallease.Priceperunit
+                                    Цена за единицу: @Methods.Money( obj.Materiallease.Priceperunit )
                                  </div>
                                 <div>
-                                    Цена поставки: @obj.Materiallease.Overallprice
+                                    Цена поставки: @Methods.Money(obj.Materiallease.Overallprice)
                                 </div>
 
                             </div>

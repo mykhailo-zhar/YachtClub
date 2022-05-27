@@ -24,7 +24,7 @@ namespace Project.Controllers
         public IActionResult Index()
         {
             var Object = Context.Event
-                .OrderBy(p => p.Startdate)
+                .OrderByDescending(p => p.Startdate)
                 .Take(5)
                 .ToList()
                 .Select(a => new EventWinnerCrewViewModel
@@ -54,17 +54,28 @@ namespace Project.Controllers
         public IActionResult Yachttype()
         {
             var Object = Context.Yachttype
-              .OrderBy(p => p.Id)
-                .Select(p => new MinCrewViewModel { 
-                    Yachttype = p
+                .Select(p => new MinCrewViewModel
+                {
+                    Yachttype = p,
+                    Yachts = Context.Yacht.Count(a => a.Typeid == p.Id)
                 })
+               .OrderByDescending(p => p.Yachts)
+
                 ;
             return View(Object);
         }
         public IActionResult Contracttype()
         {
             var Object = Context.Contracttype
-               .OrderBy(p => p.Id);
+               .Select(p => new Contracttype
+               {
+                   Id = p.Id,
+                   Name = p.Name,
+                   Price = p.Price,
+                   Description = p.Description,
+                   Count = Context.Contract.Count(a => a.Contracttypeid == p.Id)
+               })
+               .OrderByDescending(p => p.Count);
             return View(Object);
         }        
         public IActionResult Yacht()
@@ -97,7 +108,15 @@ namespace Project.Controllers
         {
             var Object = Context.Yachtleasetype
                 .Where(p => !p.Staffonly)
-                .OrderBy(p => p.Id);
+                .Select(p => new Yachtleasetype
+                {
+                    Id = p.Id,
+                    Count = Context.Yachtlease.Count(a => a.Yachtleasetypeid == p.Id),
+                    Name = p.Name,
+                    Price = p.Price,
+                    Description = p.Description
+                })
+                .OrderByDescending(p => p.Count);
             return View(Object);
         }
     }

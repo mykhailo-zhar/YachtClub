@@ -106,7 +106,7 @@ namespace Project.Controllers
                .Where(p => p.Type.Crewcapacity - Context.YachtCrew.Where(c => c.Enddate == null && c.Yachtid == p.Id).Count() > 0)
                ;
             }
-            //TODO: Запретить добавлять капитанов в яхту, если уже есть капитан
+            
             else
             {
                 ViewBag.Crew = Context.StaffPosition

@@ -127,10 +127,10 @@
     <tbody>
         <tr class="text-black text-center">
             <td>
-                @(Model.Contracts?.Avg ?? 0.0m)
+                @Methods.Money((Model.Contracts?.Avg ?? 0.0m))
             </td>
             <td>
-                @(Model.Contracts?.Sum ?? 0.0m)
+                @Methods.Money((Model.Contracts?.Sum ?? 0.0m))
             </td>
             <td>
                 @(Model.Contracts?.Count ?? 0)

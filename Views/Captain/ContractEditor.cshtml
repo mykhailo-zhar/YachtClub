@@ -56,7 +56,7 @@
         <div>
             <span asp-validation-for="Object.Averallprice" class="text-danger"></span>
         </div>
-        <input class="form-control" asp-for="Object.Averallprice" min="0.0"
+        <input class="form-control" asp-for="Object.Averallprice" min="0.0" placeholder="Общая цена @Methods.MoneyCulture"
                readonly="@(Model.ReadOnly || Model.Object.Paid)" />
     </div>
 

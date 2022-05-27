@@ -23,7 +23,7 @@
         <div>
             <span asp-validation-for="Object.Salary" class="text-danger"></span>
         </div>
-        <input class="form-control" asp-for="Object.Salary"
+        <input class="form-control" asp-for="Object.Salary" placeholder="Зарплата @Methods.MoneyCulture"
                readonly="@Model.ReadOnly" />
     </div>
 
