@@ -93,21 +93,118 @@ namespace Project.Migrations
         public bool LeadRepairMan(int RepID, int RepairManID) => throw new NotImplementedException();
 
         [DbFunction("isstaff", "public")]
-        public bool IsStaff(int PersonId) => throw new NotImplementedException(); 
+        public bool IsStaff(int PersonId) => throw new NotImplementedException();
         [DbFunction("isinterm", "public")]
         public bool IsInTerm(DateTime Start1, DateTime Start2, DateTime End2, DateTime End1) => throw new NotImplementedException();
 
         [DbFunction("hasrepairman", "public")]
         public bool HasRepairMan(int RepID, int RepairManID) => throw new NotImplementedException();
         [DbFunction("countactivecrew", "public")]
-        public int CountActiveCrew(int Yachtid) => throw new NotImplementedException(); 
+        public int CountActiveCrew(int Yachtid) => throw new NotImplementedException();
         [DbFunction("rolebyname", "public")]
-        public int CountRoleByName(string email) => throw new NotImplementedException();  
+        public int CountRoleByName(string email) => throw new NotImplementedException();
 
 
-        public IQueryable<YachtCrew> YachtCrewByEvent(int eventid) => YachtCrew.FromSqlRaw($"select * from  YachtCrewByEvent({eventid})"); 
+        public IQueryable<YachtCrew> YachtCrewByEvent(int eventid) => YachtCrew.FromSqlRaw($"select * from  YachtCrewByEvent({eventid})");
         public IQueryable<YachtCrew> CaptainByYachtid(int yachtid) => YachtCrew.FromSqlRaw($"select * from  CaptainByYachtid({yachtid})");
+        public IQueryable<MaterialAnalyticsViewModel> MaterialAnalytics(
+            string MaterialName,
+            string TypeName,
+            DateTime From,
+            DateTime To) =>
+    Set<MaterialAnalyticsViewModel>()
+            .FromSqlRaw(
+        $"select * from MaterialAnalytics(" +
+        $"'{MaterialName}', " +
+        $"'{TypeName}', " +
+        $"'{From.Day}-{From.Month}-{From.Year}'," +
+        $"'{To.Day}-{To.Month}-{To.Year}'" +
+        $")"
+        );
 
+        public IQueryable<ContractAnalyticsViewModel> ContractAnalytics(
+            string Name, 
+            string Surname,
+            string Phone,
+            string Email,
+            string YName,
+            string YType,
+            DateTime From, 
+            DateTime To) =>
+    Set<ContractAnalyticsViewModel>()
+            .FromSqlRaw(
+        $"select * from ContractAnalytics(" +
+        $"'{Name}'," +
+        $"'{Surname}'," +
+        $"'{Phone}', " +
+        $"'{Email}'," +
+        $"'{YName}'," +
+        $"'{YType}'," +
+        $"'{From.Day}-{From.Month}-{From.Year}'," +
+        $"'{To.Day}-{To.Month}-{To.Year}'" +
+        $")");
+
+        public IQueryable<ContractAnalyticsViewModel> YachtleaseAnalytics(
+            string Name, 
+            string Surname,
+            string Phone,
+            string Email,
+            string YName,
+            string YType,
+            DateTime From, 
+            DateTime To) =>
+    Set<ContractAnalyticsViewModel>()
+            .FromSqlRaw(
+        $"select * from YachtleaseAnalytics(" +
+        $"'{Name}'," +
+        $"'{Surname}'," +
+        $"'{Phone}', " +
+        $"'{Email}'," +
+        $"'{YName}'," +
+        $"'{YType}'," +
+        $"'{From.Day}-{From.Month}-{From.Year}'," +
+        $"'{To.Day}-{To.Month}-{To.Year}'" +
+        $")");
+
+        public IQueryable<CrewSearchModel> CrewSearch(
+            string Name, 
+            string Surname,
+            string Phone,
+            string Email,
+            string Position,
+            string YName,
+            string YType,
+              bool Active) =>
+    Set<CrewSearchModel>()
+            .FromSqlRaw(
+        $"select * from YCView(" +
+        $"'{Name}'," +
+        $"'{Surname}'," +
+        $"'{Phone}', " +
+        $"'{Email}'," +
+        $"'{Position}'," +
+        $"'{YName}'," +
+        $"'{YType}'," +
+        $" {Active}" +
+        $")");
+
+        public IQueryable<StaffSearchModel> StaffSearch(
+            string Name, 
+            string Surname,
+            string Phone,
+            string Email,
+            string Position,
+              bool Active) =>
+    Set<StaffSearchModel>()
+            .FromSqlRaw(
+        $"select * from SPView(" +
+        $"'{Name}'," +
+        $"'{Surname}'," +
+        $"'{Phone}', " +
+        $"'{Email}'," +
+        $"'{Position}'," +
+        $" {Active}" +
+        $")");
         #endregion
 
         #region Procedures
@@ -118,7 +215,7 @@ namespace Project.Migrations
 
         public string GetMyRole(string Role) => "my_" + RegexExtension.ReplaceAll(Role, new Regex("[ !\"#$%&'()*+,./:;<=>?@\\^_`{|}~]"), "_").ToLower();
 
-        public string GetLowerName(string Name) => RegexExtension.ReplaceAll(Name,new Regex("[ !\"#$%&'()*+,./:;<=>?@\\^_`{|}~]"),"_").ToLower();
+        public string GetLowerName(string Name) => RegexExtension.ReplaceAll(Name, new Regex("[ !\"#$%&'()*+,./:;<=>?@\\^_`{|}~]"), "_").ToLower();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -144,6 +241,11 @@ namespace Project.Migrations
                       .HasForeignKey(d => d.Userid)
                       .HasConstraintName("account_userid_fkey");
              });*/
+
+            modelBuilder.Entity<MaterialAnalyticsViewModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<ContractAnalyticsViewModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<StaffSearchModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<CrewSearchModel>().HasNoKey().ToView(null);
 
             modelBuilder.Entity<Availableresources>(entity =>
             {

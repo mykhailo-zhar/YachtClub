@@ -15,7 +15,7 @@
                 <div class="text-center" style="font-size: 3em">
                     Контракты
                 </div>
-                @if (User.IsInRole(RolesReadonly.Owner))
+                @if (User.IsInRole(RolesReadonly.Captain))
                 {
                     <div align="center">
                         <a asp-action="@Create" class="btn btn-primary w-75">
@@ -53,7 +53,7 @@
                         <div class="card" style="width: auto;">
                             <div class="card-body">
                                 <div class="position-absolute" style="right:20px;">
-                                    @if (obj.Enddate == null && User.IsInRole(RolesReadonly.Owner))
+                                    @if (obj.Enddate == null && User.IsInRole(RolesReadonly.Captain))
                                     {
                                         <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Id"> Изменить </a>
                                         <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Id">Удалить</a>

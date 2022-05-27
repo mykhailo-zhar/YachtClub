@@ -1,0 +1,189 @@
+﻿@model CrewInfo
+@{
+    var id = "";
+    var cur_placeholder = "";
+}
+
+<div class="p-2">
+    <div class="m-2 w-50 border border-1 border-primary rounded-2">
+        <div class="m-2">
+            <h4 class="modal-title m-2">Поиск экипажей</h4>
+            <form class="row g-2 p-2" asp-action="CrewSearch" method="get">
+                <input hidden asp-for="Flag" />
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Имя";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="LikeName" id="@id" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                    <div class="m-sm-2 col-auto w-25">
+                        <button type="submit" class="btn btn-primary mb-3 w-100">Найти</button>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Фамилия";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="LikeSurname" id="@id" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Email";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="LikeEmail" id="@id" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Телефон";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="LikePhone" id="@id" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Название яхты";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <select class="form-control" asp-for="LikeYName" id="@id" asp-items="@(new SelectList(Model.Yachts))">
+                            <option value="">Любая яхта</option>
+                        </select>
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Тип яхты";
+                    }
+
+                    <div class="form-floating col-sm-8">
+                        <select class="form-control col-sm-8" asp-for="LikeYType" id="@id" asp-items="@(new SelectList(Model.YachtType))">
+                            <option value="">Любой тип</option>
+                        </select>
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Должность";
+                    }
+
+                    <div class="form-floating col-sm-8">
+                        <select class="form-control col-sm-8" asp-for="LikePosition" id="@id" asp-items="@(new SelectList(Model.Positions))">
+                            <option value="">Любая должность</option>
+                        </select>
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "С";
+                    }
+                    <div col-sm-8">
+                        <<div class="form-check form-switch position-relative d-flex" style="left: 20px">
+                            <div>
+                                <input asp-for="Active" class="form-check-input" type="checkbox">
+                            </div>
+                            <div>
+                                <label>Действующий персонал</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <style>
+            .table-dark > td {
+                padding: 15px;
+            }
+        </style>
+        <tr class="table-dark text-center">
+            <td>
+                Имя
+            </td>
+            <td>
+                Фамилия
+            </td>
+            <td>
+                Телефон
+            </td>
+            <td>
+                Email
+            </td>
+            <td>
+                Должность
+            </td>
+            <td>
+                Яхта
+            </td>
+            <td>
+                Тип яхты
+            </td>
+            <td>
+                Дата заступления на должность
+            </td>
+            <td>
+                Дата ухода с должности
+            </td>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sp in Model.Crew)
+        {
+            <tr class="text-black text-center">
+                <td>
+                    @sp.Name
+                </td>
+                <td>
+                    @sp.Surname
+                </td>
+                <td>
+                    @sp.Phone
+                </td>
+                <td>
+                    @sp.Email
+                </td>
+                <td>
+                    @sp.Position
+                </td>
+                <td>
+                    @sp.Yachtname
+                </td>
+                <td>
+                    @sp.Yachttype
+                </td>
+                <td>
+                    @sp.Startdate
+                </td>
+                <td>
+                    @Methods.CoalesceDateTime(sp.Enddate)
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>

@@ -7,6 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
 
 namespace Project.Controllers
 {
@@ -750,6 +751,102 @@ namespace Project.Controllers
             return View("PositionYachttypeEditor", ObjectViewModelFactory<PositionYachttype>.Delete(PositionYachttype.Object));
 
         }
+        #endregion
+
+        #region Analytics
+
+        [HttpGet]
+        public IActionResult MaterialAnalytics(MaterialInfo Object)
+        {
+            Object = !Object.Flag? new MaterialInfo
+            {
+                Flag = true,
+                LikeName = "",
+                LikeTypeName = "",
+                From = DateTime.Today,
+                To = DateTime.Today
+            }
+            : Object            
+            ;
+
+
+            Object.Materials = Context.MaterialAnalytics(
+                Object.LikeName,
+                Object.LikeTypeName,
+                Object.From,
+                Object.To).OrderBy(p => p.Name)
+                .ToList();
+
+            return View(Object);
+        }
+        [HttpGet]
+        public IActionResult ContractAnalytics(ContractInfo Object)
+        {
+            Object = !Object.Flag ? new ContractInfo
+            {
+                Flag = true,
+                LikeName = string.Empty,
+                LikeSurname = string.Empty,
+                LikeEmail = string.Empty,
+                LikePhone = string.Empty,
+                LikeYName = string.Empty,
+                LikeYType = string.Empty,
+                From = DateTime.Today,
+                To = DateTime.Today
+            }
+            : Object
+            ;
+
+            Object.Yachts = Context.Yacht.Select(p => p.Name).OrderBy(p => p).Distinct();
+            Object.YachtType = Context.Yachttype.Select(p => p.Name).OrderBy(p => p).Distinct();
+
+            Object.Contracts = Context.ContractAnalytics(
+               Object.LikeName,
+               Object.LikeSurname,
+               Object.LikePhone,
+               Object.LikeEmail,
+               Object.LikeYName,
+               Object.LikeYType,
+               Object.From,
+               Object.To)
+               .FirstOrDefault();
+            return View(Object);
+        } 
+
+        [HttpGet]
+        public IActionResult YachtleaseAnalytics(ContractInfo Object)
+        {
+            Object = !Object.Flag ? new ContractInfo
+            {
+                Flag = true,
+                LikeName = string.Empty,
+                LikeSurname = string.Empty,
+                LikeEmail = string.Empty,
+                LikePhone = string.Empty,
+                LikeYName = string.Empty,
+                LikeYType = string.Empty,
+                From = DateTime.Today,
+                To = DateTime.Today
+            }
+            : Object
+            ;
+
+            Object.Yachts = Context.Yacht.Select(p => p.Name).OrderBy(p => p).Distinct();
+            Object.YachtType = Context.Yachttype.Select(p => p.Name).OrderBy(p => p).Distinct();
+
+            Object.Contracts = Context.YachtleaseAnalytics(
+               Object.LikeName,
+               Object.LikeSurname,
+               Object.LikePhone,
+               Object.LikeEmail,
+               Object.LikeYName,
+               Object.LikeYType,
+               Object.From,
+               Object.To)
+               .FirstOrDefault();
+            return View(Object);
+        }
+
         #endregion
     }
 }

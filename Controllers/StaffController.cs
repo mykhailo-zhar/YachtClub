@@ -243,5 +243,70 @@ namespace Project.Controllers
 
         }
         #endregion
+
+        [HttpGet]
+        public IActionResult CrewSearch(CrewInfo Object)
+        {
+            Object = !Object.Flag ? new CrewInfo
+            {
+                Flag = true,
+                LikeName = string.Empty,
+                LikeSurname = string.Empty,
+                LikeEmail = string.Empty,
+                LikePhone = string.Empty,
+                LikeYName = string.Empty,
+                LikeYType = string.Empty,
+                LikePosition = string.Empty,
+            }
+            : Object
+            ;
+
+            Object.Yachts = Context.Yacht.Select(p => p.Name).Distinct().OrderBy(p => p);
+            Object.YachtType = Context.Yachttype.Select(p => p.Name).Distinct().OrderBy(p => p);
+            Object.Positions = Context.Position.Where(p => p.Crewposition).Select(p => p.Name).Distinct().OrderBy(p => p);
+
+            Object.Crew = Context.CrewSearch(
+               Object.LikeName,
+               Object.LikeSurname,
+               Object.LikePhone,
+               Object.LikeEmail,
+               Object.LikePosition,
+               Object.LikeYName,
+               Object.LikeYType,
+               Object.Active)
+               .OrderByDescending(p => p.Enddate ?? DateTime.Now)
+               .ToList();
+            return View(Object);
+        } 
+        [HttpGet]
+        public IActionResult StaffSearch(StaffInfo Object)
+        {
+            Object = !Object.Flag ? new StaffInfo
+            {
+                Flag = true,
+                LikeName = string.Empty,
+                LikeSurname = string.Empty,
+                LikeEmail = string.Empty,
+                LikePhone = string.Empty,
+                LikePosition = string.Empty,
+            }
+            : Object
+            ;
+
+
+            Object.Positions = Context.Position.Select(p => p.Name).Distinct().OrderBy(p => p);
+
+            Object.Staff = Context.StaffSearch(
+               Object.LikeName,
+               Object.LikeSurname,
+               Object.LikePhone,
+               Object.LikeEmail,
+               Object.LikePosition,
+               Object.Active
+               )
+               .OrderByDescending(p => p.Enddate ?? DateTime.Now)
+               .ToList();
+            return View(Object);
+        }
     }
 }

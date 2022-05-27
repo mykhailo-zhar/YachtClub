@@ -1,0 +1,147 @@
+﻿@model ContractInfo
+@{
+    var id = "";
+    var cur_placeholder = "";
+}
+
+
+
+<div class="p-2">
+    <div class="m-2 w-50 border border-1 border-primary rounded-2">
+        <div class="m-2">
+            <h4 class="modal-title m-2">Отчёт по контрактам c клиентами</h4>
+            <form class="row g-2 p-2" asp-action="ContractAnalytics" method="get">
+                <input hidden asp-for="Flag" />
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Имя";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="LikeName" id="@id" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                    <div class="m-sm-2 col-auto w-25">
+                        <button type="submit" class="btn btn-primary mb-3 w-100">Найти</button>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Фамилия";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="LikeSurname" id="@id" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Email";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="LikeEmail" id="@id" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Телефон";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="LikePhone" id="@id" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Название яхты";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <select class="form-control" asp-for="LikeYName" id="@id" asp-items="@(new SelectList(Model.Yachts))">
+                            <option value="">Любая яхта</option>
+                        </select>
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "Тип яхты";
+                    }
+
+                    <div class="form-floating col-sm-8">
+                        <select class="form-control col-sm-8" asp-for="LikeYType" id="@id" asp-items="@(new SelectList(Model.YachtType))">
+                            <option value="">Любой тип</option>
+                        </select>
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+
+
+                </div>
+
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "С";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="From" id="@id" type="date" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    @{
+                        id = "f1_" + Methods.RanGuid;
+                        cur_placeholder = "По(не включительно)";
+                    }
+                    <div class="form-floating col-sm-8">
+                        <input class="form-control" placeholder="@cur_placeholder" asp-for="To" id="@id" type="date" />
+                        <label for="@id">@cur_placeholder</label>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <style>
+            .table-dark > td {
+                padding: 15px;
+            }
+        </style>
+        <tr class="table-dark text-center">
+            <td>
+                Средняя стоимость
+            </td>
+            <td>
+                Cуммарная стоимость
+            </td>
+            <td>
+                Количество контрактов
+            </td>
+
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="text-black text-center">
+            <td>
+                @(Model.Contracts?.Avg ?? 0.0m)
+            </td>
+            <td>
+                @(Model.Contracts?.Sum ?? 0.0m)
+            </td>
+            <td>
+                @(Model.Contracts?.Count ?? 0)
+            </td>
+        </tr>
+    </tbody>
+</table>

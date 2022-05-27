@@ -101,23 +101,7 @@
         </div>
     </div>
 
-
-    <div class="form-group @Model.HideOnDelete @Model.HideOnEdit">
-        <label>Заключается:</label>
-        <select class="form-control" asp-for="Object.Captaininyachtid"
-                asp-items="@((ViewBag.Captain as IEnumerable<YachtCrew> ?? Enumerable.Empty<YachtCrew>()).Select(
-                    p => new SelectListItem
-                    {
-                        Value = p.Id.ToString(),
-                        Text = Methods.PersonPhone(p.Crew.Staff) + ", капитан яхты " +p.Yacht.Name + " ("+p.Yacht.Type.Name + ")"
-                    }
-                ))"
-                min="0.0">
-            <option value="" disabled selected>Выберите капитана</option>
-        </select>
-
-        <input hidden asp-for="Object.Captaininyachtid" />
-    </div>
+    <input hidden asp-for="Object.Captaininyachtid" />
     <div class="form-group @Model.HideOnDelete @Model.HideOnEdit">
         <label>Заключается с:</label>
         <select class="form-control" asp-for="Object.Clientid"

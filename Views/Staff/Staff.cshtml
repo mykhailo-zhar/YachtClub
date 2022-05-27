@@ -31,102 +31,104 @@
         {
             <tr class="text-black">
                 <td>
-                    <div class="card m-2" style="width: auto;">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                @obj.Person.Name   @obj.Person.Surname
-                            </h5>
-                            <style>
-                                h6 > * {
-                                    margin: 10px;
-                                }
-                            </style>
-                            <h6 class="card-subtitle">
-                                <div>
-                                    Email: @obj.Person.Email
-                                </div>
-                                <div>
-                                    Телефон: @obj.Person.Phone
-                                </div>
-                                <div>
-                                    Дата регистрации: @obj.Person.Registrydate
-                                </div>
-                                <div>
-                                    Дата рождения: @obj.Person.Birthdate
-                                </div>
-                                <p>
-                                    @obj.Person.Sex
-                                </p>
-                            </h6>
-                            <hr />
-                            <div class="card-text" style="max-width: 75vw">
-                                <expander class="w-100 " button-class="fw-bold fs-3" message="Портфолио(@obj.Portfolio.Count()):">
+                    <expander class="w-100 " button-class="fw-bold fs-3" message="Об @Methods.PersonEmail(obj.Person):">
+                        <div class="card m-2" style="width: auto;">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    @obj.Person.Name   @obj.Person.Surname
+                                </h5>
+                                <style>
+                                    h6 > * {
+                                        margin: 10px;
+                                    }
+                                </style>
+                                <h6 class="card-subtitle">
                                     <div>
-                                        @foreach (var item in obj.Portfolio)
-                                        {
-                                            <div class="border border-info rounded-2 m-2">
-                                                <div class="m-3">
-                                                    <div class="fw-bold">
-                                                        Должность: @item.Position.Name
-                                                    </div>
-                                                    <div>
-                                                        С @item.Startdate по @Methods.CoalesceDateTime(item.Enddate)
-                                                    </div>
-                                                    <div class="fst-italic">
-                                                        Зарплата: @item.Position.Salary (Премия: @item.Salary)
-                                                    </div>
-                                                    <div>Описание:</div>
-                                                    <div class="card-text" style="max-width: 75vw">
-                                                        <div class="m-2 fw-light" style=" white-space: pre-line;"> @(item.Description)</div>
-                                                    </div>
-                                                    <span>
-                                                        @if (item.Enddate == null)
-                                                        {
-                                                            <a class="btn btn-danger" asp-action="@DeleteSP"
-                                                               asp-route-id="@item.Id">-</a>
-                                                            <a class="btn btn-danger" asp-action="@EditSP"
-                                                               asp-route-id="@item.Id">Edit</a>
-                                                        }
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        }
-
-                                        <a class="btn btn-primary m-4" asp-action="@CreateSP" asp-route-sid="@obj.Person.Id">+</a>
+                                        Email: @obj.Person.Email
                                     </div>
-
-                                </expander>
-                                @if (obj.YachtPortfolio.Any())
-                                {
-                                    <expander class="w-100 " button-class="fw-bold fs-3" message="Служба на яхтах(@obj.YachtPortfolio.Count()):">
+                                    <div>
+                                        Телефон: @obj.Person.Phone
+                                    </div>
+                                    <div>
+                                        Дата регистрации: @obj.Person.Registrydate
+                                    </div>
+                                    <div>
+                                        Дата рождения: @obj.Person.Birthdate
+                                    </div>
+                                    <p>
+                                        @obj.Person.Sex
+                                    </p>
+                                </h6>
+                                <hr />
+                                <div class="card-text" style="max-width: 75vw">
+                                    <expander class="w-100 " button-class="fw-bold fs-3" message="Портфолио(@obj.Portfolio.Count()):">
                                         <div>
-                                            @foreach (var item in obj.YachtPortfolio)
+                                            @foreach (var item in obj.Portfolio)
                                             {
                                                 <div class="border border-info rounded-2 m-2">
                                                     <div class="m-3">
                                                         <div class="fw-bold">
-                                                            Должность: @item.Crew.Position.Name
-                                                        </div>
-                                                        <div>
-                                                            Яхта: @item.Yacht.Name - @item.Yacht.Type.Name
+                                                            Должность: @item.Position.Name
                                                         </div>
                                                         <div>
                                                             С @item.Startdate по @Methods.CoalesceDateTime(item.Enddate)
+                                                        </div>
+                                                        <div class="fst-italic">
+                                                            Зарплата: @item.Position.Salary (Премия: @item.Salary)
                                                         </div>
                                                         <div>Описание:</div>
                                                         <div class="card-text" style="max-width: 75vw">
                                                             <div class="m-2 fw-light" style=" white-space: pre-line;"> @(item.Description)</div>
                                                         </div>
+                                                        <span>
+                                                            @if (item.Enddate == null)
+                                                            {
+                                                                <a class="btn btn-danger" asp-action="@DeleteSP"
+                                                                   asp-route-id="@item.Id">-</a>
+                                                                <a class="btn btn-danger" asp-action="@EditSP"
+                                                                   asp-route-id="@item.Id">Edit</a>
+                                                            }
+                                                        </span>
                                                     </div>
                                                 </div>
                                             }
+
+                                            <a class="btn btn-primary m-4" asp-action="@CreateSP" asp-route-sid="@obj.Person.Id">+</a>
                                         </div>
 
                                     </expander>
-                                }
+                                    @if (obj.YachtPortfolio.Any())
+                                    {
+                                        <expander class="w-100 " button-class="fw-bold fs-3" message="Служба на яхтах(@obj.YachtPortfolio.Count()):">
+                                            <div>
+                                                @foreach (var item in obj.YachtPortfolio)
+                                                {
+                                                    <div class="border border-info rounded-2 m-2">
+                                                        <div class="m-3">
+                                                            <div class="fw-bold">
+                                                                Должность: @item.Crew.Position.Name
+                                                            </div>
+                                                            <div>
+                                                                Яхта: @item.Yacht.Name - @item.Yacht.Type.Name
+                                                            </div>
+                                                            <div>
+                                                                С @item.Startdate по @Methods.CoalesceDateTime(item.Enddate)
+                                                            </div>
+                                                            <div>Описание:</div>
+                                                            <div class="card-text" style="max-width: 75vw">
+                                                                <div class="m-2 fw-light" style=" white-space: pre-line;"> @(item.Description)</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+
+                                        </expander>
+                                    }
+                                </div>
                             </div>
                         </div>
-                    </div>
+                        </expander>
                 </td>
             </tr>
         }

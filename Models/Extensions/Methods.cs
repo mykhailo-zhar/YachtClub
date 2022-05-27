@@ -54,6 +54,8 @@ namespace Project.Models
         public static string CoalesceString(string str) => IsStr(str) ? str : string.Empty;
         public static string CoalesceDateTime(DateTime? dateTime) => dateTime == null ? "[Дата окончания отсутствует]" : dateTime.Value.ToString();
 
+        public static string RanGuid => Guid.NewGuid().ToString("N");
+
         public static int ExtradationStatusPrio(string status)
         {
             switch (status)

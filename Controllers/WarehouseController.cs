@@ -426,6 +426,30 @@ namespace Project.Controllers
         #endregion
 
 
+        [HttpGet]
+        public IActionResult MaterialAnalytics(MaterialInfo Object)
+        {
+            Object = Object.LikeName == null ? new MaterialInfo
+            {
+                Flag = true,
+                LikeName = "",
+                LikeTypeName = "",
+                From = DateTime.Today,
+                To = DateTime.Today
+            }
+            : Object
+            ;
+
+            Object.Materials = Context.MaterialAnalytics(Object.LikeName,
+                Object.LikeTypeName,
+                Object.From,
+                Object.To).OrderBy(p => p.Name)
+                .ToList();
+            return View(Object);
+        }
+
+
+
         //TODO: Статусы заявок Done могут выставлять только кладовщики
     }
 }

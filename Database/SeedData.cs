@@ -1501,6 +1501,199 @@ begin
 	);
 end; 
 $$ language plpgsql;
+				");	
+			
+			//Аналитика по материалам
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function MaterialAnalytics (
+	_name text,
+	_type text,
+	_from timestamp,
+	_to timestamp
+)
+	returns Table(mname varchar, mtype varchar, avg_money decimal, sum_money decimal,
+				 remains bigint, all_mat bigint, mlid bigint, erid bigint, metric varchar
+				 )
+as $$
+begin 	
+	return query 
+	with available as (
+		select * from extradationrequest er 
+		where er.Status = 'Done' and isinterm(er.startdate,  _from, _to , coalesce(er.enddate, current_date) )
+	)
+	select distinct 
+	m.name mname,
+	t.name mtype, 
+	round( avg(ml.overallprice) over (partition by m.id), 2 ) avg_money, 
+	round( sum(ml.overallprice) over (partition by m.id), 2 ) sum_money,
+	cast( sum(coalesce(a.count, 0)) over (partition by m.id) as bigint ) remains,
+	cast( sum(ml.count) over (partition by m.id) as bigint )all_mat, 
+	count(ml.id) over (partition by m.id) mlid,
+	count(a.count) over (partition by m.id) erid,
+	materialmetric(m.id) metric
+	
+	from materiallease ml 
+	join material m on m.id = ml.material and m.name like '%' || _name || '%'
+	join materialtype t on t.id = m.typeid and t.name like '%' || _type || '%'
+	left join available a on a.material = m.id 
+	where isinterm(ml.startdate, _from, _to, coalesce(ml.deliverydate, current_date) )
+	order by mname desc
+	;
+end; 
+$$ language plpgsql;
+				");
+			//Аналитика по контрактам
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ContractAnalytics (
+	_name text,
+	_surname text,
+	_phone text,
+	_email text,
+	_from timestamp,
+	_to timestamp
+)
+	returns Table(avg_money decimal, sum_money decimal, count bigint )
+as $$
+begin 	
+	return query 
+	select distinct
+	round( avg(c.averallprice) over (), 2 ) avg_money, 
+	round( sum(c.averallprice) over (), 2 ) sum_money, 
+	count(c.id) over ()
+	from contract c 
+	join person p on c.clientid = p.id and (
+		p.phone like '%' || _phone || '%'
+		and
+		p.email like '%' || _email || '%'
+		and 
+		p.name like '%' || _name || '%'
+		and
+		p.surname like '%' || _surname || '%'
+		)
+	where 
+	isinterm(c.startdate, _from, _to, coalesce(c.enddate, current_date) );
+end; 
+$$ language plpgsql;
+				");
+			//Аналитика по контрактам на аренду
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YachtleaseAnalytics (
+	_name text,
+	_surname text,
+	_phone text,
+	_email text,
+	_yname text,
+	_ytype text,
+	_from timestamp,
+	_to timestamp
+)
+	returns Table(avg_money decimal, sum_money decimal, count bigint )
+as $$
+begin 	
+	return query 
+	select distinct
+	round( avg(yl.overallprice) over (), 2 ) avg_money, 
+	round( sum(yl.overallprice) over (), 2 ) sum_money, 
+	count(yl.id) over ()
+	from yachtlease yl 
+	join yacht y on yl.yachtid = y.id and y.name like '%' || _yname || '%' 
+	join yachttype yt on y.typeid = yt.id and yt.name like '%' || _ytype || '%' 
+	join person p on y.yachtownerid = p.id and (
+		p.phone like '%' || _phone || '%'
+		and
+		p.email like '%' || _email || '%'
+		and 
+		p.name like '%' || _name || '%'
+		and
+		p.surname like '%' || _surname || '%'
+	)
+	where 
+	isinterm(yl.startdate, _from, _to, coalesce(yl.enddate, current_date) );
+end; 
+$$ language plpgsql;
+				");
+			//Поиск должностей
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function SPView (
+	_name text,
+	_surname text,
+	_phone text,
+	_email text,
+	_pname text,
+	_active bool
+)
+	returns Table(p_name varchar, p_surname varchar, p_phone varchar, p_email varchar, p_position varchar, p_startdate timestamp, p_enddate timestamp )
+as $$
+begin 	
+	return query 
+	select distinct
+	p.name p_name,
+	p.surname p_surname,
+	cast(p.phone as varchar) p_phone,
+	cast(p.email as varchar) p_email,
+	po.name p_position,
+	sp.startdate p_startdate,
+	sp.enddate p_enddate
+	from staff_position sp 
+	join person p on sp.staffid = p.id and (
+		p.phone like '%' || _phone || '%'
+		and
+		p.email like '%' || _email || '%'
+		and 
+		p.name like '%' || _name || '%'
+		and
+		p.surname like '%' || _surname || '%'
+	)
+	join position po on po.id = sp.positionid and po.name like '%' || _pname || '%'
+	where (sp.enddate is not null and not _active) or (sp.enddate is null and _active);
+end; 
+$$ language plpgsql;
+
+				");
+			//Поиск экипажей
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YCView (
+	_name text,
+	_surname text,
+	_phone text,
+	_email text,
+	_pname text,
+	_yname text,
+	_ytype text,
+	_active bool
+)
+	returns Table(p_name varchar, p_surname varchar, p_phone varchar, p_email varchar, p_position varchar,
+				  yachtname varchar, yachttype varchar, p_startdate timestamp, p_enddate timestamp )
+as $$
+begin 	
+	return query 
+	select 
+	p.name p_name,
+	p.surname p_surname,
+	cast(p.phone as varchar) p_phone,
+	cast(p.email as varchar) p_email,
+	po.name p_position,
+	y.name yachtname,
+	yt.name yachttype,
+	yc.startdate p_startdate,
+	yc.enddate p_enddate
+	from yacht_crew yc
+	join yacht y on yc.yachtid = y.id and y.name like '%' || _yname || '%' 
+	join yachttype yt on y.typeid = yt.id and yt.name like '%' || _ytype || '%' 
+	join staff_position sp on yc.crewid = sp.id
+	join person p on sp.staffid = p.id and (
+		p.phone like '%' || _phone || '%'
+		and
+		p.email like '%' || _email || '%'
+		and 
+		p.name like '%' || _name || '%'
+		and
+		p.surname like '%' || _surname || '%'
+	)
+	join position po on po.id = sp.positionid and po.name like '%' || _pname || '%'
+	where (yc.enddate is not null and not _active) or (yc.enddate is null and _active);
+end; 
+$$ language plpgsql;
 				");
 
 			#endregion
@@ -2970,19 +3163,19 @@ grant all PRIVILEGES on yachttest, repair, repair_men, extradationrequest to my_
 			//Владелец
 			dbContext.Database.ExecuteSqlRaw(@"
 grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
-grant select on yacht_crew, yacht_crew_position to my_owner;
+grant select on yacht_crew, contract , yacht_crew_position to my_owner;
 				");	
 			//Капитан
 			dbContext.Database.ExecuteSqlRaw(@"
-grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
-grant select on yacht_crew, yacht_crew_position to my_owner;
-				");
 
+grant all privileges on contract to my_captain;
+				");
 			//Стандартные типы данных
 			dbContext.Database.ExecuteSqlRaw(@"
 grant ALL PRIVILEGES on ALL SEQUENCES IN SCHEMA PUBLIC to amy_data_types;
-				");
-						
+
+grant select on material, materialtype, materiallease, extradationrequest to amy_materialist
+				");		
 			//MyDefault
 			dbContext.Database.ExecuteSqlRaw(@"
 grant select on event, winner, yacht_crew, staff, staff_position, person, yacht, yachttype, yachtleasetype, contracttype , position, busyyacht to my_default;

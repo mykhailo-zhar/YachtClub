@@ -21,7 +21,6 @@ namespace Project.Controllers
             Context = context;
         }
 
-        //TODO: Типы яхт, типы контрактов, типы контрактов на яхты, победители и яхты
         public IActionResult Index()
         {
             var Object = Context.Event

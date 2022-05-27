@@ -26,6 +26,7 @@ namespace WebApp
             {
                // opts.UseNpgsql(Configuration["ConnectionStrings:YachtClubConnection"]);
                 opts.EnableSensitiveDataLogging(true);
+                opts.EnableDetailedErrors(true);
             });
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages().AddRazorRuntimeCompilation();
@@ -67,6 +68,11 @@ namespace WebApp
                                             options.ExpireTimeSpan = System.TimeSpan.FromHours(10);
                                         })
                     ;
+
+            services.AddMvc().AddRazorOptions(opt => {
+                opt.ViewLocationFormats.Add("/Views/{1}/Partials/{0}.cshtml");
+                opt.ViewLocationFormats.Add("/Views/Shared/Partials/{0}.cshtml");
+            });
         }
         public void Configure(IApplicationBuilder app, DataContext context, IAntiforgery antiforgery)
         {
