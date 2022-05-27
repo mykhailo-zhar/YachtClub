@@ -81,6 +81,7 @@ namespace Project.Migrations
                 optionsBuilder.UseNpgsql($"Host=localhost;Port=5432;ConnectionIdleLifetime=30;Database=YachtClub;Username={Role};Password={Password}");
             }
         }
+
         #region Functions
 
         [DbFunction("materialmetric", "public")]
@@ -107,6 +108,8 @@ namespace Project.Migrations
 
         public IQueryable<YachtCrew> YachtCrewByEvent(int eventid) => YachtCrew.FromSqlRaw($"select * from  YachtCrewByEvent({eventid})");
         public IQueryable<YachtCrew> CaptainByYachtid(int yachtid) => YachtCrew.FromSqlRaw($"select * from  CaptainByYachtid({yachtid})");
+        #region Поиск и аналитика
+
         public IQueryable<MaterialAnalyticsViewModel> MaterialAnalytics(
             string MaterialName,
             string TypeName,
@@ -205,8 +208,28 @@ namespace Project.Migrations
         $"'{Position}'," +
         $" {Active}" +
         $")");
+        public IQueryable<RepairSearchModel> RepairSearch(
+            string Name, 
+            string Surname,
+            string Phone,
+            string Email,
+            string YName,
+            string YType,
+              bool Active) =>
+    Set<RepairSearchModel>()
+            .FromSqlRaw(
+        $"select * from RepairView(" +
+        $"'{Name}'," +
+        $"'{Surname}'," +
+        $"'{Phone}', " +
+        $"'{Email}'," +
+        $"'{YName}'," +
+        $"'{YType}'," +
+        $" {Active}" +
+        $")");
         #endregion
 
+        #endregion
         #region Procedures
         public void Ping(string login, string role, string password) => Database.ExecuteSqlInterpolated($"call tryconnect({login},{role},{password});");
         public void DeleteProfile() => Database.ExecuteSqlInterpolated($"call removeallexistingroles_r({User.Identity.Name});");
@@ -246,6 +269,7 @@ namespace Project.Migrations
             modelBuilder.Entity<ContractAnalyticsViewModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<StaffSearchModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<CrewSearchModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<RepairSearchModel>().HasNoKey().ToView(null);
 
             modelBuilder.Entity<Availableresources>(entity =>
             {

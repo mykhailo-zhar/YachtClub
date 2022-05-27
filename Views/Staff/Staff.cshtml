@@ -19,7 +19,7 @@
                     Персонал
                 </div>
                 <div align="center">
-                    <a asp-controller="Client" asp-action="@Create" asp-route-staffonly="true" class="btn btn-primary w-75">
+                    <a  asp-action="@Create" asp-route-staffonly="true" class="btn btn-primary w-75">
                         Зарегистрировать
                     </a>
                 </div>
@@ -34,6 +34,9 @@
                     <expander class="w-100 " button-class="fw-bold fs-3" message="Об @Methods.PersonEmail(obj.Person):">
                         <div class="card m-2" style="width: auto;">
                             <div class="card-body">
+                                <div class="position-absolute" style="right:20px;">
+                                    <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Person.Id"> Изменить </a>
+                                </div>
                                 <h5 class="card-title">
                                     @obj.Person.Name   @obj.Person.Surname
                                 </h5>
@@ -83,8 +86,8 @@
                                                         <span>
                                                             @if (item.Enddate == null)
                                                             {
-                                                                <a class="btn btn-danger" asp-action="@DeleteSP"
-                                                                   asp-route-id="@item.Id">-</a>
+                                                                @*<a class="btn btn-danger" asp-action="@DeleteSP"
+                                                                   asp-route-id="@item.Id">-</a>*@
                                                                 <a class="btn btn-danger" asp-action="@EditSP"
                                                                    asp-route-id="@item.Id">Edit</a>
                                                             }
@@ -128,7 +131,7 @@
                                 </div>
                             </div>
                         </div>
-                        </expander>
+                    </expander>
                 </td>
             </tr>
         }

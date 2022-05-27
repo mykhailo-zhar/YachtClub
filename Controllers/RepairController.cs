@@ -143,11 +143,6 @@ namespace Project.Controllers
                 {
                     this.HandleException(exception);
                 }
-                if (ModelState.IsValid)
-                {
-                    return RedirectToAction(nameof(Repair));
-                }
-                return AEditRepair($"{Repair.Object.Id}", Repair.Object);
             }
             return AEditRepair($"{Repair.Object.Id}", Repair.Object);
         }
@@ -188,11 +183,6 @@ namespace Project.Controllers
                         transaction.Rollback();
                     }
                 }
-                if (ModelState.IsValid)
-                {
-                    return RedirectToAction(nameof(Repair));
-                }
-                return LocalCreateRepair(Repair.Object);
             }
             return LocalCreateRepair(Repair.Object);
         }
@@ -215,10 +205,6 @@ namespace Project.Controllers
             catch (Exception exception)
             {
                 this.HandleException(exception);
-            }
-            if (ModelState.IsValid)
-            {
-                return RedirectToAction(nameof(Repair));
             }
             return View("RepairEditor", ObjectViewModelFactory<Repair>.Delete(Repair.Object));
         }
@@ -305,6 +291,39 @@ namespace Project.Controllers
         }
 
         #endregion
+
+        [HttpGet]
+        public IActionResult RepairSearch(RepairInfo Object)
+        {
+            Object = !Object.Flag ? new RepairInfo
+            {
+                Flag = true,
+                LikeName = string.Empty,
+                LikeSurname = string.Empty,
+                LikeEmail = string.Empty,
+                LikePhone = string.Empty,
+                LikeYName = string.Empty,
+                LikeYType = string.Empty,
+                Active = true
+            }
+            : Object
+            ;
+
+            Object.Yachts = Context.Yacht.Select(p => p.Name).Distinct().OrderBy(p => p);
+            Object.YachtType = Context.Yachttype.Select(p => p.Name).Distinct().OrderBy(p => p);
+
+            Object.Repairs = Context.RepairSearch(
+               Object.LikeName,
+               Object.LikeSurname,
+               Object.LikePhone,
+               Object.LikeEmail,
+               Object.LikeYName,
+               Object.LikeYType,
+               Object.Active)
+                .OrderByDescending(p => p.Enddate ?? DateTime.Now)
+               .ToList();
+            return View(Object);
+        }
 
     }
 }

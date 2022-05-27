@@ -66,6 +66,8 @@ CREATE TABLE Position (
   ID    			serial    		Not Null  	Primary Key,
   Name   			varchar   		Not Null  	Unique,
   CrewPosition		boolean			Not Null	Default false,
+  DeclineDelete		Boolean			Not Null	Default false,
+  DeclineAccess		Boolean			Not Null	Default false,
   Salary        	My_Money    	Not Null
 );
 				");
@@ -142,6 +144,8 @@ CREATE TABLE Person(
   	Email      		Mail    	Not Null	unique,
 	Phone			PhoneNumber	Not Null	unique,
     StaffOnly		Boolean		Not Null	Default false,
+    StaffOrigin		Boolean		Not Null	Default false,
+    DeclineDelete	Boolean		Not Null	Default false,
 	RegistryDate	timestamp(2)	Not Null	check(BirthDate < RegistryDate)	Default current_timestamp
 );
 				");
@@ -541,10 +545,11 @@ CREATE TABLE Account(
                                ('Cook', 					1500.0),
                                ('Shipboy', 				    0.0),
                                ('DB Admin', 				4000.0),
-                               ('None', 					0.0),
                                ('Fired', 					0.0);
 
 								update Position set CrewPosition = true where id in (5, 6, 7, 8);
+								update Position set DeclineDelete = true where not id in (6, 7, 8, 9);
+								update Position set DeclineAccess = true where not id in (10);
                            ");
 
                 //Типы яхт
@@ -636,6 +641,7 @@ values
 ('Lina'		, 	'Krest'			, 'Female'	, '10-01-2002',	'25-04-2019', 'na42221da@gmail.com',	'+380982376896' ),
 ('Denis'	, 	'Smirk'			, 'Male'	, '10-01-2002',	'26-04-2019', 'den123s2@gmail.com',		'+380981343565' );
 update Person set staffonly = true where not id in (1);
+update Person set stafforigin = true;
 
 insert into Person (name, surname, sex, BirthDate, RegistryDate, email, phone)
 values
@@ -1229,7 +1235,7 @@ returns boolean
 as $$
 begin 
 	if(closed) then
-		return not ( select count(er.id) from extradationrequest as er where er.repairid = repair_id) = 
+		return ( select count(er.id) from extradationrequest as er where er.repairid = repair_id) = 
 		( select count(id) from extradationrequest as er where er.repairid = repair_id and (er.status in ('Canceled', 'Done')));
 	else 
 		return exists ( select * from extradationrequest as er where er.repairid = repair_id and er.status not in ('Canceled', 'Done'));
@@ -1273,6 +1279,7 @@ begin
 end;
 $$ language plpgsql;
 				");
+
             //Активные контракты яхты
             dbContext.Database.ExecuteSqlRaw(@"
 create or replace function ActiveContractByYachtID (
@@ -1303,6 +1310,7 @@ begin
 end; 
 $$ language plpgsql;
 				");  
+
 			//Статус яхты
             dbContext.Database.ExecuteSqlRaw(@"
 create or replace FUNCTION YachtsStatus(
@@ -1319,7 +1327,7 @@ begin
 		elsif(rec.e) then
 			return 'Учавствует в событии';
 		elsif(rec.c) then
-			return 'Учавствует в событии';
+			return 'Выполняет контракт';
 		elseif(rec.filled) then
 			return 'Готова принимать контракты';
 		else
@@ -1402,6 +1410,7 @@ begin
 end;
 $$ language plpgsql;
 				");	
+
 			//Роль по текущему пользователю
             dbContext.Database.ExecuteSqlRaw(@"
 /*create or replace function RoleByName (
@@ -1695,6 +1704,49 @@ begin
 end; 
 $$ language plpgsql;
 				");
+			//Поиск ремонтов
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function RepairView (
+	_name text,
+	_surname text,
+	_phone text,
+	_email text,
+	_yname text,
+	_ytype text,
+	_active bool
+)
+	returns Table(p_name varchar, p_surname varchar, p_phone varchar, p_email varchar, 
+				  yachtname varchar, yachttype varchar, p_startdate timestamp, p_enddate timestamp )
+as $$
+begin 	
+	return query 
+	select 
+	p.name p_name,
+	p.surname p_surname,
+	cast(p.phone as varchar) p_phone,
+	cast(p.email as varchar) p_email,
+	y.name yachtname,
+	yt.name yachttype,
+	r.startdate p_startdate,
+	r.enddate p_enddate
+	from repair_men rm 
+	join repair r on rm.repairid = r.id
+	join yacht y on r.yachtid = y.id and y.name like '%' || _yname || '%' 
+	join yachttype yt on y.typeid = yt.id and yt.name like '%' || _ytype || '%' 
+	join staff_position sp on rm.staffid = sp.id
+	join person p on sp.staffid = p.id and (
+		p.phone like '%' || _phone || '%'
+		and
+		p.email like '%' || _email || '%'
+		and 
+		p.name like '%' || _name || '%'
+		and
+		p.surname like '%' || _surname || '%'
+	)
+	where (r.enddate is not null and not _active) or (r.enddate is null and _active);
+end; 
+$$ language plpgsql;
+				");
 
 			#endregion
 
@@ -1822,7 +1874,7 @@ _bpass varchar
 )
 AS $$
 begin
-	call exec_by_rolecreator('call  updateexistingroles('''''|| _email ||''''','''''|| _bpass ||''''');');
+	call exec_by_rolecreator('call updateexistingroles('''''|| _email ||''''','''''|| _bpass ||''''');');
 end;
 $$ language plpgsql;
 
@@ -1862,6 +1914,69 @@ $$ language plpgsql;
 
 				");
 
+			//Удаление должности
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure RemoveExistingRole(
+_position varchar
+)
+AS $$
+declare
+rec record;
+username varchar;
+begin
+	execute 'DROP ROLE IF EXISTS '|| _position ||' ;';
+end;
+$$ language plpgsql;
+
+				");
+			//Удаление должности
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure RemoveExistingRole_R(
+_position varchar
+)
+AS $$
+begin
+	call exec_by_rolecreator('call RemoveExistingRole('''''|| _position ||''''');');
+end;
+$$ language plpgsql;
+
+				");
+
+			//Переименование должности
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure RenameRole(
+_oldname varchar,
+_newname varchar
+)
+AS $$
+declare
+rec record;
+username varchar;
+begin
+	execute 'ALTER ROLE '|| _oldname ||' RENAME TO '|| _newname ||';';	
+end;
+$$ language plpgsql;
+
+
+				");
+			//Переименование должности
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure RenameRole_R(
+_oldname varchar,
+_newname varchar
+)
+AS $$
+begin
+	call exec_by_rolecreator('call RenameRole('''''|| _oldname ||''''','''''|| _newname ||''''');');
+end;
+$$ language plpgsql;
+
+				");
+
 			//Пинг
 			dbContext.Database.ExecuteSqlRaw(@"
 
@@ -1881,7 +1996,7 @@ $$ language plpgsql;
 
 				");	
 
-			//Добавить одну роль
+			//Добавить один аккаунт
 			dbContext.Database.ExecuteSqlRaw(@"
 
 CREATE OR REPLACE Procedure addnewacc(
@@ -1894,11 +2009,11 @@ declare
 rec RECORD;
 usy varchar;
 begin
-	execute ' select name  from position where id = ' || _role ' ;' into rec;
-	usy :=  LowerUserName(rec.name) || LowerUserName(_email);
+	execute ' select name  from position where id = ' || _role ||  ' ;' into rec;
+	usy :=  LowerUserName(rec.name) || '_' || LowerUserName(_email);
 	
 	execute 'CREATE ROLE client_' || usy || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
-	execute 'GRANT' || myrolename(rec.name) ||' TO client_' || usy  || ' ;';
+	execute 'GRANT ' || myrolename(rec.name) ||' TO ' || usy || ' ;';
 end;
 $$ language plpgsql;
 
@@ -1917,7 +2032,7 @@ begin
 end;
 $$ language plpgsql;
 				");
-			//Добавить одну роль Защищённая
+			//Добавить один аккаунт Защищено
 			dbContext.Database.ExecuteSqlRaw(@"
 
 CREATE OR REPLACE Procedure addnewacc_r(
@@ -1928,7 +2043,7 @@ _pass varchar
 AS $$
 declare
 begin
-	call exec_by_rolecreator('call addnewacc('''''|| _email ||''''','''''|| _role ||''''','''''|| _pass ||''''');');
+	call exec_by_rolecreator('call addnewacc('''''|| _email ||''''','|| _role ||','''''|| _pass ||''''');');
 end;
 $$ language plpgsql;
 
@@ -1939,6 +2054,34 @@ _pass varchar
 AS $$
 begin
 	call exec_by_rolecreator('call addnewacc('''''|| _email ||''''','''''|| _pass ||''''');');
+end;
+$$ language plpgsql;
+				");
+
+			//Добавить новую должность
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure addnewrole(
+_user varchar, 
+_role varchar
+)
+AS $$
+begin
+	execute 'CREATE ROLE ' || _user || ' ;';
+	execute 'GRANT ' || _role ||' TO ' || _user  || ' ;';
+end;
+$$ language plpgsql;
+				");
+			//Добавить новую должность Защищено
+			dbContext.Database.ExecuteSqlRaw(@"
+
+CREATE OR REPLACE Procedure addnewrole_r(
+_user varchar, 
+_role varchar
+)
+AS $$
+begin
+	call exec_by_rolecreator('call addnewrole('''''|| _user ||''''','''''|| _role ||''''');');
 end;
 $$ language plpgsql;
 				");
@@ -2024,7 +2167,7 @@ where sp.id in (select StaffPositionListByPosition('Repairman'))
             //Персонал
             dbContext.Database.ExecuteSqlRaw(@"
 Create or replace View Staff as (
-		select * from person p where p.staffonly or exists (select * from staff_position sp where sp.staffid = p.id)
+		select * from person p where p.stafforigin
 			
 );
 
@@ -2418,9 +2561,17 @@ begin
 			if(old.enddate is not null) then 
 				raise exception 'Попытка изменения уволенного сотрудника';
 			end if;
+			if( (select name from position where id = old.positionid) = 'Fired' and old.enddate is null and new.enddate is null ) then
+				raise exception 'Попытка изменения уволенного сотрудника';
+			end if;
 			if(new.enddate is not null) then 
 				update Yacht_Crew set enddate = new.enddate where crewid = new.id;
+				/*if( (select count(*) from staff_position sp where old.id = sp.id and sp.enddate is null) - 1 <= 0) then
+					insert into staff_position(staffid, positionid, startdate) values
+					(old.staffid, (select id from position where name = 'Fired'), curstmp());
+				end if;*/
 			end if;
+			
         ELSIF (TG_OP = 'INSERT') then
 			--Выставление стандартной даты
 			new.startdate = current_timestamp; 
@@ -2428,6 +2579,18 @@ begin
 			if( (select count(sp.id) from staff_position sp 
 				 where sp.staffid = new.staffid and sp.positionid = new.positionid and sp.enddate is null) >= 1) then
 				 raise exception 'Уже присутствует открытая запись человека на данной должности, закройте предыдущую и повторите попытку';
+			end if;
+
+			if( (select name from position where id = new.positionid) = 'Fired' ) then
+				update staff_position set enddate = curstmp() where staffid = new.staffid and enddate is null;
+			end if;
+
+			if( exists(select * from staff_position sp 
+					   join person p on sp.staffid = p.id and p.id = new.staffid
+					   join position po on sp.positionid = po.id and po.name = 'Fired'
+					   where sp.enddate is null
+					  ) ) then 
+					update staff_position set enddate = curstmp() where staffid = new.staffid and enddate is null; 
 			end if;
 			new.enddate = null;
 		ELSIF (TG_OP = 'DELETE') then
@@ -2438,7 +2601,7 @@ begin
         END IF;
 		return new;
 end;
-$$ language plpgsql;	
+$$ language plpgsql;		
 
 create trigger ReadonlyConstraint
 Before insert or update or delete on Staff_Position
@@ -2953,31 +3116,29 @@ begin
 			rolename :=  MyRoleName(new.name); 
 			execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = ''' || rolename || ''';' into rec;
 			if(rec.count = 0 ) then
-			  execute 'CREATE ROLE '|| rolename || ' ;';
-			  execute 'GRANT amy_user to '|| rolename ||' ;';
+			  execute 'call addnewrole_r('''|| rolename || ''', ''amy_user'' );';
 			end if;
 		end if;
 		IF(TG_OP = 'UPDATE') then
 			rolename :=  MyRoleName(old.name); 
 			execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = ''' || rolename || ''';' into rec;
 			if(rec.count = 0 ) then
-			  execute 'CREATE ROLE '|| rolename ||' ;';
-			  execute 'GRANT amy_user to '|| rolename ||' ;';
+			   execute 'call addnewrole_r('''|| rolename || ''', ''amy_user'' );';
 			end if;
 			if(old.name <> new.name) then 
-				execute 'ALTER ROLE '|| rolename ||' RENAME TO '|| 'my_' || MyRoleName(new.name) ||';';	
+			 	execute 'call renamerole_r('''|| rolename || ''', '''|| MyRoleName(new.name) ||''' );';
 			end if;
 		end if;
 		return new;
 end;
-$$ language plpgsql;		
+$$ language plpgsql;	
 
 create trigger InsertCaptain
 After insert or update on Position
 for each row execute function POS1 ();
 				");
 
-			dbContext.Database.ExecuteSqlRaw(@"
+			dbContext.Database.ExecuteSqlRaw($@"
 create or replace function SPosition1 ()
 	returns trigger
 as $$
@@ -2985,63 +3146,59 @@ declare
 usy RECORD;
 rec RECORD;
 username varchar;
-rolename varchar;
 begin 	
 		IF(TG_OP = 'INSERT') then 
 		
-				select p.name, pe.email into usy from staff_position sp 
+				select p.id, p.name, pe.email into usy from staff_position sp 
 				join position p on p.id = sp.positionid 
 				join person pe on pe.id = sp.staffid
 				where sp.id = new.id;
 
 				username := LowerUserName(usy.name) || '_' || LowerUserName(usy.email);
-				rolename := MyRoleName(usy.name);
 
 				execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = '''
 				|| username || ''';' into rec;
 		
 			if(rec.count = 0 ) then
-			  execute 'CREATE ROLE '|| username ||' WITH LOGIN ;';
-			  execute 'GRANT '|| rolename || ' TO '||  username || ' ;';
+			  execute 'call addnewacc_r('''|| usy.email || ''', '|| usy.id ||', ''{Hash_Extension.StandartPassword}'' );';
 			end if;
+			
+			
 			return new;
 		end if;
 		IF(TG_OP = 'UPDATE') then
 		
-				select p.name, pe.email into usy from staff_position sp 
+				select p.id, p.name, pe.email into usy from staff_position sp 
 				join position p on p.id = sp.positionid 
 				join person pe on pe.id = sp.staffid
 				where sp.id = new.id;
 
 				username := LowerUserName(usy.name) || '_' || LowerUserName(usy.email);
-				rolename := MyRoleName(usy.name);
 
 				execute 'SELECT count(rolname) FROM pg_roles WHERE rolname = '''
 				|| username || ''';' into rec;
 		
 			if(rec.count = 0 and new.enddate is null and old.enddate is null  ) then
-			   execute 'CREATE ROLE '|| username ||' WITH LOGIN ;';
-			   execute 'GRANT '|| rolename || ' TO '||  username || ' ;';
+			    execute 'call addnewacc_r('''|| usy.email || ''', '|| usy.id ||', ''{Hash_Extension.StandartPassword}'' );';
 			end if;
 			if(new.enddate is not null) then 
-				execute 'DROP ROLE IF EXISTS '|| username ||' ;';	
+				execute 'call removeexistingrole_r('''|| username ||''') ;';
 			end if;
 			return new;
 		end if;
 		IF(TG_OP = 'DELETE') then
-				select p.name, pe.email into usy from staff_position sp 
+				select p.id, p.name, pe.email into usy from staff_position sp 
 				join position p on p.id = sp.positionid 
 				join person pe on pe.id = sp.staffid
 				where sp.id = old.id;
 
 				username := LowerUserName(usy.name) || '_' || LowerUserName(usy.email);
-				rolename := MyRoleName(usy.name);
 				
-				execute 'DROP ROLE IF EXISTS '|| username ||' ;';	
+				execute 'call removeexistingrole_r('''|| username ||''') ;';	
 			return old;
 		end if;
 end;
-$$ language plpgsql;	
+$$ language plpgsql;
 
 create trigger InsertAccount
 After insert or update or delete on Staff_Position
@@ -3073,7 +3230,7 @@ for each row execute function SPosition1 ();
 		for each row execute function {Parent}_{Child}();
 				");
 			}
-
+			 
 			ParentRemoval(
 				nameof(Contracttype),
 				nameof(Contract),
@@ -3115,7 +3272,32 @@ for each row execute function SPosition1 ();
 				nameof(Material.Typeid)
 				);
 
-		  dbContext.Yachttype.ToList().ForEach(
+			void DeclineDelete(string Parent)
+			{
+				string guid = Methods.RanGuid;
+				dbContext.Database.ExecuteSqlRaw($@"
+		create or replace function DeclineDelete_{guid}()
+			returns trigger
+		as $$
+		begin 	
+				if( old.declinedelete ) then
+					raise exception 'Запрещено удалять эту запись';
+				end if;
+
+				return old;
+		end;
+		$$ language plpgsql;
+
+		create trigger DeclineDelete
+		Before delete on {Parent}
+		for each row execute function DeclineDelete_{guid}();
+				");
+			}
+
+			DeclineDelete(nameof(Person));
+			DeclineDelete(nameof(Position));
+
+			dbContext.Yachttype.ToList().ForEach(
 				p =>
                 {
 					dbContext.Database.ExecuteSqlRaw($"call AddCaptainToYachttype({p.Id});");
@@ -3148,7 +3330,7 @@ grant select,update,delete on extradationrequest to my_storekeeper;
 
 			//Кадровик
 			dbContext.Database.ExecuteSqlRaw(@"
-grant ALL PRIVILEGES on staff, position, staff_position, person to my_personell_officer;
+grant ALL PRIVILEGES on staff, position, staff_position, yacht_crew, person to my_personell_officer;
 
 grant select on yacht_crew, yacht, yachttype, busyyacht to my_personell_officer;
 
@@ -3163,12 +3345,12 @@ grant all PRIVILEGES on yachttest, repair, repair_men, extradationrequest to my_
 			//Владелец
 			dbContext.Database.ExecuteSqlRaw(@"
 grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
-grant select on yacht_crew, contract , yacht_crew_position to my_owner;
+grant select on yacht_crew, contract, yacht_crew_position to my_owner;
 				");	
 			//Капитан
 			dbContext.Database.ExecuteSqlRaw(@"
-
 grant all privileges on contract to my_captain;
+grant select on yacht_crew_position to my_captain
 				");
 			//Стандартные типы данных
 			dbContext.Database.ExecuteSqlRaw(@"

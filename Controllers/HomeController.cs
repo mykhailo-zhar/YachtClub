@@ -100,17 +100,5 @@ namespace Project.Controllers
                 .OrderBy(p => p.Id);
             return View(Object);
         }
-
-
-
-        [Authorize(Roles = RolesReadonly.DB_Admin)]
-        public IActionResult ReloadDatabase()
-        {
-            SeedData.RestartDatabase(Context);
-            SeedData.SeedWithData(Context);
-            SeedData.SeedWithProcedure(Context);
-            SeedData.SeedAccounts(Context);
-            return View(nameof(Index));
-        }
     }
 }

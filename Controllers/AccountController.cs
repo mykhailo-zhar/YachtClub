@@ -96,7 +96,7 @@ namespace Project.Controllers
                     {
                         var collection = Context.StaffPosition
                             .Include(p => p.Position)
-                            .Where(p => p.Staffid == Account.Object.User.Id && p.Enddate == null)
+                            .Where(p => p.Staffid == Account.Object.User.Id && p.Enddate == null && !p.Position.DeclineAccess)
                             .Select(p => p.Position.Name)
                             .ToList();
                         if (collection.Count() == 0)

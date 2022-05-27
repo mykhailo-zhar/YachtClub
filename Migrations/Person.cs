@@ -40,6 +40,8 @@ namespace Project.Migrations
         public string Phone { get; set; }
         [Column("staffonly")]
         public bool Staffonly { get; set; }
+        [Column("stafforigin")]
+        public bool StaffOrigin { get; set; }
         [Column("registrydate")]
         public DateTime Registrydate { get; set; }
 

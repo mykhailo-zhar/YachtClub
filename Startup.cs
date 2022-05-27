@@ -18,13 +18,17 @@ namespace WebApp
         {
             Configuration = config;
         }
+        private static readonly bool AdminRestart = false;
         public IConfiguration Configuration { get; set; }
         public void ConfigureServices(IServiceCollection services)
         {
             Hash_Extension.StandartPassword = Configuration["StandartPassword"];
             services.AddDbContext<DataContext>(opts =>
             {
-               // opts.UseNpgsql(Configuration["ConnectionStrings:YachtClubConnection"]);
+                if (AdminRestart)
+                {
+                    opts.UseNpgsql(Configuration["ConnectionStrings:YachtClubConnection"]);
+                }
                 opts.EnableSensitiveDataLogging(true);
                 opts.EnableDetailedErrors(true);
             });
@@ -93,12 +97,13 @@ namespace WebApp
 
             app.UseAuthentication();    
             app.UseAuthorization();
-
-           /* SeedData.RestartDatabase(context);
-            SeedData.SeedWithData(context);
-            SeedData.SeedWithProcedure(context);
-            SeedData.SeedAccounts(context);*/
-
+            if (AdminRestart)
+            {
+                SeedData.RestartDatabase(context);
+                SeedData.SeedWithData(context);
+                SeedData.SeedWithProcedure(context);
+                SeedData.SeedAccounts(context);
+            }
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

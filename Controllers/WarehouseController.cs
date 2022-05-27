@@ -448,8 +448,5 @@ namespace Project.Controllers
             return View(Object);
         }
 
-
-
-        //TODO: Статусы заявок Done могут выставлять только кладовщики
     }
 }

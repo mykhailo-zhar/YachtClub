@@ -149,6 +149,80 @@ namespace Project.Controllers
         }
         #endregion
 
+        #region Person
+
+        public IActionResult EditPerson(string id, bool? staffonly)
+        {
+
+            ViewBag.FromStaff = staffonly ?? false;
+
+            var Person = Context.Person.First(p => p.Id == int.Parse(id));
+            return View("PersonEditor", ObjectViewModelFactory<Person>.Edit(Person));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditPerson([FromForm] ObjectViewModel<Person> Person)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var obj = Context.Person.First(p => p.Id == Person.Object.Id);
+                    obj.Staffonly = Person.Object.Staffonly;
+                    await Context.SaveChangesAsync();
+                    return Person.Object.Staffonly ? RedirectToAction(nameof(Staff), nameof(Staff)) : RedirectToAction(nameof(Person));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                }
+            }
+
+            return View("PersonEditor", ObjectViewModelFactory<Person>.Edit(Person.Object));
+        }
+
+
+        public IActionResult CreatePerson()
+        {
+            ViewBag.FromStaff = true;
+            var Person = new Person
+            {
+                Birthdate = DateTime.Now,
+                StaffOrigin = true,
+                Staffonly = true
+            };
+            return View("PersonEditor", ObjectViewModelFactory<Person>.Create(Person));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreatePerson([FromForm] ObjectViewModel<Person> Person)
+        {
+            if (ModelState.IsValid)
+            {
+                using (var trans = Context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        Context.Person.Add(Person.Object);
+                        await Context.SaveChangesAsync();
+
+                        trans.Commit();
+                        return RedirectToAction(nameof(Staff), nameof(Staff));
+                    }
+                    catch (Exception exception)
+                    {
+                        trans.Rollback();
+                        this.HandleException(exception);
+                    }
+                }
+            }
+
+            return View("PersonEditor", ObjectViewModelFactory<Person>.Create(Person.Object));
+        }
+
+
+        #endregion
+
         #region StaffPosition
 
         private void ConfigureViewBagStaffPosition()
@@ -202,17 +276,28 @@ namespace Project.Controllers
         {
             if (ModelState.IsValid)
             {
-
-                try
+                using (var trans = Context.Database.BeginTransaction())
                 {
-                    if (StaffPosition.Option[0]) StaffPosition.Object.Enddate = DateTime.Now;
-                    Context.StaffPosition.Update(StaffPosition.Object);
-                    await Context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Staff));
-                }
-                catch (Exception exception)
-                {
-                    this.HandleException(exception);
+                    try
+                    {
+                        if (StaffPosition.Option[0]) { 
+                            StaffPosition.Object.Enddate = DateTime.Now;
+                            if (Context.StaffPosition.Where(p => p.Enddate == null).Count() - 1 <= 0)
+                                Context.StaffPosition.Add(new StaffPosition { 
+                                    Staffid = StaffPosition.Object.Staffid,
+                                    Positionid = Context.Position.First(P => P.Name == "Fired").Id, 
+                                    Startdate = DateTime.Now });
+                        }
+                        Context.StaffPosition.Update(StaffPosition.Object);
+                        await Context.SaveChangesAsync();
+                        trans.Commit();
+                        return RedirectToAction(nameof(Staff));
+                    }
+                    catch (Exception exception)
+                    {
+                        this.HandleException(exception);
+                        trans.Rollback();
+                    }
                 }
             }
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Edit(StaffPosition.Object));
@@ -229,15 +314,20 @@ namespace Project.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteStaffPosition([FromForm] ObjectViewModel<StaffPosition> StaffPosition)
         {
-            try
+            using (var trans = Context.Database.BeginTransaction())
             {
-                Context.StaffPosition.Remove(StaffPosition.Object);
-                await Context.SaveChangesAsync();
-                return RedirectToAction(nameof(Staff));
-            }
-            catch (Exception exception)
-            {
-                this.HandleException(exception);
+                try
+                {
+                    Context.StaffPosition.Remove(StaffPosition.Object);
+                    await Context.SaveChangesAsync();
+                    trans.Commit();
+                    return RedirectToAction(nameof(Staff));
+                }
+                catch (Exception exception)
+                {
+                    this.HandleException(exception);
+                    trans.Rollback();
+                }
             }
             return View("StaffPositionEditor", ObjectViewModelFactory<StaffPosition>.Delete(StaffPosition.Object));
 
@@ -257,6 +347,7 @@ namespace Project.Controllers
                 LikeYName = string.Empty,
                 LikeYType = string.Empty,
                 LikePosition = string.Empty,
+                Active = true
             }
             : Object
             ;
@@ -289,12 +380,13 @@ namespace Project.Controllers
                 LikeEmail = string.Empty,
                 LikePhone = string.Empty,
                 LikePosition = string.Empty,
+                Active = true
             }
             : Object
             ;
 
 
-            Object.Positions = Context.Position.Select(p => p.Name).Distinct().OrderBy(p => p);
+            Object.Positions = Context.Position.Select(p => p.Name).OrderBy(p => p).Distinct();
 
             Object.Staff = Context.StaffSearch(
                Object.LikeName,

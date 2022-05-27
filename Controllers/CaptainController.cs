@@ -88,10 +88,19 @@ namespace Project.Controllers
                     if (Contract.Option[0])
                     {
                         contract.Enddate = DateTime.Now;
+                        if(contract.Startdate > contract.Enddate) throw new Exception("Дата окончания контракта раньше чем дата начала контракта");
                     }
                     if (Contract.Option[1])
                     {
                         contract.Averallprice = null;
+                    }
+                    if (!Contract.Object.Paid)
+                    {
+                        contract.Startdate = Contract.Object.Startdate;
+                    }
+                    else if(contract.Startdate != Contract.Object.Startdate)
+                    {
+                        throw new Exception("Нельзя поменять дату начала контракта после оплаты");
                     }
                     contract.Duration = Contract.Object.Duration;
                     contract.Specials = Methods.CoalesceString(Contract.Object.Specials);

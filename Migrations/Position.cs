@@ -22,6 +22,8 @@ namespace Project.Migrations
         public string Name { get; set; }
         [Column("crewposition")]
         public bool Crewposition { get; set; }
+        [Column("declineaccess")]
+        public bool DeclineAccess { get; set; }
         [Column("salary", TypeName = "numeric")]
         public decimal Salary { get; set; }
 
