@@ -63,7 +63,7 @@ set datestyle = 'iso, dmy';
                 //Должность
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Position (
-  ID    			serial    		Not Null  	Primary Key,
+  ID    			serial    		Primary Key,
   Name   			varchar   		Not Null  	Unique,
   CrewPosition		boolean			Not Null	Default false,
   DeclineDelete		Boolean			Not Null	Default false,
@@ -75,9 +75,9 @@ CREATE TABLE Position (
                 //Тип материала
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE MaterialType(
-  ID		serial     Not Null		Primary Key,
+  ID		serial     Primary Key,
   Name		varchar    Not Null		Unique,
-  Metric	varchar    Default NULL,
+  Metric	varchar,
   Description	text	Default ' '
 );
 				");
@@ -85,7 +85,7 @@ CREATE TABLE MaterialType(
                 //Тип яхты
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtType(
-  	ID        			serial     	Not Null		Primary Key,
+  	ID        			serial     	Primary Key,
   	Name        		varchar     Not Null		Unique,
 	Frame				varchar		Not Null		check(Frame in ('Single','Twain', 'Ternary')),	
 	Goal				varchar		Not Null		check(Goal in ('Sport','Cruise')),
@@ -100,7 +100,7 @@ CREATE TABLE YachtType(
                 //Тип контракта
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE ContractType(
-  ID    		serial    	Not Null	Primary Key,
+  ID    		serial    	Primary Key,
   Name     	  	varchar   	Not Null	Unique,
   Price    	  	My_Money   	Not Null,	
   Description	text	Default ' '
@@ -110,7 +110,7 @@ CREATE TABLE ContractType(
                 //Тип аренды яхты
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtLeaseType(
-  ID    		serial    	Not Null	Primary Key,
+  ID    		serial    	Primary Key,
   Name     	  	varchar   	Not Null	Unique,
   Price    	  	My_Money   	Not Null,
   StaffOnly		bool		Not Null	Default FALSE,
@@ -121,7 +121,7 @@ CREATE TABLE YachtLeaseType(
                 //Тип продавца
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Seller (
-	ID			serial		Not Null	primary key,
+	ID			serial		primary key,
 	Name		varchar		Not Null	unique,
 	Description	text	Default ' '
 );
@@ -136,7 +136,7 @@ CREATE TABLE Seller (
                 //Персона
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Person(
-  	ID    			serial    	Not Null	Primary Key,
+  	ID    			serial    	Primary Key,
   	Name      		varchar    	Not Null,
   	Surname      	varchar    	Not Null,
   	BirthDate    	timestamp(2)   Not Null		check(extract(year from age(BirthDate)) >= 18),
@@ -153,7 +153,7 @@ CREATE TABLE Person(
                 //Событие
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Event(
-	ID			serial		Not Null	Primary Key,
+	ID			serial		Primary Key,
 	Name		varchar		Not Null,
 	StartDate	timestamp(2)		Not Null,
 	EndDate		timestamp(2)		check(StartDate <= EndDate ),
@@ -161,8 +161,6 @@ CREATE TABLE Event(
 	Description		text		Default ' ',
 	UserRate		int			Default 0,
 	CanHaveWinners	boolean		not null	Default true,
-
-	unique(Name,StartDate)
 );
 				");
 
@@ -175,7 +173,7 @@ CREATE TABLE Event(
                 //Человек на должности
                 dbContext.Database.ExecuteSqlRaw(@"
 Create TABLE Staff_Position(
-	ID				serial		Not Null	Primary Key,
+	ID				serial		Primary Key,
 	StaffID			int			Not Null
 	References 	Person(ID)	
 	On Update Cascade	
@@ -195,9 +193,9 @@ Create TABLE Staff_Position(
                 //Материал
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Material(
-	ID		serial		Not Null	Primary Key,
+	ID		serial		Primary Key,
 	Name	varchar		Not Null	Unique,
-	Metric	varchar     Default NULL,
+	Metric	varchar     /*Default NULL*/,
 	TypeID	int			Not Null
 	References 	MaterialType(ID)	
 	On Update Cascade	
@@ -208,7 +206,7 @@ CREATE TABLE Material(
                 //Яхта
                 dbContext.Database.ExecuteSqlRaw(@"
 Create TABLE Yacht(
-	ID					Serial		Not Null	Primary Key,
+	ID					Serial		Primary Key,
 	Name				varchar		Not Null,
 	Rentable			bool		Not Null	Default TRUE,
 	Registrydate		timestamp(2)	Not Null	Default current_timestamp,
@@ -232,7 +230,7 @@ Create TABLE Yacht(
                 //Договор на поставку материала
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE MaterialLease(
-	ID				serial		Not Null	Primary Key,
+	ID				serial		Primary Key,
 	Material		int			Not Null	
 	References 	Material(ID)	
 	On Update Cascade	
@@ -254,9 +252,9 @@ CREATE TABLE MaterialLease(
                 //Тестовый заплыв яхты
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtTest(
-	ID			serial		Not Null	Primary Key,
+	ID			serial		Primary Key,
 	Date		timestamp(2)		Not Null,
-	Results		text		Not Null,
+	Results		text		Default ' ',
 	YachtID		int			Not Null
 	References 	Yacht(ID)	
 	On Update Cascade	
@@ -272,13 +270,13 @@ CREATE TABLE YachtTest(
                 //Ремонт
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Repair(
-	ID			serial			Not Null	Primary Key,
+	ID			serial			Primary Key,
 	StartDate	timestamp(2)		Not Null	Default current_timestamp,
 	EndDate		timestamp(2)		check(StartDate <= EndDate )	Default null,
 	Duration	timestamp(2)		Not Null	check(StartDate <= Duration)	Default current_timestamp,
 	Status		varchar			Not Null	check(Status in ('Created','Waits', 'Canceled', 'In Progress','Done'))	Default 'Created',
 	Personnel	int				Not Null	check(Personnel > 0)	Default 1,
-	Description	text			Not Null	Default ' ',
+	Description	text			Default ' ',
 	YachtID		int				Not Null
 	References 	Yacht(ID)	
 	On Update Cascade	
@@ -289,7 +287,7 @@ CREATE TABLE Repair(
                 //Команда судна
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Yacht_Crew(
-	ID			serial		Not Null	Primary Key,
+	ID			serial		Primary Key,
 	YachtID		int			Not Null
 	References 	Yacht(ID)	
 	On Update Cascade	
@@ -327,7 +325,7 @@ CREATE TABLE Winner(
                 //Заявка на выдачу
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE ExtradationRequest(
-	ID			serial		Not Null	Primary Key,
+	ID			serial		Primary Key,
 	Count		int			Not Null	check(Count > 0),
 
 	Material	int			Not Null	
@@ -349,19 +347,19 @@ CREATE TABLE ExtradationRequest(
 	EndDate		timestamp(2)		check(StartDate <= EndDate),
 	Duration	timestamp(2)		Not Null	check(StartDate <= Duration),
 	Description text			Not Null	Default ' ',
-	Status		varchar			Not Null	check(Status in ('Created', 'Canceled', 'Waits', 'Done'))
+	Status		varchar			Not Null	check(Status in ('Created', 'Canceled', 'Waits', 'Done')),	 Default ‘Created’
 );
 				");
 
                 //Договор на аренду места
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE YachtLease(
-	ID				serial			Not Null	Primary Key,
+	ID				serial			Primary Key,
 	StartDate		timestamp(2)		Not Null,
 	EndDate			timestamp(2)		check(StartDate <= EndDate ),
 	Duration		timestamp(2)		Not Null	check(StartDate <= Duration),
 	OverallPrice	My_Money		Not Null,
-	Specials		text			Not Null	Default ' ',
+	Specials		text			Default ' ',
 	Paid			bool			Not Null	Default False,
 	YachtID			int				Not Null
 	References 	Yacht(ID)	
@@ -382,7 +380,7 @@ CREATE TABLE YachtLease(
                 //Контракт
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Contract(
-	ID				serial		Not Null	Primary Key,
+	ID				serial		Primary Key,
 	ClientID		int			Not Null
 	References 	Person(ID)	
 	On Update Cascade	
@@ -401,7 +399,7 @@ CREATE TABLE Contract(
 	StartDate		timestamp(2)		Not Null,
 	EndDate			timestamp(2)		check(StartDate <= EndDate ),
 	Duration		timestamp(2)		Not Null	check(StartDate <= Duration),
-	Specials		text		Not Null,
+	Specials		text		Default ‘ ’,
 	Paid			bool		Not Null	Default False,
 	AverallPrice	My_Money	Not Null
 );
@@ -421,7 +419,7 @@ CREATE TABLE Review(
 	On Delete Cascade,
 	
 	Date			timestamp(2)		Not Null,
-	Text			text		Not Null,
+	Text			text		Default ‘ ’,
 	Public			bool		Not Null	Default true,
 	UserRate		int			Not Null	Default 0,
 	Rate			int 		Not Null 	check(Rate > 0 AND Rate <= 5)
@@ -438,7 +436,7 @@ CREATE TABLE Review(
                 //Справочная таблица ремонтников
                 dbContext.Database.ExecuteSqlRaw(@"
 CREATE TABLE Repair_Men(
-	ID			serial		Not Null	Primary Key,	
+	ID			serial		Primary Key,	
 
 	RepairID	int			Not Null
 	References 	Repair(ID)	
@@ -1793,7 +1791,7 @@ AS $$
 declare
 rec record;
 begin
-	execute 'select * from repair_staff where staffid = ' || _PersonID || ' ;' into rec;
+	execute 'select * from repair_staff where staffid = ' || _PersonID || ' and enddate is null ;' into rec;
 		
 	insert into repair_men(repairid, staffid) 
 	values
@@ -2120,11 +2118,19 @@ CREATE OR REPLACE RULE R_PYT_Captain_NotD AS ON DELETE TO Position_Yachttype
     DO INSTEAD NOTHING;
 	
 CREATE OR REPLACE RULE R_P_Captain_NotD AS ON DELETE TO Position
-    WHERE old.name = 'Captain'
+    WHERE old.declinedelete
     DO INSTEAD NOTHING;
 
 
 				");
+			//Стандартная дата
+			dbContext.Database.ExecuteSqlRaw(@"
+	/*create or replace rule StandartDate as
+	on insert to review
+	where new.date is null
+	do instead insert into review(clientid, date, text, public, rate) 
+	values (new.clientid, current_timestamp, new.text, new.public new.rate);*/
+");
 			#endregion
 
 			#region Views
@@ -2159,7 +2165,7 @@ select distinct m.id material, coalesce(ar.count, 0) count, materialmetric(m.id)
             dbContext.Database.ExecuteSqlRaw(@"
 Create or replace view Repair_Staff as (
 select sp.id, sp.staffid, sp.positionid, sp.startdate, sp.enddate,sp.salary, sp.description from
-staff_position as sp join position as p on sp.positionid = p.id 
+staff_position as sp 
 where sp.id in (select StaffPositionListByPosition('Repairman'))
 	);
 ");
@@ -2300,18 +2306,6 @@ create or replace view yacht_crew_position as (
 			);
 ");
 
-			#endregion
-
-			#region Rules
-
-			//Стандартная дата
-			dbContext.Database.ExecuteSqlRaw(@"
-	/*create or replace rule StandartDate as
-	on insert to review
-	where new.date is null
-	do instead insert into review(clientid, date, text, public, rate) 
-	values (new.clientid, current_timestamp, new.text, new.public new.rate);*/
-");
 			#endregion
 
 			#region Triggers
@@ -3282,9 +3276,8 @@ for each row execute function SPosition1 ();
 
 			void DeclineDelete(string Parent)
 			{
-				string guid = Methods.RanGuid;
 				dbContext.Database.ExecuteSqlRaw($@"
-		create or replace function DeclineDelete_{guid}()
+		create or replace function DeclineDelete_{Parent}()
 			returns trigger
 		as $$
 		begin 	
@@ -3298,7 +3291,7 @@ for each row execute function SPosition1 ();
 
 		create trigger DeclineDelete
 		Before delete on {Parent}
-		for each row execute function DeclineDelete_{guid}();
+		for each row execute function DeclineDelete_{Parent}();
 				");
 			}
 
@@ -3329,7 +3322,7 @@ for each row execute function SPosition1 ();
 
 			//Кладовщик
 			dbContext.Database.ExecuteSqlRaw(@"
-grant ALL PRIVILEGES on material, materiallease, materialtype, seller to my_storekeeper;
+grant insert,update,delete,select on material, materiallease, materialtype, seller to my_storekeeper;
 
 grant select on availableresources, repair, staff_position, person, position, repair_staff to my_storekeeper;
 
@@ -3338,26 +3331,26 @@ grant select,update,delete on extradationrequest to my_storekeeper;
 
 			//Кадровик
 			dbContext.Database.ExecuteSqlRaw(@"
-grant ALL PRIVILEGES on staff, position, staff_position, yacht_crew, person to my_personell_officer;
+grant insert,update,delete,select on staff, position, staff_position, yacht_crew, person to my_personell_officer;
 
 grant select on yacht_crew, yacht, yachttype, busyyacht to my_personell_officer;
 
 				");
 			//Ремонтник
 			dbContext.Database.ExecuteSqlRaw(@"
-grant select on person, position, repair_staff, material, materialtype, availableresources to my_repairman;
-grant all PRIVILEGES on yachttest, repair, repair_men, extradationrequest to my_repairman;
+grant select on person, position, repair_staff, material,busyyacht, materialtype, availableresources to my_repairman;
+grant insert,update,delete,select on yachttest, repair, repair_men, extradationrequest to my_repairman;
 
 
 				");
 			//Владелец
 			dbContext.Database.ExecuteSqlRaw(@"
-grant all privileges on yachttype, position_yachttype, yachtleasetype, contracttype, review, event, winner, yachtlease to my_owner;
-grant select on yacht_crew, contract, yacht_crew_position to my_owner;
+grant insert, select, update, delete on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
+grant select on yacht_crew, contract, review, yacht_crew_position to my_owner;
 				");	
 			//Капитан
 			dbContext.Database.ExecuteSqlRaw(@"
-grant all privileges on contract to my_captain;
+grant insert,update,delete,select on contract to my_captain;
 grant select on yacht_crew_position to my_captain
 				");
 			//Стандартные типы данных

@@ -241,11 +241,6 @@ namespace Project.Controllers
                 {
                     this.HandleException(exception);
                 }
-                if (ModelState.IsValid)
-                {
-                    return RedirectToAction(nameof(RepairMen));
-                }
-                return LocalCreateRepairMen(RepairMen.Object);
             }
             return LocalCreateRepairMen(RepairMen.Object);
         }

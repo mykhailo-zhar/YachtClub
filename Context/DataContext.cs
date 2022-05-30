@@ -61,6 +61,9 @@ namespace Project.Migrations
         public virtual DbSet<Yachttype> Yachttype { get; set; }
         #endregion
 
+        //TODO: Поиск конкретных контрактов
+        //TODO: Дать клиентам возможность просматривать ремонты яхт и тестовые заплывы
+        //TODO: Мероприятия на которых зарегистрирован конкретный капитан
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -72,7 +75,7 @@ namespace Project.Migrations
                 if (Role == null)
                 {
                     Role = RolesReadonly.Guest;
-                    Password = "1111";
+                    Password = Hash_Extension.StandartPassword;
                 }
                 else
                 {
@@ -230,6 +233,7 @@ namespace Project.Migrations
         #endregion
 
         #endregion
+
         #region Procedures
         public void Ping(string login, string role, string password) => Database.ExecuteSqlInterpolated($"call tryconnect({login},{role},{password});");
         public void DeleteProfile() => Database.ExecuteSqlInterpolated($"call removeallexistingroles_r({User.Identity.Name});");

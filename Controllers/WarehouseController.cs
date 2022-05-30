@@ -429,13 +429,13 @@ namespace Project.Controllers
         [HttpGet]
         public IActionResult MaterialAnalytics(MaterialInfo Object)
         {
-            Object = Object.LikeName == null ? new MaterialInfo
+            Object = !Object.Flag ? new MaterialInfo
             {
                 Flag = true,
                 LikeName = "",
                 LikeTypeName = "",
-                From = DateTime.Today,
-                To = DateTime.Today
+                From = DateTime.Today.AddYears(-4),
+                To = DateTime.Today.AddYears(2)
             }
             : Object
             ;
