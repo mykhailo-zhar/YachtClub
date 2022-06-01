@@ -177,5 +177,14 @@ namespace Project.Controllers
 
         }
         #endregion
+        public IActionResult Event()
+        {
+            var Object = Context.Event.FromSqlRaw($@"select * from event e where  
+                    true = any(select sp.staffid = {User.PersonId()} from yachtcrewbyevent(e.id) yc join staff_position sp on yc.crewid = sp.id )
+                ")      
+                .OrderByDescending(p => p.Enddate ?? DateTime.Now)
+                ;
+            return View(Object);
+        }
     }
 }

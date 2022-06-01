@@ -1,0 +1,54 @@
+﻿@model IEnumerable<Event>
+@{ 
+    string style = "";
+}
+<table class="table table-sm table-striped table-bordered text-white">
+    <thead>
+        <tr class="table-dark">
+            <th class="d-print-table-cell">
+                <div class="text-center" style="font-size: 3em">
+                    События
+                </div>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model)
+        {
+            {
+                style = obj.Enddate == null ? "lightgreen" : "indianred";
+            }
+            <tr class="text-black">
+                <td>
+                    <div class="card m-2" style="width: auto; padding: 5px; background-color: @style">
+                        <div class="card-body" style="background-color: white;">
+                            <h5 class="card-title fs-3">
+                                @obj.Name
+                            </h5>
+                            <style>
+                                h6 > * {
+                                    margin: 10px;
+                                }
+                            </style>
+                            <h6 class="card-subtitle">
+                                <div>
+                                    @obj.Startdate - @obj.Duration (@Methods.CoalesceDateTime(obj.Enddate))
+                                </div>
+                            </h6>
+                            @if (!string.IsNullOrWhiteSpace(obj.Description))
+                            {
+                                <hr />
+                                <div class="m-2 fs-3">
+                                    Описание:
+                                    <div class="card-text" style="max-width: 75vw">
+                                        <div class="m-2 fw-light fs-4" style=" white-space: pre-line;"> @(obj.Description)</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

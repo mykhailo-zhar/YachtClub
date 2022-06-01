@@ -1485,7 +1485,7 @@ begin
 		join event e on w.eventid = e.id and e.id = _eventid
 		join staff_position sp on yc.crewid = sp.id 
 		join position p on p.id = sp.positionid and p.name = 'Captain'
-		where isinterm(yc.startdate, e.startdate, coalesce(e.enddate, curstmp() ),coalesce(yc.enddate, curstmp() ))
+		where isinterm(yc.startdate, e.startdate, coalesce(e.enddate, e.startdate + interval '1 day' ),coalesce(yc.enddate, e.startdate + interval '1 day' ))
 	);
 end; 
 $$ language plpgsql
@@ -3055,13 +3055,13 @@ begin
 				end if;
 
 				if(not exists(select * from yacht_crew yc join yacht_crew_position yp using(id) 
-							  where positionname = 'Captain' and enddate is null and yc.yachtid = new.yachtid ) ) then
+							  where positionname = 'Captain' and yc.enddate is null and yc.yachtid = new.yachtid ) ) then
 				    raise exception 'На яхте в текущий момент отсутствует действующий капитан';
 				end if;
 				
 		ELSIF (TG_OP = 'DELETE') then 
 			if( not exists ( select * from event e where e.id = old.eventid and e.enddate is null)) then 
-				raise exception 'Попытка удаления закрытого события';			
+				raise exception 'Попытка удаления учасника события вместе с событием, удалите пожалуйста всех учасников события';			
 			end if;
 			return old;
         END IF;
