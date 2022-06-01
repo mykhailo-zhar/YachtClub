@@ -29,25 +29,10 @@
 
 
 
-    <div class="form-group @Model.HideOnDelete">
-        <div class="dropdown-divider"></div>
-        <label>Изменить сотрудника</label>
-
-        <select class="form-control" asp-for="Object.Staffid" asp-items="@(((ViewData["StaffPosition"] as IEnumerable<StaffPosition>) ?? Enumerable.Empty<StaffPosition>()).Select(p =>
-               {
-                   var item = new SelectListItem();
-                item.Text = $"{p.Staff.Name} {p.Staff.Surname} {p.Staff.Email}";
-                   item.Value = $"{p.Id}";
-                   return item;
-               }))"
-                disabled="@Model.ReadOnly">
-            <option value="" disabled selected>Выберите сотрудника</option>
-        </select>
-
-    </div>
+    <input hidden asp-for="Object.Staffid"/>
 
 
-    <div class="form-group @Model.HideOnDelete">
+    <div class="form-group @Model.HideOnDelete" hidden>
         <label asp-for="Object.Date"></label>
         <div>
             <span asp-validation-for="Object.Date" class="text-danger"></span>

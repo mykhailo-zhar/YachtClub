@@ -160,7 +160,7 @@ CREATE TABLE Event(
 	Duration	timestamp(2)		Not Null	check(StartDate <= Duration),
 	Description		text		Default ' ',
 	UserRate		int			Default 0,
-	CanHaveWinners	boolean		not null	Default true,
+	CanHaveWinners	boolean		not null	Default true
 );
 				");
 
@@ -233,13 +233,11 @@ CREATE TABLE MaterialLease(
 	ID				serial		Primary Key,
 	Material		int			Not Null	
 	References 	Material(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	
 	Seller 			int			Not Null
 	References Seller(ID)
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	
 	PricePerUnit			My_Money	Not Null,
 	Count 					int			Not Null	check(Count > 0),
@@ -257,13 +255,11 @@ CREATE TABLE YachtTest(
 	Results		text		Default ' ',
 	YachtID		int			Not Null
 	References 	Yacht(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	
 	StaffID		int			Not Null
 	References 	Staff_Position(ID)	
-	On Update Cascade	
-	On Delete Cascade
+	On Update Cascade
 );
 				");
 
@@ -279,8 +275,7 @@ CREATE TABLE Repair(
 	Description	text			Default ' ',
 	YachtID		int				Not Null
 	References 	Yacht(ID)	
-	On Update Cascade	
-	On Delete Cascade
+	On Update Cascade
 );
 				");
 
@@ -290,13 +285,11 @@ CREATE TABLE Yacht_Crew(
 	ID			serial		Primary Key,
 	YachtID		int			Not Null
 	References 	Yacht(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	
 	CrewID		int			Not Null
 	References 	Staff_Position(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	
 	StartDate	timestamp(2)		Not Null,
 	EndDate		timestamp(2)		check(StartDate <= EndDate),
@@ -314,8 +307,7 @@ CREATE TABLE Winner(
 	
 	YachtID		int		Not Null
 	References 	Yacht(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	Place		int		check(Place > 0),
 	
 	Primary Key (EventID, YachtID)
@@ -330,13 +322,11 @@ CREATE TABLE ExtradationRequest(
 
 	Material	int			Not Null	
 	References 	Material(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	
 	StaffID		int			Not Null
 	References 	Staff_Position(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	
 	RepairID	int			Not Null
 	References 	Repair(ID)	
@@ -347,7 +337,7 @@ CREATE TABLE ExtradationRequest(
 	EndDate		timestamp(2)		check(StartDate <= EndDate),
 	Duration	timestamp(2)		Not Null	check(StartDate <= Duration),
 	Description text			Not Null	Default ' ',
-	Status		varchar			Not Null	check(Status in ('Created', 'Canceled', 'Waits', 'Done')),	 Default ‘Created’
+	Status		varchar			Not Null	check(Status in ('Created', 'Canceled', 'Waits', 'Done'))	 Default 'Created'
 );
 				");
 
@@ -368,8 +358,7 @@ CREATE TABLE YachtLease(
 
 	YachtLeaseTypeID	int			Not Null
 	References 	YachtLeaseType(ID)	
-	On Update Cascade	
-	On Delete Cascade
+	On Update Cascade
 );
 				");
 
@@ -388,18 +377,16 @@ CREATE TABLE Contract(
 	
 	ContractTypeID	int			Not Null
 	References 	ContractType(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	
 	CaptainInYachtID	int			Not Null
 	References 	Yacht_Crew(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 
 	StartDate		timestamp(2)		Not Null,
 	EndDate			timestamp(2)		check(StartDate <= EndDate ),
 	Duration		timestamp(2)		Not Null	check(StartDate <= Duration),
-	Specials		text		Default ‘ ’,
+	Specials		text		Default ' ',
 	Paid			bool		Not Null	Default False,
 	AverallPrice	My_Money	Not Null
 );
@@ -419,7 +406,7 @@ CREATE TABLE Review(
 	On Delete Cascade,
 	
 	Date			timestamp(2)		Not Null,
-	Text			text		Default ‘ ’,
+	Text			text		Default ' ',
 	Public			bool		Not Null	Default true,
 	UserRate		int			Not Null	Default 0,
 	Rate			int 		Not Null 	check(Rate > 0 AND Rate <= 5)
@@ -445,8 +432,7 @@ CREATE TABLE Repair_Men(
 	
 	StaffID		int			Not Null	
 	References 	Staff_Position(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 
 	Unique(RepairID, StaffID)
 );
@@ -454,7 +440,7 @@ CREATE TABLE Repair_Men(
 
                 //Обзоры на яхту
                 dbContext.Database.ExecuteSqlRaw(@"
-CREATE TABLE Review_Yacht(
+/*CREATE TABLE Review_Yacht(
 	ReviewID	int			Not Null
 	References 	Review(ID)	
 	On Update Cascade	
@@ -466,12 +452,12 @@ CREATE TABLE Review_Yacht(
 	On Delete Cascade,
 
 	Primary Key ( ReviewID, YachtID )
-);
+);*/
 				");
 
                 //Обзоры на капитана
                 dbContext.Database.ExecuteSqlRaw(@"
-CREATE TABLE Review_Captain(
+/*CREATE TABLE Review_Captain(
 	ReviewID	int			Not Null
 	References 	Review(ID)	
 	On Update Cascade	
@@ -483,7 +469,7 @@ CREATE TABLE Review_Captain(
 	On Delete Cascade,
 
 	Primary Key ( ReviewID, CaptainID )
-);
+);*/
 				");
 
                 //Список должностей, обязательно присутствующих на яхте
@@ -1221,7 +1207,8 @@ begin
 		return  rec.m1;
 	end if;
 end;
-$$ language plpgsql;		
+$$ language plpgsql
+SECURITY DEFINER;		
 				");
             //Проверка статусов заявок ремонта
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1239,7 +1226,8 @@ begin
 		return exists ( select * from extradationrequest as er where er.repairid = repair_id and er.status not in ('Canceled', 'Done'));
 	end if;
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
             //Действующие сотрудники
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1260,7 +1248,8 @@ as $$
 Begin
 	Return query select StaffPositionListByPositionList(Array[pos]);
 END;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
 
             //Пересечение дат
@@ -1275,7 +1264,8 @@ as $$
 begin 	
 	return _s1 <= _e2 and _s2 <= _e1;
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
 
             //Активные контракты яхты
@@ -1291,7 +1281,8 @@ begin
 			where ywc.yachtid = yid and c.enddate is null
 		   ;
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
             //Активные ремонты яхты
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1306,7 +1297,8 @@ begin
 			where r.yachtid = yid and r.enddate is null
 		   ;
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");  
 
 			//Статус яхты
@@ -1335,7 +1327,8 @@ begin
 		return 'Недействительна';
 	end if;
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 
 				");	
 			//Входит ли в таблицу персонала данная персона
@@ -1349,14 +1342,16 @@ rec RECORD;
 begin
 	return exists (select * from staff where id = PersonId);
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
             //Current_Timestamp::timestamp
             dbContext.Database.ExecuteSqlRaw(@"
 			create or replace function CurStmp() returns timestamp 
 			as $$
 			begin return current_timestamp::timestamp(2); end;
-			$$ language plpgsql;
+			$$ language plpgsql
+			SECURITY DEFINER;
 				");             
 			//Ремонтники
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1370,7 +1365,8 @@ begin
 				 join Staff_position s on r.staffid = s.id
 				 where r.repairid = RepID limit 1 ) = RepairManID;
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 
 create or replace function HasRepairMan (RepID int, RepairManID int)
 	returns boolean
@@ -1382,7 +1378,8 @@ begin
 				 join Staff_position s on r.staffid = s.id
 				 where r.repairid = RepID and s.staffid = RepairManID);
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				"); 
 			//AUTOGRANTER
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1435,7 +1432,8 @@ as $$
 begin 	
 	return (select count(*) from pg_roles p where p.rolname like '%' || lowerusername(_email) || '%');
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 
 				");
 			//Опознавание черт
@@ -1448,7 +1446,8 @@ as $$
 begin 	
 return lower(regexp_replace (username, '[ [:punct:]]', '_','g'));
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 
 create or replace function MyRoleName (
 	posname varchar
@@ -1458,7 +1457,8 @@ as $$
 begin 	
 return 'my_' || lower(regexp_replace (posname, '[ [:punct:]]', '_','g'));
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");	
 			//Активное количество персонала
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1488,7 +1488,8 @@ begin
 		where isinterm(yc.startdate, e.startdate, coalesce(e.enddate, curstmp() ),coalesce(yc.enddate, curstmp() ))
 	);
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");	
 			//Текущий капитан яхты
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1507,7 +1508,8 @@ begin
 		Limit 1
 	);
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");	
 			
 			//Аналитика по материалам
@@ -1543,32 +1545,165 @@ begin
 	join material m on m.id = ml.material and m.name like '%' || _name || '%'
 	join materialtype t on t.id = m.typeid and t.name like '%' || _type || '%'
 	left join available a on a.material = m.id 
-	where isinterm(ml.startdate, _from, _to, coalesce(ml.deliverydate, current_date) )
+	where isinterm(ml.startdate, _from, _to, ml.deliverydate) and ml.deliverydate is not null
 	order by mname desc
 	;
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
-			//Аналитика по контрактам
+            //Аналитика по контрактам
             dbContext.Database.ExecuteSqlRaw(@"
-create or replace function ContractAnalytics (
+			create or replace function ContractAnalytics (
+				_name text,
+				_surname text,
+				_phone text,
+				_email text,
+				_yname text,
+				_ytype text,
+				_from timestamp,
+				_to timestamp
+			)
+				returns Table(avg_money decimal, sum_money decimal, count bigint )
+			as $$
+			begin 	
+				return query 
+				select distinct
+				round( avg(c.averallprice) over (), 2 ) avg_money, 
+				round( sum(c.averallprice) over (), 2 ) sum_money, 
+				count(c.id) over ()
+				from contract c 
+				join person p on c.clientid = p.id and (
+					p.phone like '%' || _phone || '%'
+					and
+					p.email like '%' || _email || '%'
+					and 
+					p.name like '%' || _name || '%'
+					and
+					p.surname like '%' || _surname || '%'
+					)
+				join yacht_crew yc on yc.id = c.captaininyachtid 
+				join yacht y on  yc.yachtid = y.id and y.name like '%' || _yname || '%' 
+				join yachttype yt on y.typeid = yt.id and yt.name like '%' || _ytype || '%' 
+				where 
+				isinterm(c.startdate, _from, _to, coalesce(c.enddate, current_date) ) and c.paid;
+			end; 
+
+			$$ language plpgsql
+			SECURITY DEFINER;
+							");
+
+			//Поиск по контрактам
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function ContractSearch (
+				_name text,
+				_surname text,
+				_phone text,
+				_email text,
+				_cname text,
+				_csurname text,
+				_cphone text,
+				_cemail text,
+				_yname text,
+				_ytype text,
+				_ctype text,
+				_ispaid boolean,
+				_from timestamp,
+				_to timestamp
+			)
+				returns Table(_id text,
+							  _start timestamp(2), 
+							  _end timestamp(2), 
+							  _fend timestamp(2),
+							  _yinfo text,
+							  _clinfo text,
+							  _capinfo text,
+							  _specials text,
+							  _averall decimal,
+							  _ctname varchar,
+							  _ctprice decimal)
+			as $$
+			begin 	
+				return query 
+				select distinct
+				lpad(c.id || '', 8, '0'),
+				c.startdate, 
+				c.duration, 
+				c.enddate,
+				y.name || ' ( ' || yt.name || ' )',
+				p.name || ' ' || p.surname || ' ' || p.email || ' ' || p.phone,
+				cap.name || ' ' || cap.surname || ' ' || cap.email || ' ' || cap.phone,
+				c.specials, 
+				round( c.averallprice, 2 ),
+				ct.name, 
+				round( ct.price, 2 )
+				from contract c 
+				join person p on c.clientid = p.id and (
+					p.phone like '%' || _phone || '%'
+					and
+					p.email like '%' || _email || '%'
+					and 
+					p.name like '%' || _name || '%'
+					and
+					p.surname like '%' || _surname || '%'
+					)
+				join yacht_crew yc on yc.id = c.captaininyachtid 
+				join staff_position sp on yc.crewid = sp.id
+				join person cap on cap.id = sp.staffid and (
+					cap.phone like '%' || _cphone || '%'
+					and
+					cap.email like '%' || _cemail || '%'
+					and 
+					cap.name like '%' || _cname || '%'
+					and
+					cap.surname like '%' || _csurname || '%'
+					)
+				join contracttype ct on c.contracttypeid = ct.id and ct.name like '%' || _ctype || '%' 
+				join yacht y on yc.yachtid = y.id and y.name like '%' || _yname || '%' 
+				join yachttype yt on y.typeid = yt.id and yt.name like '%' || _ytype || '%' 
+				where 
+				isinterm(c.startdate, _from, _to, coalesce(c.enddate, current_date) ) and (c.paid = _ispaid);
+			end; 
+			
+			$$ language plpgsql
+			SECURITY DEFINER;
+			
+							");
+			//Поиск по контрактам по аренде
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YachtleaseSearch(
 	_name text,
 	_surname text,
 	_phone text,
 	_email text,
+	_yname text,
+	_ytype text,
+	_ylname text,
+	_ispaid boolean,
 	_from timestamp,
 	_to timestamp
 )
-	returns Table(avg_money decimal, sum_money decimal, count bigint )
+	returns Table(_id text,_start timestamp(2), _end timestamp(2), _fend timestamp(2), _yinfo text, _clinfo text, _capinfo text,
+							  _specials text, _averall decimal, _ctname varchar, _ctprice decimal)
 as $$
 begin 	
 	return query 
 	select distinct
-	round( avg(c.averallprice) over (), 2 ) avg_money, 
-	round( sum(c.averallprice) over (), 2 ) sum_money, 
-	count(c.id) over ()
-	from contract c 
-	join person p on c.clientid = p.id and (
+				lpad(yl.id || '', 8, '0'),
+				yl.startdate, 
+				yl.duration, 
+				yl.enddate,
+				y.name || ' ( ' || yt.name || ' )',
+				p.name || ' ' || p.surname || ' ' || p.email || ' ' || p.phone,
+				'',
+				yl.specials, 
+				round( yl.overallprice, 2 ),
+				ylc.name, 
+				round( ylc.price, 2 )
+	from yachtlease yl 
+	join yacht y on yl.yachtid = y.id and y.name like '%' || _yname || '%' 
+	join yachttype yt on y.typeid = yt.id and yt.name like '%' || _ytype || '%' 
+	join person p on y.yachtownerid = p.id and (
 		p.phone like '%' || _phone || '%'
 		and
 		p.email like '%' || _email || '%'
@@ -1576,13 +1711,16 @@ begin
 		p.name like '%' || _name || '%'
 		and
 		p.surname like '%' || _surname || '%'
-		)
+	)
+	join yachtleasetype ylc on ylc.id = yl.yachtleasetypeid and ylc.name like '%' || _ylname || '%' 
 	where 
-	isinterm(c.startdate, _from, _to, coalesce(c.enddate, current_date) );
+	isinterm(yl.startdate, _from, _to, coalesce(yl.enddate, current_date) ) and _ispaid = yl.paid;
 end; 
-$$ language plpgsql;
-				");
-			//Аналитика по контрактам на аренду
+$$ language plpgsql
+SECURITY DEFINER;	
+							");
+
+            //Аналитика по контрактам на аренду
             dbContext.Database.ExecuteSqlRaw(@"
 create or replace function YachtleaseAnalytics (
 	_name text,
@@ -1615,9 +1753,10 @@ begin
 		p.surname like '%' || _surname || '%'
 	)
 	where 
-	isinterm(yl.startdate, _from, _to, coalesce(yl.enddate, current_date) );
+	isinterm(yl.startdate, _from, _to, coalesce(yl.enddate, current_date) ) and yl.paid;
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
 			//Поиск должностей
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1654,7 +1793,8 @@ begin
 	join position po on po.id = sp.positionid and po.name like '%' || _pname || '%'
 	where (sp.enddate is not null and not _active) or (sp.enddate is null and _active);
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 
 				");
 			//Поиск экипажей
@@ -1700,7 +1840,8 @@ begin
 	join position po on po.id = sp.positionid and po.name like '%' || _pname || '%'
 	where (yc.enddate is not null and not _active) or (yc.enddate is null and _active);
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
 			//Поиск ремонтов
             dbContext.Database.ExecuteSqlRaw(@"
@@ -1743,7 +1884,62 @@ begin
 	)
 	where (r.enddate is not null and not _active) or (r.enddate is null and _active);
 end; 
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
+				");
+			
+			//Тесты яхт у яхты
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YachttestInfo(
+	_yid int
+)
+	returns Table(_test text, _who text, _date timestamp(2))
+as $$
+begin 	
+	return query 
+	select 
+				yt.results, 
+				p.name || ' ' || p.surname || ' ' || p.email || ' ' || p.phone,
+				yt.date
+	from yachttest yt 
+	join staff_position sp on sp.id = yt.staffid and yt.yachtid = _yid
+	join person p on sp.staffid = p.id
+	order by yt.date desc;
+end; 
+$$ language plpgsql
+SECURITY DEFINER;	
+				");
+			
+			//Ремонты у яхты
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function RepairInfo(
+	_yid int
+)
+	returns Table(_text text,
+				  _status varchar,
+				  _who text,
+				  _start timestamp(2),
+				  _end timestamp(2),
+				  _fend timestamp(2)
+				 )
+as $$
+begin 	
+	return query 
+	select 
+				r.description, 
+				r.status,
+				p.name || ' ' || p.surname || ' ' || p.email || ' ' || p.phone,
+				r.startdate,
+				r.duration,
+				r.enddate
+	from repair r
+	join staff_position sp on sp.id = ( select staffid from repair_men where repairid = 1 limit 1 )
+	join person p on sp.staffid = p.id
+	where r.yachtid = _yid and status <> 'Canceled'
+	order by coalesce(r.enddate,curstmp()) desc;
+end; 
+$$ language plpgsql
+SECURITY DEFINER;	
 				");
 
 			#endregion
@@ -1758,7 +1954,8 @@ AS $$
 begin
 	insert into position_yachttype(positionid,yachttypeid,count) values ((select id from position where name = 'Captain'), YTId, 1);
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
 
 			#region Хлам
@@ -1797,7 +1994,8 @@ begin
 	values
 	(_RepairID, rec.id);
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 
 				");
 
@@ -1828,7 +2026,8 @@ begin
 	execute 'CREATE ROLE client_' || _email_ || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
 	execute 'GRANT my_client TO client_' || _email_  || ' ;';
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");	
 			//Выдача новых активных ролей Защищено
 			dbContext.Database.ExecuteSqlRaw(@"
@@ -1840,7 +2039,8 @@ AS $$
 begin
 	call exec_by_rolecreator('call PopulateAllValidSP('''''|| _email ||''''','''''|| _pass ||''''');');
 end;
-$$ language plpgsql;
+$$ language plpgsql
+SECURITY DEFINER;
 				");
 
 
@@ -2525,17 +2725,14 @@ create or replace function P1()
 	returns trigger
 as $$
 begin 	
-		IF (TG_OP = 'UPDATE') THEN 
-			return new;
-        ELSIF (TG_OP = 'INSERT') then
+
 			new.registrydate = current_timestamp;
             RETURN NEW;
-        END IF;
 end;
 $$ language plpgsql;	
 
 create trigger ReadonlyConstraint
-Before insert or update on Person
+Before insert on Person
 for each row execute function P1();
 				");
 
@@ -2692,7 +2889,6 @@ begin
 				raise exception 'Попытка изменения уволеного члена экипажа';			
 			end if;	
         ELSIF (TG_OP = 'INSERT') then
-			if(exists (select * from yacht_crew_position))
 			new.startdate = current_timestamp;
 			new.enddate = null;
 		ELSIF (TG_OP = 'DELETE') then 
@@ -2943,22 +3139,15 @@ for each row execute function W1 ();
 			 declare 
 			 rec RECORD;
 			 begin 	
-					 IF (TG_OP = 'UPDATE') THEN 
-	
-					 ELSIF (TG_OP = 'INSERT') then
+					 IF (TG_OP = 'INSERT') then
 						 new.registrydate = current_timestamp;
-					 ELSIF (TG_OP = 'DELETE') then
-							if( exists (select * from yachtlease where yachtid = old.id) ) then 
-								raise exception 'Невозможно удалить яхту, если на неё были созданы договоры на аренду места';
-							end if;
-							return old;
 					 END IF;
 					 RETURN new;
 			 end;
 			 $$ language plpgsql;
 
 			 create trigger ReadonlyConstraint
-			 Before insert or update or delete on Yacht
+			 Before insert on Yacht
 			 for each row execute function Y1 ();
 							 ");
             #endregion
@@ -3211,7 +3400,7 @@ for each row execute function SPosition1 ();
             #endregion
 
             #region SameTriggers
-            void ParentRemoval(string Parent, string Child, string Property)
+/*            void ParentRemoval(string Parent, string Child, string Property)
             {
 				dbContext.Database.ExecuteSqlRaw($@"
 		create or replace function {Parent}_{Child}()
@@ -3272,7 +3461,7 @@ for each row execute function SPosition1 ();
 				nameof(Materialtype),
 				nameof(Material),
 				nameof(Material.Typeid)
-				);
+				);*/
 
 			void DeclineDelete(string Parent)
 			{
@@ -3296,7 +3485,7 @@ for each row execute function SPosition1 ();
 			}
 
 			DeclineDelete(nameof(Person));
-			DeclineDelete(nameof(Position));
+			//DeclineDelete(nameof(Position));
 
 			dbContext.Yachttype.ToList().ForEach(
 				p =>
@@ -3323,10 +3512,14 @@ for each row execute function SPosition1 ();
 			//Кладовщик
 			dbContext.Database.ExecuteSqlRaw(@"
 grant insert,update,delete,select on material, materiallease, materialtype, seller to my_storekeeper;
-
-grant select on availableresources, repair, staff_position, person, position, repair_staff to my_storekeeper;
-
+grant select on availableresources, repair, person, position, repair_staff to my_storekeeper;
 grant select,update,delete on extradationrequest to my_storekeeper;
+
+GRANT EXECUTE ON FUNCTION 
+check_er_for_reps, leadrepairman, materialanalytics, materialmetric, 
+staffpositionlistbyposition, staffpositionlistbypositionlist
+TO my_storekeeper;
+
 				");
 
 			//Кадровик
@@ -3335,40 +3528,71 @@ grant insert,update,delete,select on staff, position, staff_position, yacht_crew
 
 grant select on yacht_crew, yacht, yachttype, busyyacht to my_personell_officer;
 
+GRANT EXECUTE ON FUNCTION 
+countactivecrew, spview, ycview
+TO my_personell_officer;
+
+GRANT EXECUTE ON PROCEDURE  addnewacc_r(_email varchar, _role int, _pass varchar),
+addnewrole_r, removeexistingrole_r, renamerole_r TO my_personell_officer;
 				");
 			//Ремонтник
 			dbContext.Database.ExecuteSqlRaw(@"
 grant select on person, position, repair_staff, material,busyyacht, materialtype, availableresources to my_repairman;
 grant insert,update,delete,select on yachttest, repair, repair_men, extradationrequest to my_repairman;
 
+GRANT EXECUTE ON FUNCTION 
+check_er_for_reps, hasrepairman, leadrepairman,
+ materialmetric, staffpositionlistbypositionlist, repairview
+TO my_repairman;
 
+GRANT EXECUTE ON PROCEDURE populaterepair_men TO my_repairman;
 				");
 			//Владелец
 			dbContext.Database.ExecuteSqlRaw(@"
 grant insert, select, update, delete on yachttype, position_yachttype, yachtleasetype, contracttype, event, winner, yachtlease to my_owner;
-grant select on yacht_crew, contract, review, yacht_crew_position to my_owner;
+grant select on yacht_crew, review, yacht_crew_position to my_owner;
+
+GRANT EXECUTE ON FUNCTION 
+contractanalytics, materialanalytics, materialmetric, yachtleaseanalytics, contractsearch, yachtleasesearch
+TO my_owner;
+
+GRANT EXECUTE ON PROCEDURE  addcaptaintoyachttype  TO my_owner;
 				");	
 			//Капитан
 			dbContext.Database.ExecuteSqlRaw(@"
 grant insert,update,delete,select on contract to my_captain;
-grant select on yacht_crew_position to my_captain
+grant select on yacht_crew_position to my_captain;
+
+GRANT EXECUTE ON FUNCTION 
+countactivecrew
+TO my_captain;
 				");
 			//Стандартные типы данных
 			dbContext.Database.ExecuteSqlRaw(@"
 grant ALL PRIVILEGES on ALL SEQUENCES IN SCHEMA PUBLIC to amy_data_types;
 
-grant select on material, materialtype, materiallease, extradationrequest to amy_materialist
+grant select on material, materialtype, materiallease, extradationrequest to amy_materialist;
 				");		
 			//MyDefault
 			dbContext.Database.ExecuteSqlRaw(@"
 grant select on event, winner, yacht_crew, staff, staff_position, person, yacht, yachttype, yachtleasetype, contracttype , position, busyyacht to my_default;
 grant insert on person to my_default;
+
+GRANT EXECUTE ON PROCEDURE addnewacc_r(_email varchar,_pass varchar),
+populateallvalidsp_r, removeallexistingroles_r, tryconnect, updateexistingroles_r TO my_default;
+
+GRANT EXECUTE ON FUNCTION captainbyyachtid, 
+curstmp, isinterm, isstaff, 
+myrolename, rolebyname, yachtcrewbyevent, 
+yachtsstatus TO my_default;
 				");
 			//Клиент
 			dbContext.Database.ExecuteSqlRaw(@"
 grant select on yachtlease, busyyacht, contract to my_client;
 grant insert,update,delete on yacht to my_client;
 grant insert, select, update on review to my_client;
+
+GRANT EXECUTE ON FUNCTION yachttestinfo, repairinfo TO my_client;
 				");
 
 			#endregion

@@ -863,6 +863,89 @@ namespace Project.Controllers
                .FirstOrDefault();
             return View(Object);
         }
+        [HttpGet]
+        public IActionResult YachtleaseSearch(ContractSearchInfo Object)
+        {
+            Object = !Object.Flag ? new ContractSearchInfo
+            {
+                Flag = true,
+                IsPaid = false,
+                LikeCName = string.Empty,
+                LikeCSurname = string.Empty,
+                LikeCEmail = string.Empty,
+                LikeCPhone = string.Empty, 
+                LikeYName = string.Empty,
+                LikeYType = string.Empty,
+                LikeCType = string.Empty,
+                From = DateTime.Today,
+                To = DateTime.Today
+            }
+            : Object
+            ;
+
+            Object.Yachts = Context.Yacht.Select(p => p.Name).OrderBy(p => p).Distinct();
+            Object.YachtType = Context.Yachttype.Select(p => p.Name).OrderBy(p => p);
+            Object.Contracttype = Context.Yachtleasetype.Select(p => p.Name).OrderBy(p => p);
+
+            Object.Contracts = Context.YachtleaseSearch(
+                Object.LikeCName,
+               Object.LikeCSurname,
+               Object.LikeCPhone,
+               Object.LikeCEmail,
+               Object.LikeYName,
+               Object.LikeYType,
+               Object.LikeCType,
+               Object.IsPaid,
+               Object.From,
+               Object.To);
+            return View(Object);
+        }
+        [HttpGet]
+        public IActionResult ContractSearch(ContractSearchInfo Object)
+        {
+            Object = !Object.Flag ? new ContractSearchInfo
+            {
+                Flag = true,
+                IsPaid = false,
+                LikeCName = string.Empty,
+                LikeCSurname = string.Empty,
+                LikeCEmail = string.Empty,
+                LikeCPhone = string.Empty,
+                LikeCaName = string.Empty,
+                LikeCaSurname = string.Empty,
+                LikeCaEmail = string.Empty,
+                LikeCaPhone = string.Empty,
+                LikeYName = string.Empty,
+                LikeYType = string.Empty,
+                LikeCType = string.Empty,
+                From = DateTime.Today,
+                To = DateTime.Today
+            }
+            : Object
+            ;
+
+            Object.Yachts = Context.Yacht.Select(p => p.Name).OrderBy(p => p).Distinct();
+            Object.YachtType = Context.Yachttype.Select(p => p.Name).OrderBy(p => p);
+            Object.Contracttype = Context.Contracttype.Select(p => p.Name).OrderBy(p => p);
+
+            Object.Contracts = Context.ContracSearch(
+               Object.LikeCName,
+               Object.LikeCSurname,
+               Object.LikeCPhone,
+               Object.LikeCEmail, 
+               Object.LikeCaName,
+               Object.LikeCaSurname,
+               Object.LikeCaPhone,
+               Object.LikeCaEmail,
+               Object.LikeYName,
+               Object.LikeYType,
+               Object.LikeCType,
+               Object.IsPaid,
+               Object.From,
+               Object.To
+                );
+            return View(Object);
+        }
 
         #endregion
     }

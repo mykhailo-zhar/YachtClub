@@ -39,10 +39,15 @@ namespace Project.Controllers
                         .Include(p => p.Crew)
                             .ThenInclude(p => p.Position)
                         .Where(y => y.Enddate == null && y.Yachtid == p.Id)
-                        .ToList()
+                        .ToList(),                        
                     }
                 )
                 .ToList();
+            Yacht.ForEach(p => {
+                p.Tests = Context.YachttestInfo(p.Yacht.Id).ToList();
+                p.Repairs = Context.RepairInfo(p.Yacht.Id).ToList();
+            });
+
             return View(Yacht);
         }
 

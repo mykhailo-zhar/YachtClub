@@ -129,13 +129,13 @@ namespace Project.Migrations
         );
 
         public IQueryable<ContractAnalyticsViewModel> ContractAnalytics(
-            string Name, 
+            string Name,
             string Surname,
             string Phone,
             string Email,
             string YName,
             string YType,
-            DateTime From, 
+            DateTime From,
             DateTime To) =>
     Set<ContractAnalyticsViewModel>()
             .FromSqlRaw(
@@ -150,14 +150,49 @@ namespace Project.Migrations
         $"'{To.Day}-{To.Month}-{To.Year}'" +
         $")");
 
+        public IQueryable<ContractSearchViewModel> ContracSearch(
+            string Name,
+            string Surname,
+            string Phone,
+            string Email,
+            string CName,
+            string CSurname,
+            string CPhone,
+            string CEmail,
+            string YName,
+            string YType,
+            string CType,
+            bool IsPaid,
+            DateTime From,
+            DateTime To
+            ) =>
+    Set<ContractSearchViewModel>()
+            .FromSqlRaw(
+        $"select * from ContractSearch(" +
+        $"'{Name}'," +
+        $"'{Surname}'," +
+        $"'{Phone}', " +
+        $"'{Email}'," + 
+        $"'{CName}'," +
+        $"'{CSurname}'," +
+        $"'{CPhone}', " +
+        $"'{CEmail}'," +
+        $"'{YName}'," +
+        $"'{YType}'," +
+        $"'{CType}'," +
+        $" {IsPaid}," +
+        $"'{From.Day}-{From.Month}-{From.Year}'," +
+        $"'{To.Day}-{To.Month}-{To.Year}'" +
+        $");");
+
         public IQueryable<ContractAnalyticsViewModel> YachtleaseAnalytics(
-            string Name, 
+            string Name,
             string Surname,
             string Phone,
             string Email,
             string YName,
             string YType,
-            DateTime From, 
+            DateTime From,
             DateTime To) =>
     Set<ContractAnalyticsViewModel>()
             .FromSqlRaw(
@@ -172,8 +207,35 @@ namespace Project.Migrations
         $"'{To.Day}-{To.Month}-{To.Year}'" +
         $")");
 
+        public IQueryable<ContractSearchViewModel> YachtleaseSearch(
+            string Name,
+            string Surname,
+            string Phone,
+            string Email,
+            string YName,
+            string YType,
+            string CType,
+            bool IsPaid,
+            DateTime From,
+            DateTime To
+    ) =>
+Set<ContractSearchViewModel>()
+    .FromSqlRaw(
+$"select * from YachtleaseSearch(" +
+        $"'{Name}'," +
+        $"'{Surname}'," +
+        $"'{Phone}', " +
+        $"'{Email}'," +
+        $"'{YName}'," +
+        $"'{YType}'," +
+        $"'{CType}'," +
+        $" {IsPaid}," +
+        $"'{From.Day}-{From.Month}-{From.Year}'," +
+        $"'{To.Day}-{To.Month}-{To.Year}'" +
+$");");
+
         public IQueryable<CrewSearchModel> CrewSearch(
-            string Name, 
+            string Name,
             string Surname,
             string Phone,
             string Email,
@@ -195,7 +257,7 @@ namespace Project.Migrations
         $")");
 
         public IQueryable<StaffSearchModel> StaffSearch(
-            string Name, 
+            string Name,
             string Surname,
             string Phone,
             string Email,
@@ -211,8 +273,9 @@ namespace Project.Migrations
         $"'{Position}'," +
         $" {Active}" +
         $")");
+
         public IQueryable<RepairSearchModel> RepairSearch(
-            string Name, 
+            string Name,
             string Surname,
             string Phone,
             string Email,
@@ -230,6 +293,12 @@ namespace Project.Migrations
         $"'{YType}'," +
         $" {Active}" +
         $")");
+        #endregion
+
+        #region Просмотр
+        public IQueryable<RepairViewModel> RepairInfo(int yachtid) => Set<RepairViewModel>().FromSqlRaw($"select * from Repairinfo({yachtid})");
+        public IQueryable<YachtTestViewModel> YachttestInfo(int yachtid) => Set<YachtTestViewModel>().FromSqlRaw($"select * from Yachttestinfo({yachtid})");
+
         #endregion
 
         #endregion
@@ -274,6 +343,10 @@ namespace Project.Migrations
             modelBuilder.Entity<StaffSearchModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<CrewSearchModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<RepairSearchModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<ContractSearchViewModel>().HasNoKey().ToView(null);
+
+            modelBuilder.Entity<YachtTestViewModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<RepairViewModel>().HasNoKey().ToView(null);
 
             modelBuilder.Entity<Availableresources>(entity =>
             {

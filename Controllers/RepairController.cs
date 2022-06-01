@@ -32,18 +32,6 @@ namespace Project.Controllers
                 .OrderByDescending(p => p.Date);
             return View(Yachttest);
         }
-        public IActionResult DetailsYachttest(string id)
-        {
-            var Yachttest = Context.Yachttest.First(p => p.Id == int.Parse(id));
-            return View("_Details", new DetailsViewModel
-            {
-                Description = Yachttest.Results,
-                ButtonsViewModel = new EditorBottomButtonsViewModel
-                {
-                    BackAction = typeof(Yachttest).Name
-                }
-            });
-        }
         private IActionResult ACreateYachttest(Yachttest Yachttest)
         {
             ViewData["StaffPosition"] = Context.StaffPosition.FromSqlRaw(@"select * from Repair_Staff").Include(p => p.Yachttest);
@@ -53,7 +41,8 @@ namespace Project.Controllers
         public IActionResult CreateYachttest()
         {
             var Yachttest = new Yachttest { 
-                 Date = DateTime.Now
+                 Date = DateTime.Now,
+                 Staffid = Context.RepairStaff.First(p => p.Staffid == User.PersonId()).Id
             };
             return ACreateYachttest(Yachttest);
         }
@@ -115,17 +104,22 @@ namespace Project.Controllers
             return View(Repair);
         }
 
-        private IActionResult AEditRepair(string id, Repair Repair = null)
+        public void RepairConfigureViewBag()
+        {
+            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type).Where(p => Context.Busyyacht.Any(y => !y.C && !y.E && !y.R && y.Val && y.Id == p.Id));
+        }
+
+        private IActionResult LocalEditRepair(string id, Repair Repair = null)
         {
             Repair = Repair ?? Context.Repair
                .Include(p => p.Yacht)
                    .ThenInclude(p => p.Type)
                .First(p => p.Id == int.Parse(id));
-            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type);
+            RepairConfigureViewBag();
             var Model = ObjectViewModelFactory<Repair>.Edit(Repair);
             return View("RepairEditor", Model);
         }
-        public IActionResult EditRepair(string id) => AEditRepair(id);
+        public IActionResult EditRepair(string id) => LocalEditRepair(id);
 
         [HttpPost]
         public async Task<IActionResult> EditRepair([FromForm] ObjectViewModel<Repair> Repair)
@@ -144,7 +138,7 @@ namespace Project.Controllers
                     this.HandleException(exception);
                 }
             }
-            return AEditRepair($"{Repair.Object.Id}", Repair.Object);
+            return LocalEditRepair($"{Repair.Object.Id}", Repair.Object);
         }
 
         private IActionResult LocalCreateRepair(Repair Repair = null) {
@@ -153,7 +147,7 @@ namespace Project.Controllers
                 Personnel = 1
             };
             Repair.Startdate = DateTime.Now;
-            ViewData["Yacht"] = Context.Yacht.Include(p => p.Type).Where(p => Context.Busyyacht.Any(y => !y.C && !y.E && !y.R && y.Val && y.Id == p.Id));
+            RepairConfigureViewBag();
             var Model = ObjectViewModelFactory<Repair>.Create(Repair);
             return View("RepairEditor", Model);
         }

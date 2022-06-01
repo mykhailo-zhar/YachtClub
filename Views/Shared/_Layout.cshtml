@@ -181,12 +181,21 @@
                                         </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Owner" asp-action="MaterialAnalytics">Отчёт по материалам</a>
-                                        </li> 
+                                        </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Owner" asp-action="ContractAnalytics">Отчёт по контрактам с клиентами</a>
-                                        </li> 
+                                        </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Owner" asp-action="YachtleaseAnalytics">Отчёт по контрактам арендования места</a>
+                                        </li>
+                                        <li>
+                                            <hr />
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Owner" asp-action="ContractSearch">Поиск контрактов с клиентами</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Owner" asp-action="YachtleaseSearch">Поиск контрактов на аренду</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -208,6 +217,11 @@
                                         <li>
                                             <a class="dropdown-item" asp-controller="Captain" asp-action="Contract">
                                                 Контракты
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Captain" asp-action="Event">
+                                                Мои события
                                             </a>
                                         </li>
                                     </ul>

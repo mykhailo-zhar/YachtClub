@@ -78,6 +78,57 @@
 
                                     }
                                 </expander>
+                                <expander class="w-100 " button-class="fw-bold fs-4" message="Ремонты яхты (@obj.Repairs.Count()):">
+                                    @foreach (var mod in obj.Repairs)
+                                    {
+                                        <div class="card m-2" style="width: auto">
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    Главный ремонтник - @mod.RepairManInfo
+                                                </h5>
+                                                <h6 class="card-subtitle">
+                                                    <div>
+                                                        Статус: @mod.Status
+                                                    </div>
+                                                    <div>
+                                                        Длительность: @mod.Start - @mod.End (@Methods.CoalesceDateTime(mod.Fend))
+                                                    </div>
+                                                    <div>
+                                                        <div>Описание: </div>
+                                                        <div class="card-text" style="max-width: 75%">
+                                                            <div class="m-2 fw-light" style=" white-space: pre-line;"> @mod.Text</div>
+                                                        </div>
+                                                    </div>
+
+                                                </h6>
+                                            </div>
+                                        </div>
+                                    }
+                                </expander> 
+                                <expander class="w-100 " button-class="fw-bold fs-4" message="Проверки работоспособности яхты (@obj.Tests.Count()):">
+                                    @foreach (var mod in obj.Tests)
+                                    {
+                                        <div class="card m-2" style="width: auto">
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    Главный ремонтник - @mod.RepairManInfo
+                                                </h5>
+                                                <h6 class="card-subtitle">
+                                                    <div>
+                                                        Дата проведения: @mod.Date
+                                                    </div>
+                                                    <div>
+                                                        <div>Описание: </div>
+                                                        <div class="card-text" style="max-width: 75%">
+                                                            <div class="m-2 fw-light" style=" white-space: pre-line;"> @mod.Text</div>
+                                                        </div>
+                                                    </div>
+
+                                                </h6>
+                                            </div>
+                                        </div>
+                                    }
+                                </expander>
                                 <div class="fs-4">
                                     <div>Описание:</div>
                                     <div class="card-text" style="max-width: 75vw">
