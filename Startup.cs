@@ -9,6 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Project.Migrations;
 using Project.Models;
 using Project.Database;
+using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Diagnostics;
+using System.Security.Principal;
+using Microsoft.AspNetCore.Authentication;
 
 namespace WebApp
 {
@@ -42,38 +47,41 @@ namespace WebApp
                 opts.HeaderName = "X-XSRF-TOKEN";
             });
 
-           services.AddAuthorization(options =>
+            services.AddAuthorization(options =>
+             {
+                 options.AddPolicy("Warehouse", policy =>
+                       policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Storekeeper));
+
+                 options.AddPolicy("Staff", policy =>
+                       policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Personell_Officer));
+
+                 options.AddPolicy("CaptainCrew", policy =>
+                       policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Personell_Officer, RolesReadonly.Captain));
+
+                 options.AddPolicy("Repair", policy =>
+                       policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Repairman));
+
+                 options.AddPolicy("EReq", policy =>
+                       policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Repairman, RolesReadonly.Storekeeper));
+             });
+
+            services.Configure<MvcOptions>(opts =>
             {
-                options.AddPolicy("Warehouse", policy =>
-                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Storekeeper));
-
-                options.AddPolicy("Staff", policy =>
-                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Personell_Officer)); 
-
-                options.AddPolicy("CaptainCrew", policy =>
-                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Personell_Officer, RolesReadonly.Captain));
-
-                options.AddPolicy("Repair", policy =>
-                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Repairman));
-
-                options.AddPolicy("EReq", policy =>
-                      policy.RequireRole(RolesReadonly.DB_Admin, RolesReadonly.Repairman, RolesReadonly.Storekeeper));
-            });
-
-            services.Configure<MvcOptions>(opts => {
                 opts.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(value => "Пожалуйста введите значение:");
                 opts.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(value => $"Заполните пожалуйста, {value}");
             });
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                    .AddCookie(options => 
+                    .AddCookie(options =>
                                         {
                                             options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
+                                            options.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Account/Logout");
                                             options.ExpireTimeSpan = System.TimeSpan.FromHours(10);
                                         })
                     ;
 
-            services.AddMvc().AddRazorOptions(opt => {
+            services.AddMvc().AddRazorOptions(opt =>
+            {
                 opt.ViewLocationFormats.Add("/Views/{1}/Partials/{0}.cshtml");
                 opt.ViewLocationFormats.Add("/Views/Shared/Partials/{0}.cshtml");
             });
@@ -84,6 +92,25 @@ namespace WebApp
             app.UseStaticFiles();
             app.UseRouting();
 
+            app.UseExceptionHandler(exceptionHandlerApp =>
+            {
+                exceptionHandlerApp.Run(async context =>
+                {
+
+                    var exceptionHandlerPathFeature =
+                        context.Features.Get<IExceptionHandlerPathFeature>();
+
+                    if (exceptionHandlerPathFeature?.Error is Npgsql.PostgresException)
+                    {
+                        var except = exceptionHandlerPathFeature?.Error as Npgsql.PostgresException;
+                        if(except.SqlState == Npgsql.PostgresErrorCodes.InvalidPassword)
+                        {
+                            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                            context.Response.Redirect("/Home/Index");
+                        }
+                    }
+                });
+            });
             app.Use(async (context, next) =>
             {
                 if (!context.Request.Path.StartsWithSegments("/api"))
@@ -95,8 +122,9 @@ namespace WebApp
                 await next();
             });
 
-            app.UseAuthentication();    
+            app.UseAuthentication();
             app.UseAuthorization();
+
             if (AdminRestart)
             {
                 SeedData.RestartDatabase(context);
@@ -104,6 +132,7 @@ namespace WebApp
                 SeedData.SeedWithProcedure(context);
                 SeedData.SeedAccounts(context);
             }
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

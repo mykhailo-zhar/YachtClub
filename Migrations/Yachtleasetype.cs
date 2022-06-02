@@ -27,7 +27,7 @@ namespace Project.Migrations
         public string Description { get; set; }
 
         [NotMapped]
-        public int? Count { get; set; }
+        public long? Count { get; set; }
 
         [InverseProperty("Yachtleasetype")]
         public virtual ICollection<Yachtlease> Yachtlease { get; set; }

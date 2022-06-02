@@ -116,6 +116,7 @@ namespace Project.Controllers
             {
                 try
                 {
+                    Yacht.Object.Yachtownerid = User.PersonId();
                     Yacht.Object.Registrydate = DateTime.Now;
                     Context.Yacht.Add(Yacht.Object);
                     await Context.SaveChangesAsync();
@@ -129,6 +130,30 @@ namespace Project.Controllers
             var Model = ObjectViewModelFactory<Yacht>.Create(Yacht.Object);
             ViewData["Type"] = Context.Yachttype;
             return View("YachtEditor", Model);
+        }
+
+        public IActionResult DeleteYacht(string id)
+        {
+            var Yacht = Context.Yacht
+                .First(p => p.Id == int.Parse(id));
+            return View("YachtEditor", ObjectViewModelFactory<Yacht>.Delete(Yacht));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteYacht([FromForm] ObjectViewModel<Yacht> Yacht)
+        {
+            try
+            {
+                Context.Yacht.Remove(Yacht.Object);
+                await Context.SaveChangesAsync();
+                return RedirectToAction(nameof(Yacht));
+            }
+            catch (Exception exception)
+            {
+                this.HandleException(exception);
+            }
+            return View("YachtEditor", ObjectViewModelFactory<Yacht>.Delete(Yacht.Object));
+
         }
         #endregion
 

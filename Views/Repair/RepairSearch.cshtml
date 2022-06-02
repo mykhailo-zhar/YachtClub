@@ -131,6 +131,9 @@
             <td>
                 Дата окончания ремонта
             </td>
+            <td>
+                Статус
+            </td>
 
         </tr>
     </thead>
@@ -162,7 +165,9 @@
                 <td>
                     @Methods.CoalesceDateTime(sp.Enddate)
                 </td>
-
+                <td>
+                    @sp.Status
+                </td>
             </tr>
         }
     </tbody>

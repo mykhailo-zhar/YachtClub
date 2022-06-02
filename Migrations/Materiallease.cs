@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,6 +11,7 @@ namespace Project.Migrations
     {
         [Key]
         [Column("id")]
+        [DisplayName("Номер договора")]
         public int Id { get; set; }
         [Column("material")]
         public int Material { get; set; }

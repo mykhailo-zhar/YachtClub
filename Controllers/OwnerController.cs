@@ -8,9 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Project.Controllers
 {
+    [Authorize(Roles = RolesReadonly.Owner)]
     public class OwnerController : Controller
     {
 
@@ -261,7 +263,7 @@ namespace Project.Controllers
                     Name = p.Name,
                     Price = p.Price,
                     Description = p.Description,
-                    Count = Context.Contract.Count(a => a.Contracttypeid == p.Id)
+                    Count = Context.CountCTypes(p.Id)
                 })
                 .OrderByDescending(p => p.Count);
             return View(Object);
@@ -370,11 +372,10 @@ namespace Project.Controllers
         public IActionResult Yachtleasetype()
         {
             var Object = Context.Yachtleasetype
-                .Where(p => !p.Staffonly)
                 .Select(p => new Yachtleasetype
                 {
                     Id = p.Id,
-                    Count = Context.Yachtlease.Count(a => a.Yachtleasetypeid == p.Id),
+                    Count = Context.CountYLTypes(p.Id),
                     Name = p.Name,
                     Price = p.Price,
                     Description = p.Description
@@ -500,8 +501,7 @@ namespace Project.Controllers
                 try
                 {
                     if (Yachtlease.Option[0]) Yachtlease.Object.Enddate = DateTime.Now;
-                    if (Yachtlease.Option[1]) Yachtlease.Object.Overallprice = Context.Yachtleasetype.First(p => p.Id == Yachtlease.Object.Yachtleasetypeid).Price *
-                        (Yachtlease.Object.Duration - Yachtlease.Object.Startdate).Days;
+                    if (Yachtlease.Option[1]) Yachtlease.Object.Overallprice = null;
                     Yachtlease.Object.Specials = Methods.IsStr(Yachtlease.Object.Specials) ? Yachtlease.Object.Specials : string.Empty;
                     Context.Yachtlease.Update(Yachtlease.Object);
                     await Context.SaveChangesAsync();
@@ -534,8 +534,7 @@ namespace Project.Controllers
             {
                 try
                 {
-                    Yachtlease.Object.Specials = Methods.IsStr(Yachtlease.Object.Specials) ? Yachtlease.Object.Specials : string.Empty;
-                    Yachtlease.Object.Startdate = DateTime.Now;
+                    Yachtlease.Object.Specials = Methods.CoalesceString(Yachtlease.Object.Specials);
                     Yachtlease.Object.Overallprice =
                         Context.Yachtleasetype.First(p => p.Id == Yachtlease.Object.Yachtleasetypeid).Price *
                         (Yachtlease.Object.Duration - Yachtlease.Object.Startdate).Days;
@@ -549,6 +548,7 @@ namespace Project.Controllers
                 }
             }
             var Model = ObjectViewModelFactory<Yachtlease>.Create(Yachtlease.Object);
+            ConfigViewBagYachtlease();
             return View("YachtleaseEditor", Model);
         }
         public IActionResult DeleteYachtlease(string id)
@@ -586,7 +586,9 @@ namespace Project.Controllers
                     .Where(z => z.Yachttypeid == p.Id)
                     .Include(l => l.Position)
                     .ToList()
-            });
+            })
+            .OrderByDescending(p => p.Yachttype.Name)
+            ;
             return View(Yachttype);
         }
         public IActionResult EditYachttype(string id)
@@ -621,7 +623,10 @@ namespace Project.Controllers
         {
             var Yachttype = new Yachttype
             {
-                Description = ""
+                Description = "",
+                Sails = 0,
+                Crewcapacity = 1,
+                Capacity = 1
             };
             return View("YachttypeEditor", ObjectViewModelFactory<Yachttype>.Create(Yachttype));
         }
@@ -814,8 +819,8 @@ namespace Project.Controllers
             : Object
             ;
 
-            Object.Yachts = Context.Yacht.Select(p => p.Name).OrderBy(p => p).Distinct();
-            Object.YachtType = Context.Yachttype.Select(p => p.Name).OrderBy(p => p).Distinct();
+            Object.Yachts = Context.Yacht.Select(p => p.Name).Distinct().OrderBy(p => p);
+            Object.YachtType = Context.Yachttype.Select(p => p.Name).Distinct().OrderBy(p => p);
 
             Object.Contracts = Context.ContractAnalytics(
                Object.LikeName,

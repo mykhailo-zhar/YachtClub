@@ -24,7 +24,11 @@ namespace Project.Models
                             break;
                         case PostgresErrorCodes.CheckViolation:
                             controller.ModelState.AddModelError("CheckViolation",
-                                $"<{pgEx.ConstraintName}> - нарушение!");
+                                $"Нарушено ограничение: {pgEx.ConstraintName}");
+                            break;  
+                        case PostgresErrorCodes.ForeignKeyViolation:
+                            controller.ModelState.AddModelError("ForeignKeyViolation",
+                                $"Уже используется");
                             break;
                         case PostgresErrorCodes.RaiseException:
                             controller.ModelState.AddModelError("Trigger",

@@ -181,8 +181,7 @@ Create TABLE Staff_Position(
 	
 	PositionID		int			Not Null
 	References 	Position(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	StartDate		timestamp(2)		Not Null,
 	EndDate			timestamp(2)		check(StartDate <= EndDate),
 	Salary        	My_Money			Default 0,
@@ -330,8 +329,7 @@ CREATE TABLE ExtradationRequest(
 	
 	RepairID	int			Not Null
 	References 	Repair(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 	
 	StartDate	timestamp(2)		Not Null,
 	EndDate		timestamp(2)		check(StartDate <= EndDate),
@@ -353,8 +351,7 @@ CREATE TABLE YachtLease(
 	Paid			bool			Not Null	Default False,
 	YachtID			int				Not Null
 	References 	Yacht(ID)	
-	On Update Cascade	
-	On Delete Cascade,
+	On Update Cascade,
 
 	YachtLeaseTypeID	int			Not Null
 	References 	YachtLeaseType(ID)	
@@ -1941,6 +1938,62 @@ end;
 $$ language plpgsql
 SECURITY DEFINER;	
 				");
+			//Подсчитать кол-во контрактов по типу яхт
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function CountContracttypes(
+	_id int
+)
+	returns bigint
+as $$
+begin 	
+	return ( select count(*) from contract where contracttypeid = _id);
+end; 
+$$ language plpgsql
+SECURITY DEFINER;
+
+create or replace function CountYachtleasetypes(
+	_id int
+)
+	returns bigint
+as $$
+begin 	
+	return ( select count(*) from yachtlease where yachtleasetypeid = _id);
+end; 
+$$ language plpgsql
+SECURITY DEFINER;	
+				");
+			//Команда капитана
+            dbContext.Database.ExecuteSqlRaw(@"
+create or replace function CaptainAndHisCrew(
+	_personid int
+)
+	returns setof yacht_crew
+as $$
+begin 	
+	return query
+	with cap as (
+select yc.id, yc.yachtid from yacht_crew yc 
+	join staff_position sp on sp.id = yc.crewid
+	join position p on sp.positionid = p.id and p.name = 'Captain'
+	where sp.staffid = _personid and yc.enddate is null
+),
+crew as (
+select yc.id, yc.yachtid from yacht_crew yc
+	join staff_position sp on sp.id = yc.crewid
+	join position p on sp.positionid = p.id and p.name <> 'Captain'
+	where sp.staffid <> _personid and yc.yachtid in ( select yachtid from cap )
+),
+uni as (
+	select * from cap
+	union
+	select * from crew
+)
+select * from yacht_crew where id in (select id from uni)
+	;
+end; 
+$$ language plpgsql
+SECURITY DEFINER;	
+				");
 
 			#endregion
 
@@ -2038,6 +2091,51 @@ _pass varchar
 AS $$
 begin
 	call exec_by_rolecreator('call PopulateAllValidSP('''''|| _email ||''''','''''|| _pass ||''''');');
+end;
+$$ language plpgsql
+SECURITY DEFINER;
+				");
+			//Выдача новых активных ролей
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure PopulateAllValidSP_newlogin(
+_email varchar, 
+_previous varchar,
+_pass varchar
+)
+AS $$
+declare
+rec record;
+username varchar;
+_email_ varchar;
+begin
+	_email_ := LowerUserName(_email);
+	for rec in select po.name, p.email from 
+	staff_position sp join person p on sp.staffid = p.id
+	join position po on po.id = sp.positionid 
+	where p.email = _previous and sp.enddate is null
+	Loop
+		username := LowerUserName(rec.name) || '_' || _email_;
+		if(not exists (select rolname from pg_roles where rolname = username)) then
+			execute 'CREATE ROLE ' || username || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
+			execute 'GRANT ' || MyRoleName(rec.name) || ' TO ' || username || ' ;';
+		end if;
+	end loop;
+	execute 'CREATE ROLE client_' || _email_ || ' WITH LOGIN PASSWORD ''' || _pass || ''';';
+	execute 'GRANT my_client TO client_' || _email_  || ' ;';
+end;
+$$ language plpgsql
+SECURITY DEFINER;
+				");	
+			//Выдача новых активных ролей Защищено
+			dbContext.Database.ExecuteSqlRaw(@"
+CREATE OR REPLACE Procedure PopulateAllValidSP_newlogin_r(
+_email varchar, 
+_previous varchar,
+_pass varchar
+)
+AS $$
+begin
+	call exec_by_rolecreator('call PopulateAllValidSP_newlogin('''''|| _email ||''''','''''||_previous ||''''','''''|| _pass ||''''');');
 end;
 $$ language plpgsql
 SECURITY DEFINER;
@@ -2820,11 +2918,17 @@ begin
 			   pers ) then
 			   raise exception 'Количество персонала на данном ремонте не должно превышать %', pers;
 			end if;
-			--Добавление залогиненого сотрудника
+			if (not exists (select * from repair_staff where id = new.staffid)) then
+				raise exception 'На ремонт можно добавлять только ремонтников';
+			end if;
             RETURN new;
 		ELSIF (TG_OP = 'DELETE') then 
 			if ( ( select r.status from repair r where r.id = old.repairid) in ('Canceled','Done')  ) then 
 				raise exception 'Отсутствует возможность убрать персонал с закрытого ремонта';
+			end if;
+			if ( exists (select * from repair where id = old.repairid ) 
+				and leadrepairman(old.repairid, (select staffid from repair_staff where id = old.staffid)) ) then
+				raise exception 'Нельзя удалить главного ремонтника, не удаляя ремонт';
 			end if;
 			return old;
         END IF;
@@ -3093,6 +3197,7 @@ for each row execute function W1 ();
 						if(old.paid) then
 								rec.startdate = new.startdate;
 								rec.paid = new.paid;
+								rec.overallprice = new.overallprice;
 						end if;
 						if(rec <> old) 
 							then raise exception 'Изменены запрещенные поля';
@@ -3109,11 +3214,8 @@ for each row execute function W1 ();
 						return old;
 					END IF;
 
-						if(new.startdate <= current_timestamp or new.startdate is null) then
+						if(new.startdate <= current_timestamp and not new.paid) then
 							new.startdate = current_timestamp;
-						end if;
-						if(new.duration <= current_timestamp or new.duration is null) then
-							new.duration = current_timestamp;
 						end if;
 						if(new.overallprice is null) then
 							new.overallprice = (select ylt.price from yachtleasetype ylt where ylt.id = new.yachtleasetypeid) * 
@@ -3221,14 +3323,8 @@ for each row execute function W1 ();
 							   raise exception 'Невозможно заключить новый контракт, если яхта не арендуема';
 						end if;
 				 end if;
-				 		if(new.specials is null) then
-							new.specials = ' ';
-						end if;
-					    if(new.startdate <= current_timestamp or new.startdate is null) then
+					    if(new.startdate <= current_timestamp or not new.paid) then
 							new.startdate = current_timestamp;
-						end if;
-						if(new.duration <= current_timestamp or new.duration is null) then
-							new.duration = current_timestamp;
 						end if;
 						if(new.averallprice is null ) then 
 							new.averallprice = (select ct.price from contracttype ct where ct.id = new.contracttypeid) * 
@@ -3259,9 +3355,9 @@ begin
 	
 		select yt.crewcapacity cap into rec from yachttype yt where yt.id = new.yachttypeid;		
 		if( rec.cap - (
-			select coalesce(sum(pyt.count),0) from position_yachttype pyt where pyt.yachttypeid = new.yachttypeid
-		) - ( select coalesce( abs( new.count - sum(pyt.count)), new.count ) from position_yachttype pyt
-			 where pyt.yachttypeid = new.yachttypeid and pyt.positionid = new.positionid)  < 0 ) then 
+			select coalesce(sum(pyt.count),0) from position_yachttype pyt where pyt.yachttypeid = new.yachttypeid 
+			and pyt.positionid <> new.positionid
+		) - new.count < 0 ) then 
 			 raise exception 'Данная тип яхты не поддерживает более % членов экипажа', rec.cap;
 		end if;
 		RETURN new;
@@ -3291,7 +3387,28 @@ $$ language plpgsql;
 create trigger InsertCaptain
 After insert on Yachttype
 for each row execute function YT2 ();
+				");
+			
+			//Триггер на изменение количества экипажа
+			dbContext.Database.ExecuteSqlRaw(@"
+create or replace function YT1 ()
+	returns trigger
+as $$
+declare 
+rec RECORD;
+begin 	
+		select coalesce(sum(pyt.count),0) count into rec from position_yachttype pyt where pyt.yachttypeid = new.id;
+		
+		if( new.crewcapacity - rec.count < 0 ) then 
+			 raise exception 'Сейчас данный тип яхты не поддерживает менее % членов экипажа', rec.count;
+		end if;
+		RETURN new;
+end;
+$$ language plpgsql;	
 
+create trigger ReadonlyConstraint
+After update on Yachttype
+for each row execute function YT1 ();
 				");
 			#endregion
 
@@ -3519,14 +3636,13 @@ GRANT EXECUTE ON FUNCTION
 check_er_for_reps, leadrepairman, materialanalytics, materialmetric, 
 staffpositionlistbyposition, staffpositionlistbypositionlist
 TO my_storekeeper;
-
 				");
 
 			//Кадровик
 			dbContext.Database.ExecuteSqlRaw(@"
 grant insert,update,delete,select on staff, position, staff_position, yacht_crew, person to my_personell_officer;
 
-grant select on yacht_crew, yacht, yachttype, busyyacht to my_personell_officer;
+grant select on yacht_crew, yacht, yachttype, busyyacht, yacht_crew_position to my_personell_officer;
 
 GRANT EXECUTE ON FUNCTION 
 countactivecrew, spview, ycview
@@ -3535,6 +3651,7 @@ TO my_personell_officer;
 GRANT EXECUTE ON PROCEDURE  addnewacc_r(_email varchar, _role int, _pass varchar),
 addnewrole_r, removeexistingrole_r, renamerole_r TO my_personell_officer;
 				");
+
 			//Ремонтник
 			dbContext.Database.ExecuteSqlRaw(@"
 grant select on person, position, repair_staff, material,busyyacht, materialtype, availableresources to my_repairman;
@@ -3560,11 +3677,11 @@ GRANT EXECUTE ON PROCEDURE  addcaptaintoyachttype  TO my_owner;
 				");	
 			//Капитан
 			dbContext.Database.ExecuteSqlRaw(@"
-grant insert,update,delete,select on contract to my_captain;
+grant insert,update,delete,select on contract,  yacht_crew to my_captain;
 grant select on yacht_crew_position to my_captain;
 
 GRANT EXECUTE ON FUNCTION 
-countactivecrew
+countactivecrew, CaptainAndHisCrew
 TO my_captain;
 				");
 			//Стандартные типы данных
@@ -3572,6 +3689,8 @@ TO my_captain;
 grant ALL PRIVILEGES on ALL SEQUENCES IN SCHEMA PUBLIC to amy_data_types;
 
 grant select on material, materialtype, materiallease, extradationrequest to amy_materialist;
+
+grant update on person to amy_user 
 				");		
 			//MyDefault
 			dbContext.Database.ExecuteSqlRaw(@"
@@ -3579,12 +3698,13 @@ grant select on event, winner, yacht_crew, staff, staff_position, person, yacht,
 grant insert on person to my_default;
 
 GRANT EXECUTE ON PROCEDURE addnewacc_r(_email varchar,_pass varchar),
-populateallvalidsp_r, removeallexistingroles_r, tryconnect, updateexistingroles_r TO my_default;
+populateallvalidsp_r,  populateallvalidsp_newlogin_r, removeallexistingroles_r, tryconnect, updateexistingroles_r 
+TO my_default;
 
 GRANT EXECUTE ON FUNCTION captainbyyachtid, 
 curstmp, isinterm, isstaff, 
 myrolename, rolebyname, yachtcrewbyevent, 
-yachtsstatus TO my_default;
+yachtsstatus, countcontracttypes, countyachtleasetypes TO my_default;
 				");
 			//Клиент
 			dbContext.Database.ExecuteSqlRaw(@"

@@ -73,7 +73,7 @@ namespace Project.Controllers
                    Name = p.Name,
                    Price = p.Price,
                    Description = p.Description,
-                   Count = Context.Contract.Count(a => a.Contracttypeid == p.Id)
+                   Count = Context.CountCTypes(p.Id)
                })
                .OrderByDescending(p => p.Count);
             return View(Object);
@@ -88,7 +88,6 @@ namespace Project.Controllers
                     {
                         Yacht = p,
                         Status = Context.YachtsStatus(p.Id),
-
                     }
                 )
                 .Where(p => p.Status == "Готова принимать контракты")
@@ -111,7 +110,7 @@ namespace Project.Controllers
                 .Select(p => new Yachtleasetype
                 {
                     Id = p.Id,
-                    Count = Context.Yachtlease.Count(a => a.Yachtleasetypeid == p.Id),
+                    Count = Context.CountYLTypes(p.Id),
                     Name = p.Name,
                     Price = p.Price,
                     Description = p.Description

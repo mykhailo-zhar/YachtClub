@@ -18,7 +18,7 @@ namespace Project.Migrations
         [Column("duration", TypeName = "timestamp(2) without time zone")]
         public DateTime Duration { get; set; }
         [Column("overallprice", TypeName = "numeric")]
-        public decimal Overallprice { get; set; }
+        public decimal? Overallprice { get; set; }
         [Column("specials")]
         public string Specials { get; set; }
         [Column("paid")]

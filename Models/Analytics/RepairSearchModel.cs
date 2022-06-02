@@ -42,7 +42,9 @@ namespace Project.Models
         [Column("p_startdate")]
         public DateTime Startdate { get; set; }
         [Column("p_enddate")]
-        public DateTime? Enddate { get; set; }
+        public DateTime? Enddate { get; set; } 
+        [Column("p_status")]
+        public string Status { get; set; }
     }
 
 }

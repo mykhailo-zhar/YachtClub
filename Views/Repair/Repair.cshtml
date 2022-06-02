@@ -11,6 +11,8 @@
     string DeleteER = CRUD.Delete + typeof(Extradationrequest).Name;
     string EditER = CRUD.Edit + typeof(Extradationrequest).Name;
     string CreateER = CRUD.Create + typeof(Extradationrequest).Name;
+
+    int UserId = User.PersonId();
 }
 @model IEnumerable<Repair_MenViewModel>
 
@@ -42,6 +44,7 @@
                                 {
                                     <a class="btn btn-info" asp-action="@Edit" asp-route-id="@obj.Repair.Id"> Изменить </a>
                                     <a class="btn btn-danger" asp-action="@Delete" asp-route-id="@obj.Repair.Id">Удалить</a>
+
                                 }
                             </div>
                             <h5 class="card-title">
@@ -75,7 +78,7 @@
                                                         <div>
                                                             @item.Staff.Staff.Name @item.Staff.Staff.Surname @item.Staff.Staff.Email
 
-                                                            @if (obj.Repair.Enddate == null && obj.LeadRight)
+                                                            @if (obj.Repair.Enddate == null && obj.LeadRight && item.Staff.Staffid != UserId)
                                                             {
                                                                 <span>
                                                                     <a class="btn btn-danger m-2" asp-action="@DeleteRM"
@@ -118,7 +121,7 @@
                                                             <span>
                                                                 <a class="btn btn-danger" asp-controller="RepairStorekeeperCommon" asp-action="@DeleteER"
                                                                    asp-route-id="@item.Id">-</a>
-                                                                <a class="btn btn-danger"  asp-controller="RepairStorekeeperCommon" asp-action="@EditER"
+                                                                <a class="btn btn-danger" asp-controller="RepairStorekeeperCommon" asp-action="@EditER"
                                                                    asp-route-id="@item.Id">Edit</a>
                                                             </span>
                                                         }
@@ -127,7 +130,7 @@
                                             }
                                             @if (obj.Repair.Enddate == null && obj.LeadRight)
                                             {
-                                                <a class="btn btn-primary m-4" asp-action="@CreateER"  asp-controller="RepairStorekeeperCommon" asp-route-repairid="@obj.Repair.Id">+</a>
+                                                <a class="btn btn-primary m-4" asp-action="@CreateER" asp-controller="RepairStorekeeperCommon" asp-route-repairid="@obj.Repair.Id">+</a>
                                             }
                                         </div>
                                     </expander>

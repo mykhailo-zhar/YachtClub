@@ -55,7 +55,7 @@ namespace Project.Controllers
             }
             else
             {
-                var Object = Context.YachtCrew
+                var Object = Context.CaptainCrew(User.PersonId())
                    .Include(p => p.Yacht)
                        .ThenInclude(p => p.Type)
                    .Include(p => p.Crew)
@@ -63,9 +63,7 @@ namespace Project.Controllers
                    .Include(p => p.Yacht)
                         .ThenInclude(p => p.Yachtowner)
                    .Include(p => p.Crew)
-                       .ThenInclude(p => p.Staff)
-                   .Where(p => p.Crew.Staffid == User.PersonId() && p.Crew.Position.Name == RolesReadonly.Captain)
-                   .Where(p => p.Enddate == null || p.Crew.Position.Name != RolesReadonly.Captain)
+                       .ThenInclude(p => p.Staff)                                 
                    .Select(p => new YachtCrewStatusViewModel
                    {
                        Captain = p,

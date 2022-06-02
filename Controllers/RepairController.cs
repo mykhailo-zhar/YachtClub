@@ -100,6 +100,7 @@ namespace Project.Controllers
                 )
                 .ToList()
                 .OrderByDescending(p => Methods.RepairStatusPrio(p.Repair.Status))
+                .ThenByDescending(p => p.Repair.Startdate)
                 ;
             return View(Repair);
         }

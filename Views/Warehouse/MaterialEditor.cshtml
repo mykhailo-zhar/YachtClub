@@ -31,10 +31,8 @@
     <div class="dropdown-divider"></div>
 
     <div class="@Model.HideOnDelete">
-        <label>@typeof(Materialtype).Name</label>
-
         <div class="form-group">
-            <label>Изменить объект</label>
+            <label asp-for="Object.Typeid"></label>
             <select class="form-control" asp-for="Object.Typeid"
                     asp-items="@(new SelectList(ViewData["Materialtype"] as IEnumerable<Materialtype> ?? Enumerable.Empty<Materialtype>(), "Id", "Name"))"
                     disabled="@Model.ReadOnly">

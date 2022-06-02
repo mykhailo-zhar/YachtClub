@@ -14,7 +14,7 @@
                 <h5 class="card-title">@obj.Event.Name</h5>
                 <h5 class="card-subtitle">@obj.Event.Startdate - @obj.Event.Duration (@Methods.CoalesceDateTime(obj.Event.Enddate))</h5>
                 <p class="card-text">@obj.Event.Description</p>
-                <expander class="w-100 " button-class="fw-bold fs-4" message="Участники события события(@obj.Winners.Count()):">
+                <expander class="w-100 " button-class="fw-bold fs-4" message="Участники события (@obj.Winners.Count()):">
                     @foreach (var item in obj.Winners)
                     {
                         <div>

@@ -61,9 +61,6 @@ namespace Project.Migrations
         public virtual DbSet<Yachttype> Yachttype { get; set; }
         #endregion
 
-        //TODO: Поиск конкретных контрактов
-        //TODO: Дать клиентам возможность просматривать ремонты яхт и тестовые заплывы
-        //TODO: Мероприятия на которых зарегистрирован конкретный капитан
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -81,7 +78,7 @@ namespace Project.Migrations
                 {
                     Role = GetLowerName(Role) + "_" + GetLowerName(User.Identity.Name);
                 }
-                optionsBuilder.UseNpgsql($"Host=localhost;Port=5432;ConnectionIdleLifetime=30;Database=YachtClub;Username={Role};Password={Password}");
+                optionsBuilder.UseNpgsql($"Host=localhost;Port=5432;ConnectionIdleLifetime=10;Database=YachtClub;Username={Role};Password={Password}");
             }
         }
 
@@ -106,11 +103,16 @@ namespace Project.Migrations
         [DbFunction("countactivecrew", "public")]
         public int CountActiveCrew(int Yachtid) => throw new NotImplementedException();
         [DbFunction("rolebyname", "public")]
-        public int CountRoleByName(string email) => throw new NotImplementedException();
+        public int CountRoleByName(string email) => throw new NotImplementedException(); 
+        [DbFunction("countcontracttypes", "public")]
+        public long CountCTypes(int id) => throw new NotImplementedException();
+        [DbFunction("countyachtleasetypes", "public")]
+        public long CountYLTypes(int id) => throw new NotImplementedException();
 
 
         public IQueryable<YachtCrew> YachtCrewByEvent(int eventid) => YachtCrew.FromSqlRaw($"select * from  YachtCrewByEvent({eventid})");
         public IQueryable<YachtCrew> CaptainByYachtid(int yachtid) => YachtCrew.FromSqlRaw($"select * from  CaptainByYachtid({yachtid})");
+        public IQueryable<YachtCrew> CaptainCrew(int capid) => YachtCrew.FromSqlRaw($"select * from CaptainAndHisCrew({capid})");
         #region Поиск и аналитика
 
         public IQueryable<MaterialAnalyticsViewModel> MaterialAnalytics(
@@ -325,6 +327,8 @@ $");");
             modelBuilder.HasDbFunction(() => IsInTerm(default, default, default, default));
             modelBuilder.HasDbFunction(() => CountActiveCrew(default));
             modelBuilder.HasDbFunction(() => CountRoleByName(default));
+            modelBuilder.HasDbFunction(() => CountYLTypes(default));
+            modelBuilder.HasDbFunction(() => CountCTypes(default));
             //modelBuilder.HasDbFunction(() => YachtCrewByEvent(default));
 
             /* modelBuilder.Entity<Account>(entity => {

@@ -25,6 +25,7 @@
                 disabled="@Model.ReadOnly">
             <option value="" disabled selected>Выберите яхту</option>
         </select>
+        <input class="form-control" asp-for="Object.Yachtid" readonly hidden />
     </div>
     <div class="form-group  @Model.HideOnDelete @Model.HideOnEdit">
         <label>Экипаж</label>
@@ -39,6 +40,7 @@
                 disabled="@Model.ReadOnly">
             <option value="" disabled selected>Выберите экипаж</option>
         </select>
+        <input class="form-control" asp-for="Object.Crewid" readonly hidden />
     </div>
 
     <input hidden asp-for="Object.Startdate"

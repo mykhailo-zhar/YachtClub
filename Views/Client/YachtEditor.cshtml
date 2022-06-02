@@ -43,7 +43,7 @@
     </div>
 
 
-    <div class="form-group @Model.HideOnDelete">
+    <div class="form-group @Model.HideOnDelete @Model.HideOnCreate">
         <label>Владелец яхты</label>
         <select class="form-control" asp-for="Object.Yachtownerid" asp-items="@(((ViewData["Yachtowner"] as IEnumerable<Person>) ?? Enumerable.Empty<Person>()).Select(p =>
                         {
